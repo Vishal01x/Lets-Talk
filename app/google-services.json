@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "721942695928",
+    "firebase_url": "https://loop-it-d337e-default-rtdb.firebaseio.com",
+    "project_id": "loop-it-d337e",
+    "storage_bucket": "loop-it-d337e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:721942695928:android:e6f371777909409ca7900d",
+        "android_client_info": {
+          "package_name": "com.exa.android.khacheri"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDJ0vECvvNg1-j3uIMj2FzeopU3w_mnKI0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:721942695928:android:37fb4c686182407ea7900d",
+        "android_client_info": {
+          "package_name": "com.exa.android.letstalk"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDJ0vECvvNg1-j3uIMj2FzeopU3w_mnKI0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
