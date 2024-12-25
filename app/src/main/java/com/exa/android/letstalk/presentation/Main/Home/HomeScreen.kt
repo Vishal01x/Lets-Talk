@@ -1,4 +1,4 @@
-package com.exa.android.khacheri.screens.Main.Home
+package com.exa.android.letstalk.presentation.Main.Home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -30,7 +29,6 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -47,10 +45,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.exa.android.khacheri.mvvm.main.ViewModel.ChatViewModel
-import com.exa.android.khacheri.screens.navigation.component.HomeRoute
-import com.exa.android.khacheri.screens.navigation.component.ScreenPurpose
-import com.exa.android.khacheri.screens.navigation.component.SheetState
+import com.exa.android.letstalk.data.repositories.main.ViewModel.ChatViewModel
+import com.exa.android.letstalk.presentation.navigation.component.HomeRoute
+import com.exa.android.letstalk.presentation.navigation.component.ScreenPurpose
+import com.exa.android.letstalk.presentation.navigation.component.SheetState
 import com.exa.android.letstalk.AppManager.curBottomSheetState
 import com.exa.android.letstalk.AppManager.setCurChat
 import com.exa.android.letstalk.AppManager.switchSheetState
@@ -325,7 +323,7 @@ fun CustomBottomSheet(
     }
 
     LaunchedEffect(sheetState.isVisible) {
-        if (!sheetState.isVisible && curBottomSheetState.value == com.exa.android.khacheri.screens.navigation.component.SheetState.SHOW) {
+        if (!sheetState.isVisible && curBottomSheetState.value == SheetState.SHOW) {
             switchSheetState()
         }
     }

@@ -1,4 +1,4 @@
-package com.exa.android.khacheri.screens.navigation.component
+package com.exa.android.letstalk.presentation.navigation.component
 
 import android.util.Log
 import androidx.compose.foundation.background
@@ -63,7 +63,8 @@ fun CustomBottomNavigationBar(
     var selected = currentDestination?.route
     Log.d("currentBackStackEntry->BottomNav", "selected - $selected, back - ${currentDestination?.route.toString()}")
     // Define navigation items
-    val items = listOf(BottomNavItem(route = HomeRoute.ChatList.route,
+    val items = listOf(
+        BottomNavItem(route = HomeRoute.ChatList.route,
         icon = Icons.Default.Home,
         label = "Home",
         onClick = {
@@ -84,7 +85,8 @@ fun CustomBottomNavigationBar(
                     restoreState = true
                 }
            // }
-        }))
+        })
+    )
 
     // Render the custom navigation bar
     Row(

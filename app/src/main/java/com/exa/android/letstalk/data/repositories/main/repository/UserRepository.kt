@@ -1,13 +1,12 @@
-package com.exa.android.khacheri.mvvm.main.repository
+package com.exa.android.letstalk.data.repositories.main.repository
 
 import android.util.Log
-import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.exa.android.khacheri.utils.helperFun.getUserIdFromChatId
-import com.exa.android.khacheri.utils.models.Chat
-import com.exa.android.khacheri.utils.models.Status
-import com.exa.android.khacheri.utils.models.User
+import com.exa.android.letstalk.utils.helperFun.getUserIdFromChatId
+import com.exa.android.letstalk.utils.models.Chat
+import com.exa.android.letstalk.utils.models.Status
+import com.exa.android.letstalk.utils.models.User
 import com.exa.android.letstalk.utils.Response
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
@@ -19,7 +18,6 @@ import com.google.firebase.database.Transaction
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.emitAll

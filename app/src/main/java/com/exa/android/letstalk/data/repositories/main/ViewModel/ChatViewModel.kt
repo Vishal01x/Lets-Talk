@@ -1,12 +1,12 @@
-package com.exa.android.khacheri.mvvm.main.ViewModel
+package com.exa.android.letstalk.data.repositories.main.ViewModel
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.exa.android.khacheri.mvvm.main.repository.FirestoreService
-import com.exa.android.khacheri.utils.models.Chat
-import com.exa.android.khacheri.utils.models.Message
-import com.exa.android.khacheri.utils.models.User
+import com.exa.android.letstalk.data.repositories.main.repository.FirestoreService
+import com.exa.android.letstalk.utils.models.Chat
+import com.exa.android.letstalk.utils.models.Message
+import com.exa.android.letstalk.utils.models.User
 import com.exa.android.letstalk.utils.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -95,7 +95,7 @@ class ChatViewModel @Inject constructor(
         }
     }
 
-    fun deleteMessages(messages : Set<String>, chatId: String, deleteFor : Int, onCleared :() -> Unit){
+    fun deleteMessages(messages : List<String>, chatId: String, deleteFor : Int, onCleared :() -> Unit){
         viewModelScope.launch {
             repo.deleteMessages(messages,chatId,deleteFor){
                 onCleared()

@@ -1,4 +1,4 @@
-package com.exa.android.khacheri.utils.helperFun
+package com.exa.android.letstalk.utils.helperFun
 
 import android.content.Context
 import android.os.Build

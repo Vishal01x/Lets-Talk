@@ -1,13 +1,13 @@
-package com.exa.android.khacheri.mvvm.main.ViewModel
+package com.exa.android.letstalk.data.repositories.main.ViewModel
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.exa.android.khacheri.mvvm.main.repository.UserRepository
-import com.exa.android.khacheri.utils.models.Chat
-import com.exa.android.khacheri.utils.models.Status
-import com.exa.android.khacheri.utils.models.User
+import com.exa.android.letstalk.data.repositories.main.repository.UserRepository
+import com.exa.android.letstalk.utils.models.Chat
+import com.exa.android.letstalk.utils.models.Status
+import com.exa.android.letstalk.utils.models.User
 import com.exa.android.letstalk.utils.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

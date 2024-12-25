@@ -1,5 +1,6 @@
 package com.exa.android.khacheri.screens.Main.Home.ChatDetail
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -20,6 +21,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -48,21 +50,22 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.exa.android.khacheri.utils.helperFun.formatTimestamp
-import com.exa.android.khacheri.utils.models.Chat
-import com.exa.android.khacheri.utils.models.Status
-import com.exa.android.khacheri.utils.models.User
+import com.exa.android.letstalk.utils.helperFun.formatTimestamp
+import com.exa.android.letstalk.utils.models.Chat
+import com.exa.android.letstalk.utils.models.Status
+import com.exa.android.letstalk.utils.models.User
 import com.exa.android.letstalk.R
+import com.exa.android.letstalk.utils.models.Message
 
 
 @Composable
 fun ChatHeader(
 //    profilePictureUrl: String,
-    chat : Chat, // chatRoomDetails
+    chat: Chat, // chatRoomDetails
     status: Status?, // status of other User
     curUser: String, // cur User Id
     members: List<User>, // all the members of chat
-    selectedMessages: Int, // messages Selected to show its count
+    selectedMessages: Set<Message>, // messages Selected to show its count
     onProfileClick: () -> Unit, // when otherUserProfile Click show its details
     onBackClick: () -> Unit, // navigate to ChatListDetail
     onCallClick: () -> Unit,
@@ -76,16 +79,19 @@ fun ChatHeader(
         elevation = CardDefaults.cardElevation(8.dp),
         colors = CardDefaults.cardColors(Color.White),
         shape = RectangleShape,
-        modifier = Modifier.clickable(enabled = (selectedMessages <= 0)) { onProfileClick() }
+        modifier = Modifier.clickable(enabled = (selectedMessages.isEmpty())) { onProfileClick() }
     ) {
-        if (selectedMessages > 0) { // if messages are selected then show Header options and hide other profile
+        if (selectedMessages.isNotEmpty()) { // if messages are selected then show Header options and hide other profile
             HeaderWithOptions(
+                curUser = curUser,
                 selectedMessages = selectedMessages,
                 onUnselectClick = { onUnselectClick() },
                 onCopyClick = { onCopyClick() },
                 onForwardClick = { onForwardClick() },
-                onDeleteClick = { it -> onDeleteClick(it)}
-                )
+                onDeleteClick = { it -> onDeleteClick(it)},
+                onReplyClick = {message ->},
+                onEditClick = {message ->}
+            )
         } else {
             HeaderWithProfile( // when selectedMessages are 0 now show profile
                 chat = chat,
@@ -102,17 +108,59 @@ fun ChatHeader(
 
 @Composable
 fun HeaderWithOptions(
-    selectedMessages : Int,
+    curUser: String,
+    selectedMessages: Set<Message>,
     onUnselectClick: () -> Unit,
     onCopyClick: () -> Unit,
     onForwardClick: () -> Unit,
-    onDeleteClick: (Int) -> Unit
+    onDeleteClick: (Int) -> Unit,
+    onReplyClick : (Message?) -> Unit,
+    onEditClick : (Message?) -> Unit
 ) {
 
     var showDialog by remember { mutableStateOf(false) }
+    val singleMessage = if(selectedMessages.size == 1)selectedMessages.first() else null
+    val endIcons = mutableListOf<IconData>()
+    val copy = IconData(
+        iconType = IconType.PainterIcon(R.drawable.ic_copy),
+        contentDescription = "Copy Selected",
+        onClick = { onCopyClick() }
+    )
+    val forward = IconData(
+        iconType = IconType.PainterIcon(R.drawable.ic_forward),
+        contentDescription = "Forward Selected",
+        onClick = { onForwardClick() }
+    )
+    val delete = IconData(
+        iconType = IconType.VectorIcon(Icons.Default.Delete),
+        contentDescription = "Delete Selected",
+        onClick = { showDialog = true }
+    )
+    val reply = IconData(
+        iconType = IconType.PainterIcon(R.drawable.ic_forward),
+        contentDescription = "Reply Selected",
+        onClick = { onReplyClick(singleMessage) }
+    )
+    val edit = IconData(
+        iconType = IconType.VectorIcon(Icons.Default.Edit),
+        contentDescription = "Edit Selected",
+        onClick = { onEditClick(singleMessage) }
+    )
+
+
+    getVisibleIcons(selectedMessages, curUser).forEach {
+        when (it) {
+            IconsName.REPLY -> endIcons.add(reply)
+            IconsName.COPY -> endIcons.add(copy)
+            IconsName.EDIT -> endIcons.add(edit)
+            IconsName.DELETE -> endIcons.add(delete)
+            IconsName.FORWARD -> endIcons.add(forward)
+
+        }
+    }
 
     PlaceIcons( // see docs
-        selectedMessages = selectedMessages,
+        selectedMessages = selectedMessages.size,
         startIcons = listOf(
             IconData(
                 iconType = IconType.VectorIcon(Icons.AutoMirrored.Filled.ArrowBack),
@@ -120,35 +168,21 @@ fun HeaderWithOptions(
                 onClick = { onUnselectClick() }
             )
         ),
-        endIcons = listOf(
-            IconData(
-                iconType = IconType.PainterIcon(R.drawable.ic_copy),
-                contentDescription = "Copy Selected",
-                onClick = { onCopyClick() }
-            ),
-            IconData(
-                iconType = IconType.PainterIcon(R.drawable.ic_forward),
-                contentDescription = "Forward Selected",
-                onClick = { onForwardClick() }
-            ),
-            IconData(
-                iconType = IconType.VectorIcon(Icons.Default.Delete),
-                contentDescription = "Delete Selected",
-                onClick = { showDialog = true }
-            )
-        )
+        endIcons =  endIcons
     ) { iconData, index ->
-        val rotation = if(index == 1)90f else 0f
+        val rotation = if (iconData.contentDescription == "Forward Selected") 90f else 0f
         ShowIcon(iconData = iconData, rotationAngle = rotation)
         // since we use want to use lambda for only one icon but now we need to manage for all
     }
 
-    if(showDialog){
+    if (showDialog) {
         DeleteMessageDialog(
-            onDelete = {deleteOption ->
-                if(deleteOption == "Delete for Me"){
+            checkAllFromCurrentUser(selectedMessages, curUser),
+            checkDeleted(selectedMessages),
+            onDelete = { deleteOption ->
+                if (deleteOption == "Delete for Me") {
                     onDeleteClick(1)
-                }else{
+                } else {
                     onDeleteClick(2)
                 }
                 showDialog = false
@@ -162,7 +196,7 @@ fun HeaderWithOptions(
 
 @Composable
 fun PlaceIcons(
-    selectedMessages : Int,
+    selectedMessages: Int,
     startIcons: List<IconData>,
     endIcons: List<IconData>,
     iconContent: @Composable (iconData: IconData, index: Int) -> Unit = { iconData, _ ->
@@ -175,7 +209,7 @@ fun PlaceIcons(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(vertical = 4.dp, horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Row(
@@ -208,25 +242,28 @@ fun PlaceIcons(
 }
 
 @Composable
-fun ShowIcon(iconData: IconData, rotationAngle : Float = 0f) {
+fun ShowIcon(iconData: IconData, rotationAngle: Float = 0f) {
     IconButton(onClick = { iconData.onClick() }) {
-        when(val icon = iconData.iconType){
-            is IconType.VectorIcon ->{
+        when (val icon = iconData.iconType) {
+            is IconType.VectorIcon -> {
                 Icon(
                     imageVector = icon.imageVector,
                     contentDescription = iconData.contentDescription,
                     modifier = Modifier
-                        .rotate(rotationAngle).size(24.dp),
+                        .rotate(rotationAngle)
+                        .size(24.dp),
                     tint = Color.Black,
                     // for forward icon we rotate it opposite of reply
                 )
             }
-            is IconType.PainterIcon ->{
+
+            is IconType.PainterIcon -> {
                 Icon(
                     painter = painterResource(id = icon.painter),
                     contentDescription = iconData.contentDescription,
                     modifier = Modifier
-                        .rotate(rotationAngle).size(24.dp),
+                        .rotate(rotationAngle)
+                        .size(24.dp),
                     tint = Color.Black
                 )
             }
@@ -236,7 +273,7 @@ fun ShowIcon(iconData: IconData, rotationAngle : Float = 0f) {
 
 @Composable
 fun HeaderWithProfile(
-    chat : Chat,
+    chat: Chat,
     status: Status? = Status(),
     curUser: String,
     members: List<User>,
@@ -247,7 +284,7 @@ fun HeaderWithProfile(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(vertical = 4.dp, horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         // Back Button
@@ -260,7 +297,7 @@ fun HeaderWithProfile(
             )
         }
 
-        Spacer(modifier = Modifier.width(8.dp))
+        Spacer(modifier = Modifier.width(4.dp))
 
         // Profile Picture
         Image(
@@ -276,48 +313,55 @@ fun HeaderWithProfile(
         Spacer(modifier = Modifier.width(8.dp))
 
         // User Name and Status
-        Column {
+        Column(
+            modifier = Modifier.weight(1f)
+        ) {
+            // Chat Name
             Text(
                 text = chat.name,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                color = Color.Black,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.fillMaxWidth(fraction = 0.9f) // Restrict width to avoid overlapping
             )
-            if(!chat.isGroup){
-            Text(
-                text = when {
-                    status!!.typingTo == curUser -> "typing..."
-                    status.isOnline -> "Online"
-                    status.lastSeen != null -> {
-                        val timestamp = status.lastSeen * 1000L // already in seconds
-                        val time = formatTimestamp(timestamp)
-                        "last seen at ${time}"
-                    }
 
-                    else -> {
-                        "Offline"
-                    }
-                },
-                style = MaterialTheme.typography.labelSmall,
-                color = Color.Gray
-            )}else{
-                Text(
-                    text = when {
-                        status!!.typingTo.isNotEmpty() -> "${status.typingTo}..."
-                        else -> {
-                            val membersName = members.joinToString(", ") { it.name }
-                            membersName
+            // Chat Status
+            Log.d("checkingStatus", chat.group.toString())
+            val statusText = when {
+                !chat.group && status != null -> {
+                    when {
+                        status.typingTo == curUser -> "typing..."
+                        status.isOnline -> "Online"
+                        status.lastSeen != null -> {
+                            val time =
+                                formatTimestamp(status.lastSeen * 1000L) // Convert to milliseconds
+                            "last seen at $time"
                         }
-                    },
-                    style = MaterialTheme.typography.labelSmall,
-                    color = Color.Gray,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-        }
 
-        Spacer(modifier = Modifier.weight(1f))
+                        else -> "Offline"
+                    }
+                }
+
+                chat.group && status != null -> {
+                    when {
+                        status.typingTo.isNotEmpty() -> "${status.typingTo}..."
+                        else -> members.joinToString(", ") { it.name }
+                    }
+                }
+
+                else -> ""
+            }
+
+            Text(
+                text = statusText,
+                style = MaterialTheme.typography.labelSmall,
+                color = Color.Gray,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.fillMaxWidth(fraction = 0.9f) // Restrict width to avoid overlapping
+            )
+        }
 
         // Video Call Icon
         IconButton(onClick = onVideoCallClick) {
@@ -338,10 +382,112 @@ fun HeaderWithProfile(
             )
         }
     }
+
+    /* TopAppBar(
+         title = {
+             Row(
+                 modifier = Modifier
+                     .fillMaxWidth()
+                     .padding(horizontal = 16.dp)
+                     ,
+                 verticalAlignment = Alignment.CenterVertically
+             ) {
+                 // Profile Picture
+                 CircularUserImage(imageId = R.drawable.chat_img3,
+                     modifier = Modifier
+                     .size(40.dp)
+                     .clip(CircleShape)
+                     .border(1.dp, Color.Black, CircleShape))
+
+                 Spacer(modifier = Modifier.width(8.dp))
+
+                 // User Name and Status
+                 Column {
+                     // Chat Name
+                     Text(
+                         text = chat.name,
+                         style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                         color = Color.Black,
+                         maxLines = 1,
+                         overflow = TextOverflow.Ellipsis
+                     )
+
+                     // Chat Status
+                     val statusText = when {
+                         !chat.isGroup && status != null -> {
+                             when {
+                                 status.typingTo == curUser -> "typing..."
+                                 status.isOnline -> "Online"
+                                 status.lastSeen != null -> {
+                                     val time =
+                                         formatTimestamp(status.lastSeen * 1000L) // Convert to milliseconds
+                                     "last seen at $time"
+                                 }
+
+                                 else -> "Offline"
+                             }
+                         }
+
+                         chat.isGroup && status != null -> {
+                             when {
+                                 status.typingTo.isNotEmpty() -> "${status.typingTo}..."
+                                 else -> members.joinToString(", ") { it.name }
+                             }
+                         }
+
+                         else -> ""
+                     }
+
+                     Text(
+                         text = statusText,
+                         style = MaterialTheme.typography.labelSmall,
+                         color = Color.Gray,
+                         maxLines = 1,
+                         overflow = TextOverflow.Ellipsis
+                     )
+                 }
+             }
+         },
+         navigationIcon = {
+
+             IconButton(onClick = onBackClick) {
+                 Icon(
+                     imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                     contentDescription = "Back",
+                     tint = Color.Black,
+                     modifier = Modifier.size(32.dp)
+                 )
+             }
+
+         },
+         actions = {
+             // Video Call Icon
+             IconButton(onClick = onVideoCallClick) {
+                 Icon(
+                     painter = painterResource(id = R.drawable.video),
+                     contentDescription = "Video Call",
+                     tint = Color.Black,
+                     modifier = Modifier.size(24.dp)
+                 )
+             }
+
+             // Call Icon
+             IconButton(onClick = onCallClick) {
+                 Icon(
+                     imageVector = Icons.Default.Call,
+                     contentDescription = "Call",
+                     tint = Color.Black
+                 )
+             }
+         },
+         backgroundColor = Color.White
+     )*/
 }
 
 @Composable
 fun DeleteMessageDialog(
+    allFromCurrentUser: Boolean,
+    anyDeleted: Boolean,
     onDelete: (deleteOption: String) -> Unit,
     onCancel: () -> Unit
 ) {
@@ -362,7 +508,7 @@ fun DeleteMessageDialog(
                 onClick = {
                     selectedOption?.let { onDelete(it) }
                 },
-                enabled = selectedOption != null, // Enabled only if an option is selected
+                enabled = selectedOption != null || (!allFromCurrentUser || anyDeleted), // Enabled only if an option is selected
                 colors = ButtonDefaults.buttonColors(
                     if (selectedOption != null) Color.Red else Color.Gray
                 )
@@ -375,12 +521,14 @@ fun DeleteMessageDialog(
         },
         text = {
             Column {
+                if(allFromCurrentUser && !anyDeleted)
                 Text(text = "You can delete messages for everyone or just for yourself.")
-
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Radio Buttons for options
-                val options = listOf("Delete for Me", "Delete for Everyone")
+                val options = mutableListOf("Delete for Me")
+                if(allFromCurrentUser && !anyDeleted)options.add("Delete for Everyone")
+
                 options.forEach { option ->
                     Row(
                         modifier = Modifier
@@ -408,6 +556,33 @@ fun DeleteMessageDialog(
 }
 
 
+fun getVisibleIcons(selectedMessages: Set<Message>, curUser: String): List<IconsName> {
+    if (selectedMessages.isEmpty()) return emptyList()
+
+    val isSingleSelection = selectedMessages.size == 1
+    val allFromCurrentUser = checkAllFromCurrentUser(selectedMessages, curUser)
+    val anyDeleted = checkDeleted(selectedMessages)
+
+    if(anyDeleted){
+        return listOf(IconsName.DELETE)
+    } else if(isSingleSelection){
+        val visibleIcos =  listOf(IconsName.REPLY, IconsName.COPY, IconsName.FORWARD, IconsName.DELETE, IconsName.EDIT)
+        return if(allFromCurrentUser) visibleIcos else visibleIcos.filter { it != IconsName.EDIT }
+    }else{
+        return listOf(IconsName.COPY, IconsName.FORWARD, IconsName.DELETE)
+    }
+
+}
+
+fun checkAllFromCurrentUser(selectedMessages: Set<Message>, curUser: String) : Boolean{
+    return selectedMessages.all { it.senderId == curUser}
+}
+
+fun checkDeleted(selectedMessages: Set<Message>) : Boolean{
+    return selectedMessages.any { it.message == "deleted" }
+}
+
+
 sealed class IconType { // Since icon can be imageVector or painterResource we create a sealed class and utilize it further
     data class VectorIcon(val imageVector: ImageVector) : IconType()
     data class PainterIcon(val painter: Int) : IconType()
@@ -419,3 +594,7 @@ data class IconData(
     val onClick: () -> Unit
 )// it's data class, we created it pass details of icon in form of list to another fun
 // actually we are creating same ui for all icons so instead of redundant code we create a separate composable and pass list
+
+enum class IconsName{
+    COPY, DELETE, FORWARD, EDIT,REPLY
+}

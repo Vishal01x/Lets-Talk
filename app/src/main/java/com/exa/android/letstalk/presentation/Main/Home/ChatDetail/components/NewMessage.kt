@@ -1,4 +1,4 @@
-package com.exa.android.khacheri.screens.Main.Home.ChatDetail
+package com.exa.android.letstalk.presentation.Main.Home.ChatDetail.components
 
 import android.util.Log
 import androidx.compose.foundation.background
@@ -50,10 +50,10 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.exa.android.letstalk.R
-import com.exa.android.khacheri.mvvm.main.ViewModel.UserViewModel
-import com.exa.android.khacheri.utils.helperFun.AudioWaveForm
-import com.exa.android.khacheri.utils.models.Message
-import com.exa.android.khacheri.utils.models.User
+import com.exa.android.letstalk.data.repositories.main.ViewModel.UserViewModel
+import com.exa.android.letstalk.utils.helperFun.AudioWaveForm
+import com.exa.android.letstalk.utils.models.Message
+import com.exa.android.letstalk.utils.models.User
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -122,6 +122,7 @@ fun NewMessageSection(
     if (!isRecording) {
         // Text Input UI
         SendTFMessage(
+            curUser = curUser,
             replyTo = replyTo,
             members = members,
             focusRequester = focusRequester,
@@ -172,6 +173,7 @@ fun NewMessageSection(
 
 @Composable
 fun SendTFMessage(
+    curUser: String,
     replyTo: Message?,
     members: List<User?>,
     focusRequester: FocusRequester,
@@ -198,7 +200,7 @@ fun SendTFMessage(
                         .padding(vertical = 8.dp, horizontal = 16.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    ReplyUi(replyTo, members, true) {
+                    ReplyUi(curUser, replyTo, members, true) {
                         onDiscardReply()
                         onDone()
                     }
@@ -359,6 +361,7 @@ fun SendAudioMessage(
 
 @Composable
 fun ReplyUi(
+    curUser: String,
     replyTo: Message,
     members: List<User?>,
     showCross: Boolean = false,
@@ -376,12 +379,14 @@ fun ReplyUi(
             .padding(vertical = 8.dp, horizontal = 8.dp)
     ) {
         Column(verticalArrangement = Arrangement.SpaceEvenly) {
-            Text(
-                text = user?.name ?: "You",
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black
-            )
+            (if(user?.userId != curUser)user?.name else "You")?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
+            }
 
             Text(
                 text = replyTo.message,

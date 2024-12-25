@@ -1,4 +1,4 @@
-package com.exa.android.khacheri.screens.navigation
+package com.exa.android.letstalk.presentation.navigation
 
 import android.util.Log
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -6,10 +6,11 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
-import com.exa.android.khacheri.mvvm.main.ViewModel.ChatViewModel
-import com.exa.android.khacheri.screens.Main.SettingScreen
-import com.exa.android.khacheri.screens.Main.StatusScreen
-import com.exa.android.khacheri.screens.navigation.component.MainRoute
+import com.exa.android.letstalk.data.repositories.main.ViewModel.ChatViewModel
+import com.exa.android.letstalk.presentation.Main.SettingScreen
+import com.exa.android.letstalk.presentation.Main.StatusScreen
+import com.exa.android.letstalk.presentation.navigation.component.MainRoute
+import com.exa.android.letstalk.presentation.navigation.homeNavGraph
 
 fun NavGraphBuilder.mainAppNavGraph(navController: NavHostController) {
 

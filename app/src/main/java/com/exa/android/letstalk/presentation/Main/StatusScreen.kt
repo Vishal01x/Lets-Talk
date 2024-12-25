@@ -1,4 +1,4 @@
-package com.exa.android.khacheri.screens.Main
+package com.exa.android.letstalk.presentation.Main
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -8,7 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
-import com.exa.android.khacheri.screens.navigation.component.MainRoute
+import com.exa.android.letstalk.presentation.navigation.component.MainRoute
 
 @Composable
 fun StatusScreen(navController: NavController) {

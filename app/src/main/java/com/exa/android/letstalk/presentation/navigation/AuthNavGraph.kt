@@ -1,10 +1,10 @@
-package com.exa.android.khacheri.screens.navigation
+package com.exa.android.letstalk.presentation.navigation
 
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
-import com.exa.android.khacheri.screens.navigation.component.AuthRoute
+import com.exa.android.letstalk.presentation.navigation.component.AuthRoute
 import com.exa.android.letstalk.presentation.auth.signIn.LoginScreen
 import com.exa.android.letstalk.presentation.auth.signUp.ForgetPasswordScreen
 import com.exa.android.letstalk.presentation.auth.signUp.RegisterScreen

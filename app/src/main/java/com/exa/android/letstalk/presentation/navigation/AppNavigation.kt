@@ -1,4 +1,4 @@
-package com.exa.android.khacheri.screens.navigation
+package com.exa.android.letstalk.presentation.navigation
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -7,10 +7,10 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.exa.android.khacheri.screens.navigation.component.CustomBottomNavigationBar
-import com.exa.android.khacheri.screens.navigation.component.HomeRoute
-import com.exa.android.khacheri.screens.navigation.component.MainRoute
-import com.exa.android.khacheri.screens.navigation.component.SheetState
+import com.exa.android.letstalk.presentation.navigation.component.CustomBottomNavigationBar
+import com.exa.android.letstalk.presentation.navigation.component.HomeRoute
+import com.exa.android.letstalk.presentation.navigation.component.MainRoute
+import com.exa.android.letstalk.presentation.navigation.component.SheetState
 import com.exa.android.letstalk.AppManager.curBottomSheetState
 import com.exa.android.letstalk.AppManager.switchSheetState
 

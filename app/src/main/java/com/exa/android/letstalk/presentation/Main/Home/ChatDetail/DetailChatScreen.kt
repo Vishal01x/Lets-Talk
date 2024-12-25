@@ -1,4 +1,4 @@
-package com.exa.android.khacheri.screens.Main.Home.ChatDetail
+package com.exa.android.letstalk.presentation.Main.Home.ChatDetail
 
 import android.util.Log
 import androidx.compose.foundation.background
@@ -27,18 +27,19 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.exa.android.khacheri.mvvm.main.ViewModel.ChatViewModel
-import com.exa.android.khacheri.mvvm.main.ViewModel.UserViewModel
-import com.exa.android.khacheri.screens.navigation.component.ChatInfo
-import com.exa.android.khacheri.screens.navigation.component.HomeRoute
-import com.exa.android.khacheri.screens.navigation.component.ScreenPurpose
-import com.exa.android.khacheri.utils.helperFun.generateChatId
-import com.exa.android.khacheri.utils.models.Chat
-import com.exa.android.khacheri.utils.models.Message
-import com.exa.android.khacheri.utils.models.User
+import com.exa.android.letstalk.data.repositories.main.ViewModel.ChatViewModel
+import com.exa.android.letstalk.data.repositories.main.ViewModel.UserViewModel
+import com.exa.android.khacheri.screens.Main.Home.ChatDetail.ChatHeader
+import com.exa.android.letstalk.presentation.Main.Home.ChatDetail.components.MessageList
+import com.exa.android.letstalk.presentation.Main.Home.ChatDetail.components.NewMessageSection
+import com.exa.android.letstalk.presentation.navigation.component.ChatInfo
+import com.exa.android.letstalk.presentation.navigation.component.HomeRoute
+import com.exa.android.letstalk.presentation.navigation.component.ScreenPurpose
+import com.exa.android.letstalk.utils.models.Chat
+import com.exa.android.letstalk.utils.models.Message
+import com.exa.android.letstalk.utils.models.User
 import com.exa.android.letstalk.utils.Response
 import com.google.gson.Gson
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -62,7 +63,7 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
 
 
     var replyMessage by remember { mutableStateOf<Message?>(null) } // to track is message replied
-    var selectedMessages by remember { mutableStateOf<Set<String>>(emptySet()) } // to track the Id's of messages selected to operate HeaderWithOptions
+    var selectedMessages by remember { mutableStateOf<Set<Message>>(emptySet()) } // to track the Id's of messages selected to operate HeaderWithOptions
     val focusRequester = remember { FocusRequester() } // to request focus of keyboard
     val focusManager = LocalFocusManager.current // handling focus like show or not show keyboard
     val clipboardManager = LocalClipboardManager.current
@@ -74,7 +75,7 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
         viewModel.getMessages(chat.id)
         viewModel.fetchChatMembersDetails(chat.id)
 
-        userVM.observeChatRoomStatus(chat.id, chat.isGroup)
+        userVM.observeChatRoomStatus(chat.id, chat.group)
         //userVM.getChatRoomDetail(chat.id) // getting otherUser Details
     }
 
@@ -120,7 +121,7 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
 
     DisposableEffect(key1 = Unit) {// when the user while typing navigate to somewhere else then update its typingTo null
         onDispose {
-            if (chat.isGroup)
+            if (chat.group)
                 userVM.setTypingStatus(chat.id, "")
             else
                 userVM.setTypingStatus(curUserId, "")
@@ -139,19 +140,18 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
                 chatRoomStatus,
                 curUserId,
                 members,
-                selectedMessages.size,
+                selectedMessages,
                 onProfileClick = { navController.navigate(ChatInfo.ProfileScreen.route) },
                 onBackClick = { navController.popBackStack() },
                 onCallClick = { /*TODO*/ },
                 onVideoCallClick = {},
                 onUnselectClick = { selectedMessages = emptySet() },
                 onCopyClick = {
-                    val messageToDelete = selectedMessages
+                    val messageToCopy = selectedMessages
                     selectedMessages = emptySet()
                     coroutineScope.launch {
                         val selectedMessagesFormatted =
-                            chatMessages.value.filter { it.messageId in messageToDelete }
-                                .joinToString(separator = "\n") { message ->
+                            messageToCopy.joinToString(separator = "\n") { message ->
                                     val dateTime = SimpleDateFormat(
                                         "dd-MM-yyyy HH:mm",
                                         Locale.getDefault()
@@ -170,8 +170,7 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
                     selectedMessages = emptySet()
 
                     val messagesText =
-                        chatMessages.value.filter { it.messageId in messageToForward }
-                            .map { it.message }
+                        messageToForward.map { it.message }
                     val gson = Gson()
                     val jsonString = gson.toJson(messagesText)
                     navController.navigate(
@@ -182,7 +181,7 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
                     ) // navigate to forward screen where we have all users
                 },
                 onDeleteClick = { deleteFor ->
-                    val messageToDelete = selectedMessages
+                    val messageToDelete = selectedMessages.map { it.senderId }
                     selectedMessages = emptySet()
                     coroutineScope.launch {
                         viewModel.deleteMessages(
@@ -198,7 +197,7 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
         },
         bottomBar = {
             NewMessageSection(
-                chat.isGroup,
+                chat.group,
                 replyMessage,
                 members = members,
                 curUserId, chat.id,
@@ -206,7 +205,7 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
                 focusRequester,
                 onTextMessageSend = { text, replyTo ->
                     val membersId = members.map { it.userId }
-                    if (chatMessages.value.isEmpty() && !chat.isGroup) {
+                    if (chatMessages.value.isEmpty() && !chat.group) {
                         viewModel.createChat(chat) {
                             viewModel.createChatAndSendMessage(
                                 chat.id,

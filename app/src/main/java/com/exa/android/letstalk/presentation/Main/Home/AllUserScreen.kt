@@ -1,4 +1,4 @@
-package com.exa.android.khacheri.screens.Main.Home
+package com.exa.android.letstalk.presentation.Main.Home
 
 import android.util.Log
 import androidx.compose.foundation.Image
@@ -30,16 +30,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.exa.android.letstalk.R
-import com.exa.android.khacheri.mvvm.main.ViewModel.ChatViewModel
-import com.exa.android.khacheri.mvvm.main.ViewModel.UserViewModel
-import com.exa.android.khacheri.screens.navigation.component.HomeRoute
-import com.exa.android.khacheri.screens.navigation.component.ScreenPurpose
-import com.exa.android.khacheri.utils.helperFun.generateChatId
-import com.exa.android.khacheri.utils.models.Chat
-import com.exa.android.khacheri.utils.models.User
+import com.exa.android.letstalk.data.repositories.main.ViewModel.ChatViewModel
+import com.exa.android.letstalk.data.repositories.main.ViewModel.UserViewModel
+import com.exa.android.letstalk.presentation.navigation.component.HomeRoute
+import com.exa.android.letstalk.presentation.navigation.component.ScreenPurpose
+import com.exa.android.letstalk.utils.helperFun.generateChatId
+import com.exa.android.letstalk.utils.models.Chat
+import com.exa.android.letstalk.utils.models.User
 import com.exa.android.letstalk.utils.Response
 import com.google.gson.Gson
 import java.net.URLEncoder
@@ -76,7 +75,7 @@ fun AllUserScreen(
                 if(createGroup) {
                     val selectedUsersID = selectedUsers.map{it.userId}
                     chatViewModel.createGroup("Just Chill", selectedUsersID) {chatId->
-                        val chat = Chat(id = chatId, name = "Just Chill", profilePicture = "", isGroup = true)
+                        val chat = Chat(id = chatId, name = "Just Chill", profilePicture = "", group = true)
                         val chatJson = Gson().toJson(chat)
                         val encodedChatJson = URLEncoder.encode(chatJson, "UTF-8")
                         navController.navigate(HomeRoute.ChatDetail.createRoute(encodedChatJson)){
@@ -212,7 +211,7 @@ fun AllUserTopBar(onBackClick: () -> Unit) {
             }
         },
         navigationIcon = {
-            IconButton(onClick = { onBackClick() }) {
+            IconButton(onClick =  onBackClick) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
                     contentDescription = "Back",

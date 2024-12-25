@@ -1,4 +1,40 @@
-package com.exa.android.khacheri.screens.Main.Home.ChatDetail
+package com.exa.android.letstalk.presentation.Main.Home.ChatDetail
+
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.TopAppBar
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.filled.Call
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import com.exa.android.letstalk.R
+import com.exa.android.letstalk.utils.helperFun.formatTimestamp
+import com.exa.android.letstalk.utils.models.Chat
+import com.exa.android.letstalk.utils.models.Status
+import com.exa.android.letstalk.utils.models.User
+
 /*
 /*
 import androidx.compose.foundation.BorderStroke
@@ -1710,7 +1746,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 
-import com.exa.android.khacheri.mvvm.main.ViewModel.ChatViewModel
+import com.exa.android.letstalk.data.repositories.main.ViewModel.ChatViewModel
 import kotlinx.coroutines.launch
 
 @Composable
@@ -1964,11 +2000,121 @@ fun Detail(chatId : String){
         chatViewModel.getMessages(chatId)
     }
 }
-
-//@Preview(showBackground = true)
-//@Composable
-//fun PreviewMessageList() {
-//    TbottomSheetImp()
-//}
-//
 */
+
+@Composable
+fun Header(
+    chat : Chat = Chat(id = "diogfogh", name = "Andrew Joe", group = true),
+    status: Status? = Status(),
+    curUser: String = "curUser",
+    members: List<User> = emptyList(),
+    onBackClick: (() -> Unit)? = null,
+    onCallClick: (() -> Unit)? = null,
+    onVideoCallClick: (() -> Unit)? = null
+) {
+    TopAppBar(
+        title = {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Profile Picture
+                Image(
+                    painter = painterResource(id = R.drawable.chat_img3),
+                    contentDescription = "Profile Picture",
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .border(1.dp, Color.Black, CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                // User Name and Status
+                Column {
+                    Text(
+                        text = chat.name,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black
+                    )
+                    if (!chat.group) {
+                        Text(
+                            text = when {
+                                status!!.typingTo == curUser -> "typing..."
+                                status.isOnline -> "Online"
+                                status.lastSeen != null -> {
+                                    val timestamp = status.lastSeen * 1000L // already in seconds
+                                    val time = formatTimestamp(timestamp)
+                                    "last seen at ${time}"
+                                }
+
+                                else -> {
+                                    "Offline"
+                                }
+                            },
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.Gray
+                        )
+                    } else {
+                        Text(
+                            text = when {
+                                status!!.typingTo.isNotEmpty() -> "${status.typingTo}..."
+                                else -> {
+                                    val membersName = members.joinToString(", ") { it.name }
+                                    membersName
+                                }
+                            },
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.Gray,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+
+            }
+        },
+        navigationIcon = {
+            IconButton(onClick = onBackClick!!) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                    contentDescription = "Back",
+                    tint = Color.Black,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+        },
+        actions = {
+            // Video Call Icon
+            IconButton(onClick = onVideoCallClick!!) {
+                Icon(
+                    painter = painterResource(id = R.drawable.video),
+                    contentDescription = "Video Call",
+                    tint = Color.Black,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+
+            // Call Icon
+            IconButton(onClick = onCallClick!!) {
+                Icon(
+                    imageVector = Icons.Default.Call,
+                    contentDescription = "Call",
+                    tint = Color.Black
+                )
+            }
+        },
+        backgroundColor = Color.White
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewMessageList() {
+    Header()
+}
+

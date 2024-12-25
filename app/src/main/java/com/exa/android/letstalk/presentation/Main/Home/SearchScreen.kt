@@ -1,4 +1,4 @@
-package com.exa.android.khacheri.screens.Main.Home
+package com.exa.android.letstalk.presentation.Main.Home
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -37,10 +37,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.exa.android.khacheri.mvvm.main.ViewModel.ChatViewModel
-import com.exa.android.khacheri.screens.navigation.component.HomeRoute
-import com.exa.android.khacheri.utils.helperFun.generateChatId
-import com.exa.android.khacheri.utils.models.Chat
+import com.exa.android.letstalk.data.repositories.main.ViewModel.ChatViewModel
+import com.exa.android.letstalk.presentation.navigation.component.HomeRoute
+import com.exa.android.letstalk.utils.helperFun.generateChatId
+import com.exa.android.letstalk.utils.models.Chat
 import com.exa.android.letstalk.AppManager.setCurChat
 import com.exa.android.letstalk.R
 import com.exa.android.letstalk.utils.Response

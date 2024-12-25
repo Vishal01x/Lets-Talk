@@ -17,19 +17,20 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.exa.android.letstalk.R
+import com.exa.android.letstalk.presentation.Main.components.CircularUserImage
 
 @Composable
 fun StoryItem(image: Int, name: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Image(
-            painter = painterResource(image),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
+
+        CircularUserImage(imageId = R.drawable.chat_img3,
             modifier = Modifier
-                .size(58.dp)
-                .clip(CircleShape)
-        )
+            .size(58.dp)
+            .clip(CircleShape))
+
         Spacer(modifier = Modifier.height(2.dp))
+
         Text(
             name,
             style = MaterialTheme.typography.titleSmall,

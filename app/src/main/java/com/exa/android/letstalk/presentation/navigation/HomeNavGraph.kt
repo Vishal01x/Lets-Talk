@@ -1,4 +1,4 @@
-package com.exa.android.khacheri.screens.navigation
+package com.exa.android.letstalk.presentation.navigation
 
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
@@ -7,16 +7,16 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
-import com.exa.android.khacheri.mvvm.main.ViewModel.ChatViewModel
-import com.exa.android.khacheri.screens.Main.Home.AllUserScreen
-import com.exa.android.khacheri.screens.Main.Home.ChatDetail.DetailChatScreen
-import com.exa.android.khacheri.screens.Main.Home.ChatDetail.ProfileScreen
-import com.exa.android.khacheri.screens.Main.Home.HomeScreen
-import com.exa.android.khacheri.screens.Main.Home.SearchScreen
-import com.exa.android.khacheri.screens.navigation.component.ChatInfo
-import com.exa.android.khacheri.screens.navigation.component.HomeRoute
-import com.exa.android.khacheri.screens.navigation.component.ScreenPurpose
-import com.exa.android.khacheri.utils.models.Chat
+import com.exa.android.letstalk.data.repositories.main.ViewModel.ChatViewModel
+import com.exa.android.letstalk.presentation.Main.Home.AllUserScreen
+import com.exa.android.letstalk.presentation.Main.Home.ChatDetail.DetailChatScreen
+import com.exa.android.letstalk.presentation.Main.Home.ChatDetail.ProfileScreen
+import com.exa.android.letstalk.presentation.Main.Home.HomeScreen
+import com.exa.android.letstalk.presentation.Main.Home.SearchScreen
+import com.exa.android.letstalk.presentation.navigation.component.ChatInfo
+import com.exa.android.letstalk.presentation.navigation.component.HomeRoute
+import com.exa.android.letstalk.presentation.navigation.component.ScreenPurpose
+import com.exa.android.letstalk.utils.models.Chat
 import com.exa.android.letstalk.R
 import com.exa.android.letstalk.presentation.Main.Home.components.ZoomPhoto
 import com.google.gson.Gson

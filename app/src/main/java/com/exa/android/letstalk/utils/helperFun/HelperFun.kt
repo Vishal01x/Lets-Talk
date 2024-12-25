@@ -1,7 +1,6 @@
-package com.exa.android.khacheri.utils.helperFun
+package com.exa.android.letstalk.utils.helperFun
 
 import android.content.Context
-import android.widget.Toast
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat

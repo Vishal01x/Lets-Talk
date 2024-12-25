@@ -1,4 +1,4 @@
-package com.exa.android.khacheri.utils.models
+package com.exa.android.letstalk.utils.models
 
 import com.google.firebase.Timestamp
 import java.util.UUID
@@ -26,7 +26,7 @@ data class Chat(
     var id: String = "",
     val name: String = "",
     val profilePicture: String? = "",
-    val isGroup : Boolean = false,
+    val group : Boolean = false,
     val lastMessage: String = "",
     val lastMessageTimestamp: Timestamp = Timestamp.now(),
     val lastMessageCnt : Long = 0,

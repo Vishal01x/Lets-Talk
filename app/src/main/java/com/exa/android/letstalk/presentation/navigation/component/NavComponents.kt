@@ -1,6 +1,4 @@
-package com.exa.android.khacheri.screens.navigation.component
-
-import com.exa.android.khacheri.utils.models.Chat
+package com.exa.android.letstalk.presentation.navigation.component
 
 sealed class AuthRoute(val route : String){
     data object Login : AuthRoute("login")

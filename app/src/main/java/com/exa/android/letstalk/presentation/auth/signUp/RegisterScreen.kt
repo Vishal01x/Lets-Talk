@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.exa.android.khacheri.screens.navigation.component.AuthRoute
+import com.exa.android.letstalk.presentation.navigation.component.AuthRoute
 import com.exa.android.letstalk.presentation.auth.viewmodels.AuthViewModel
 import com.exa.android.letstalk.presentation.auth.components.AccountInfo
 import com.exa.android.letstalk.presentation.auth.components.ShowLoader

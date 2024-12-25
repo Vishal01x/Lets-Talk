@@ -17,15 +17,14 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.exa.android.khacheri.mvvm.main.ViewModel.UserViewModel
-import com.exa.android.khacheri.screens.navigation.AppNavigation
-import com.exa.android.khacheri.screens.navigation.component.HomeRoute
-import com.exa.android.khacheri.screens.navigation.component.MainRoute
+import com.exa.android.letstalk.data.repositories.main.ViewModel.UserViewModel
+import com.exa.android.letstalk.presentation.navigation.AppNavigation
+import com.exa.android.letstalk.presentation.navigation.component.HomeRoute
+import com.exa.android.letstalk.presentation.navigation.component.MainRoute
 import com.exa.android.letstalk.presentation.auth.viewmodels.AuthViewModel
 import com.exa.android.letstalk.ui.theme.LetsTalkTheme
 import com.exa.android.letstalk.utils.MyLifecycleObserver
 import com.exa.android.letstalk.utils.NetworkCallbackReceiver
-import dagger.hilt.EntryPoint
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

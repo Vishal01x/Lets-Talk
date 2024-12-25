@@ -27,9 +27,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.exa.android.khacheri.utils.helperFun.formatTimestamp
-import com.exa.android.khacheri.utils.models.Chat
+import com.exa.android.letstalk.utils.helperFun.formatTimestamp
+import com.exa.android.letstalk.utils.models.Chat
 import com.exa.android.letstalk.R
+import com.exa.android.letstalk.presentation.Main.components.CircularUserImage
 
 @Composable
 fun ChatListItem(chat: Chat, zoomImage: (Int) -> Unit, openChat: (userId :String) -> Unit) {
@@ -40,15 +41,14 @@ fun ChatListItem(chat: Chat, zoomImage: (Int) -> Unit, openChat: (userId :String
             .clickable { openChat(chat.id) }
             .padding(horizontal = 4.dp, vertical = 8.dp)
     ) {
-        Image(
-            painter = painterResource(R.drawable.chat_img3),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
+
+        CircularUserImage(
+            imageId = R.drawable.chat_img3,  // Replace with the actual image resource
             modifier = Modifier
-                .size(48.dp)
-                .clip(CircleShape)
-                .clickable { zoomImage(R.drawable.chat_img3) }
-        )
+            .size(48.dp)
+            .clip(CircleShape)
+            .clickable { zoomImage(R.drawable.chat_img3) })
+
         Spacer(modifier = Modifier.width(16.dp))
         Column(
             modifier = Modifier.weight(1f),

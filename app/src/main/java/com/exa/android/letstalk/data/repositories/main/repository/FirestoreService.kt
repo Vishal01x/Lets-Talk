@@ -1,11 +1,11 @@
-package com.exa.android.khacheri.mvvm.main.repository
+package com.exa.android.letstalk.data.repositories.main.repository
 
 import android.util.Log
-import com.exa.android.khacheri.utils.helperFun.generateChatId
-import com.exa.android.khacheri.utils.helperFun.getUserIdFromChatId
-import com.exa.android.khacheri.utils.models.Chat
-import com.exa.android.khacheri.utils.models.Message
-import com.exa.android.khacheri.utils.models.User
+import com.exa.android.letstalk.utils.helperFun.generateChatId
+import com.exa.android.letstalk.utils.helperFun.getUserIdFromChatId
+import com.exa.android.letstalk.utils.models.Chat
+import com.exa.android.letstalk.utils.models.Message
+import com.exa.android.letstalk.utils.models.User
 import com.exa.android.letstalk.utils.Response
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
@@ -97,7 +97,7 @@ class FirestoreService @Inject constructor(
                 id = chatId,
                 name = groupName,
                 profilePicture = groupProfile,
-                isGroup = true
+                group = true
             )
         )
 
@@ -140,7 +140,7 @@ class FirestoreService @Inject constructor(
         }
     }
 
-    suspend fun doesChatIdExist(chatCollection: CollectionReference, chatId: String): Boolean {
+    private suspend fun doesChatIdExist(chatCollection: CollectionReference, chatId: String): Boolean {
         val querySnapshot = chatCollection
             .whereEqualTo("id", chatId)
             .limit(1) // Use limit to minimize query time
@@ -308,7 +308,7 @@ class FirestoreService @Inject constructor(
     }
 
     suspend fun deleteMessages(
-        messages: Set<String>,
+        messages: List<String>,
         chatId: String,
         deleteFor: Int = 1,
         onCleared: () -> Unit
@@ -447,7 +447,8 @@ class FirestoreService @Inject constructor(
                 .addOnSuccessListener { document ->
                     val user = document.toObject<User>()?.copy(userId = userId)
 
-                    if (user != null && user.userId != currentUser) {
+                    //if (user != null && user.userId != currentUser) {
+                    if (user != null){
                         userDetails.add(user)
                     }
                     remainingUsers--
@@ -477,6 +478,7 @@ class FirestoreService @Inject constructor(
         val userDocumentListener = userDocument.collection("chat_list")
             .addSnapshotListener { userSnapshot, userException ->
                 if (userException != null) {
+                    Log.d("FireStore Operation", "user - ${userException.message.toString()}")
                     trySend(
                         Response.Error(
                             userException.message ?: "Error fetching chat list"
@@ -511,6 +513,7 @@ class FirestoreService @Inject constructor(
                         val chatListener =
                             chatDocument.addSnapshotListener { chatSnapshot, chatException ->
                                 if (chatException != null) {
+                                    Log.d("FireStore Operation", chatException.message.toString())
                                     trySend(
                                         Response.Error(
                                             chatException.message ?: "Error fetching chat data"
