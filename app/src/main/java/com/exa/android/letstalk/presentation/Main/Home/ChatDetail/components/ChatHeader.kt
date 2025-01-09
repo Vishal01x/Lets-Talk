@@ -68,7 +68,7 @@ fun ChatHeader(
     selectedMessages: Set<Message>, // messages Selected to show its count
     onProfileClick: () -> Unit, // when otherUserProfile Click show its details
     onBackClick: () -> Unit, // navigate to ChatListDetail
-    onCallClick: () -> Unit,
+    onVoiceCallClick: () -> Unit,
     onVideoCallClick: () -> Unit,
     onUnselectClick: () -> Unit, // unselect all the messages
     onCopyClick: () -> Unit,
@@ -88,9 +88,9 @@ fun ChatHeader(
                 onUnselectClick = { onUnselectClick() },
                 onCopyClick = { onCopyClick() },
                 onForwardClick = { onForwardClick() },
-                onDeleteClick = { it -> onDeleteClick(it)},
-                onReplyClick = {message ->},
-                onEditClick = {message ->}
+                onDeleteClick = { it -> onDeleteClick(it) },
+                onReplyClick = { message -> },
+                onEditClick = { message -> }
             )
         } else {
             HeaderWithProfile( // when selectedMessages are 0 now show profile
@@ -99,8 +99,8 @@ fun ChatHeader(
                 curUser = curUser,
                 members = members,
                 onBackClick = { onBackClick() },
-                onCallClick = { /*TODO*/ },
-                onVideoCallClick = { /*TODO*/ }
+                onVoiceCallClick = { onVoiceCallClick() },
+                onVideoCallClick = { onVideoCallClick() }
             )
         }
     }
@@ -114,12 +114,12 @@ fun HeaderWithOptions(
     onCopyClick: () -> Unit,
     onForwardClick: () -> Unit,
     onDeleteClick: (Int) -> Unit,
-    onReplyClick : (Message?) -> Unit,
-    onEditClick : (Message?) -> Unit
+    onReplyClick: (Message?) -> Unit,
+    onEditClick: (Message?) -> Unit
 ) {
 
     var showDialog by remember { mutableStateOf(false) }
-    val singleMessage = if(selectedMessages.size == 1)selectedMessages.first() else null
+    val singleMessage = if (selectedMessages.size == 1) selectedMessages.first() else null
     val endIcons = mutableListOf<IconData>()
     val copy = IconData(
         iconType = IconType.PainterIcon(R.drawable.ic_copy),
@@ -168,7 +168,7 @@ fun HeaderWithOptions(
                 onClick = { onUnselectClick() }
             )
         ),
-        endIcons =  endIcons
+        endIcons = endIcons
     ) { iconData, index ->
         val rotation = if (iconData.contentDescription == "Forward Selected") 90f else 0f
         ShowIcon(iconData = iconData, rotationAngle = rotation)
@@ -278,7 +278,7 @@ fun HeaderWithProfile(
     curUser: String,
     members: List<User>,
     onBackClick: () -> Unit,
-    onCallClick: () -> Unit,
+    onVoiceCallClick: () -> Unit,
     onVideoCallClick: () -> Unit
 ) {
     Row(
@@ -373,8 +373,8 @@ fun HeaderWithProfile(
             )
         }
 
-        // Call Icon
-        IconButton(onClick = onCallClick) {
+        // Voice Call Icon
+        IconButton(onClick = onVoiceCallClick) {
             Icon(
                 imageVector = Icons.Default.Call,
                 contentDescription = "Call",
@@ -506,11 +506,15 @@ fun DeleteMessageDialog(
         confirmButton = {
             Button(
                 onClick = {
-                    selectedOption?.let { onDelete(it) }
+                    if(!allFromCurrentUser || anyDeleted){
+                        onDelete("Delete for Me")
+                    }else{
+                        selectedOption?.let { onDelete(it) }
+                    }
                 },
-                enabled = selectedOption != null || (!allFromCurrentUser || anyDeleted), // Enabled only if an option is selected
+                enabled = (selectedOption != null || !allFromCurrentUser || anyDeleted), // Enabled only if an option is selected
                 colors = ButtonDefaults.buttonColors(
-                    if (selectedOption != null) Color.Red else Color.Gray
+                    if (selectedOption != null || !allFromCurrentUser || anyDeleted) Color.Red else Color.Gray
                 )
             ) {
                 Text(text = "Delete", color = Color.White)
@@ -521,32 +525,32 @@ fun DeleteMessageDialog(
         },
         text = {
             Column {
-                if(allFromCurrentUser && !anyDeleted)
-                Text(text = "You can delete messages for everyone or just for yourself.")
+                if (allFromCurrentUser && !anyDeleted)
+                    Text(text = "You can delete messages for everyone or just for yourself.")
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Radio Buttons for options
-                val options = mutableListOf("Delete for Me")
-                if(allFromCurrentUser && !anyDeleted)options.add("Delete for Everyone")
-
-                options.forEach { option ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .selectable(
+                val options = mutableListOf("Delete for Me", "Delete for Everyone")
+                if (allFromCurrentUser && !anyDeleted) {
+                    options.forEach { option ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .selectable(
+                                    selected = selectedOption == option,
+                                    onClick = { selectedOption = option }
+                                ),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
                                 selected = selectedOption == option,
                                 onClick = { selectedOption = option }
-                            ),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        RadioButton(
-                            selected = selectedOption == option,
-                            onClick = { selectedOption = option }
-                        )
-                        Text(
-                            text = option,
-                            modifier = Modifier.padding(start = 8.dp)
-                        )
+                            )
+                            Text(
+                                text = option,
+                                modifier = Modifier.padding(start = 8.dp)
+                            )
+                        }
                     }
                 }
             }
@@ -563,22 +567,28 @@ fun getVisibleIcons(selectedMessages: Set<Message>, curUser: String): List<Icons
     val allFromCurrentUser = checkAllFromCurrentUser(selectedMessages, curUser)
     val anyDeleted = checkDeleted(selectedMessages)
 
-    if(anyDeleted){
+    if (anyDeleted) {
         return listOf(IconsName.DELETE)
-    } else if(isSingleSelection){
-        val visibleIcos =  listOf(IconsName.REPLY, IconsName.COPY, IconsName.FORWARD, IconsName.DELETE, IconsName.EDIT)
-        return if(allFromCurrentUser) visibleIcos else visibleIcos.filter { it != IconsName.EDIT }
-    }else{
+    } else if (isSingleSelection) {
+        val visibleIcos = listOf(
+            IconsName.REPLY,
+            IconsName.COPY,
+            IconsName.FORWARD,
+            IconsName.DELETE,
+            IconsName.EDIT
+        )
+        return if (allFromCurrentUser) visibleIcos else visibleIcos.filter { it != IconsName.EDIT }
+    } else {
         return listOf(IconsName.COPY, IconsName.FORWARD, IconsName.DELETE)
     }
 
 }
 
-fun checkAllFromCurrentUser(selectedMessages: Set<Message>, curUser: String) : Boolean{
-    return selectedMessages.all { it.senderId == curUser}
+fun checkAllFromCurrentUser(selectedMessages: Set<Message>, curUser: String): Boolean {
+    return selectedMessages.all { it.senderId == curUser }
 }
 
-fun checkDeleted(selectedMessages: Set<Message>) : Boolean{
+fun checkDeleted(selectedMessages: Set<Message>): Boolean {
     return selectedMessages.any { it.message == "deleted" }
 }
 
@@ -595,6 +605,6 @@ data class IconData(
 )// it's data class, we created it pass details of icon in form of list to another fun
 // actually we are creating same ui for all icons so instead of redundant code we create a separate composable and pass list
 
-enum class IconsName{
-    COPY, DELETE, FORWARD, EDIT,REPLY
+enum class IconsName {
+    COPY, DELETE, FORWARD, EDIT, REPLY
 }

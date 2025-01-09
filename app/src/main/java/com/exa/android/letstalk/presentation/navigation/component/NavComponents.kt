@@ -35,7 +35,10 @@ sealed class HomeRoute(val route : String){
 }
 
 sealed class ChatInfo(val route : String){
-    data object ProfileScreen : ChatInfo("profile")
+    data object ProfileScreen : ChatInfo("profile/{encodedUserJson}"){
+        fun createRoute(encodedUserJson : String) : String = "profile/${encodedUserJson}"
+    }
+
     data object ChatMedia : ChatInfo("media")
     data object ProfileImage : ChatInfo("photo")
     data object StarredMessage : ChatInfo("starred")

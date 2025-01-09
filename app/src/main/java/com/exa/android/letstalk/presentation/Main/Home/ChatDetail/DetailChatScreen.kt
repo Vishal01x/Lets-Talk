@@ -39,6 +39,9 @@ import com.exa.android.letstalk.utils.models.Chat
 import com.exa.android.letstalk.utils.models.Message
 import com.exa.android.letstalk.utils.models.User
 import com.exa.android.letstalk.utils.Response
+import com.exa.android.letstalk.utils.helperFun.getUserIdFromChatId
+import com.exa.android.letstalk.utils.models.Call
+import com.exa.android.letstalk.utils.models.CallType
 import com.google.gson.Gson
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -141,10 +144,25 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
                 curUserId,
                 members,
                 selectedMessages,
-                onProfileClick = { navController.navigate(ChatInfo.ProfileScreen.route) },
+                onProfileClick = {
+                    val chatJson = Gson().toJson(chat)
+                    //navController.navigate(ChatInfo.ProfileScreen.createRoute(chatJson))
+                },
                 onBackClick = { navController.popBackStack() },
-                onCallClick = { /*TODO*/ },
-                onVideoCallClick = {},
+                onVoiceCallClick = {
+                    val call = Call(
+                        callerId = curUserId,
+                        receiverId = getUserIdFromChatId(chat.id, curUserId),
+                        isVideoCall = CallType.VOICE
+                    )
+                },
+                onVideoCallClick = {
+                    val call = Call(
+                        callerId = curUserId,
+                        receiverId = getUserIdFromChatId(chat.id, curUserId),
+                        isVideoCall = CallType.VIDEO
+                    )
+                },
                 onUnselectClick = { selectedMessages = emptySet() },
                 onCopyClick = {
                     val messageToCopy = selectedMessages
@@ -152,14 +170,14 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
                     coroutineScope.launch {
                         val selectedMessagesFormatted =
                             messageToCopy.joinToString(separator = "\n") { message ->
-                                    val dateTime = SimpleDateFormat(
-                                        "dd-MM-yyyy HH:mm",
-                                        Locale.getDefault()
-                                    ).format(
-                                        Date(message.timestamp.seconds * 1000L)
-                                    )
-                                    "[$dateTime] ${message.senderId}: ${message.message}"
-                                }
+                                val dateTime = SimpleDateFormat(
+                                    "dd-MM-yyyy HH:mm",
+                                    Locale.getDefault()
+                                ).format(
+                                    Date(message.timestamp.seconds * 1000L)
+                                )
+                                "[$dateTime] ${message.senderId}: ${message.message}"
+                            }
                         clipboardManager.setText(AnnotatedString(selectedMessagesFormatted))
                     }
                 },
@@ -181,7 +199,8 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
                     ) // navigate to forward screen where we have all users
                 },
                 onDeleteClick = { deleteFor ->
-                    val messageToDelete = selectedMessages.map { it.senderId }
+                    Log.d("DeleteOpr", deleteFor.toString())
+                    val messageToDelete = selectedMessages.map { it.messageId }
                     selectedMessages = emptySet()
                     coroutineScope.launch {
                         viewModel.deleteMessages(

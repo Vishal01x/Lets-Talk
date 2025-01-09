@@ -234,7 +234,7 @@ fun MessageBubble(
                     Text(
                         text = if (message.senderId == curUserId) "You deleted this message" else "This message was deleted",
                         style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 16.sp),
-                        color = Color.White.copy(alpha = 0.8F),
+                        color = if (message.senderId == curUserId)Color.White.copy(alpha = 0.8F) else Color.Black.copy(alpha = 0.8F),
                         fontWeight = FontWeight.Normal,
                         fontStyle = FontStyle.Italic
                     )

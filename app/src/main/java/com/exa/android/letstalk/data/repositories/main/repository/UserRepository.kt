@@ -8,6 +8,7 @@ import com.exa.android.letstalk.utils.models.Chat
 import com.exa.android.letstalk.utils.models.Status
 import com.exa.android.letstalk.utils.models.User
 import com.exa.android.letstalk.utils.Response
+import com.exa.android.letstalk.utils.models.Call
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
@@ -99,11 +100,18 @@ class UserRepository @Inject constructor(
                     return Transaction.success(currentData)  // Indicate the transaction was successful
                 }
 
-                override fun onComplete(error: DatabaseError?, committed: Boolean, currentData: DataSnapshot?) {
+                override fun onComplete(
+                    error: DatabaseError?,
+                    committed: Boolean,
+                    currentData: DataSnapshot?
+                ) {
                     if (error != null) {
                         Log.e("Firebase Operation", "Transaction failed: $error")
                     } else {
-                        Log.d("Firebase Operation", "Transaction completed with success: $committed")
+                        Log.d(
+                            "Firebase Operation",
+                            "Transaction completed with success: $committed"
+                        )
                     }
                 }
             })
@@ -118,19 +126,25 @@ class UserRepository @Inject constructor(
     }
 
 
-
-
-    suspend fun updateUnreadMessages(chatId : String) {
+    suspend fun updateUnreadMessages(chatId: String) {
         val chatDocRef = chatCollection.document(chatId)
         try {
             chatDocRef.update("unreadMessages.$currentUser", 0).await()
-            Log.d("Firebase Operation", "Unread messages for ${currentUser} successfully reset to 0.")
+            Log.d(
+                "Firebase Operation",
+                "Unread messages for ${currentUser} successfully reset to 0."
+            )
         } catch (e: Exception) {
             Log.e("Firebase Operation", "Failed to reset unread messages", e)
         }
     }
 
-     fun getChatRoomDetail(chatId: String): Flow<Response<Chat?>> = callbackFlow {
+//    fun makeCall(call : Call){
+//        val callRef = db.collection(currentUser!!).
+//    }
+
+
+    fun getChatRoomDetail(chatId: String): Flow<Response<Chat?>> = callbackFlow {
         try {
             trySend(Response.Loading) // Emit loading state
 
@@ -161,8 +175,8 @@ class UserRepository @Inject constructor(
         }
     }
 
-    fun getChatRoomStatus(id: String, isGroup : Boolean): LiveData<Status?> {
-        val chatId = if(isGroup)id else getUserIdFromChatId(id, currentUser!!)
+    fun getChatRoomStatus(id: String, isGroup: Boolean): LiveData<Status?> {
+        val chatId = if (isGroup) id else getUserIdFromChatId(id, currentUser!!)
         val path = rdb.getReference("/status/$chatId")
         val liveData = MutableLiveData<Status?>()
         path.addValueEventListener(object : ValueEventListener {
@@ -172,6 +186,7 @@ class UserRepository @Inject constructor(
                 liveData.postValue(status)
                 Log.d("Firebase Operation", status.toString())
             }
+
             override fun onCancelled(error: DatabaseError) {
                 liveData.postValue(null) // Handle the error by posting null
             }
@@ -188,7 +203,8 @@ class UserRepository @Inject constructor(
                 val usersPath = userCollection.addSnapshotListener { snapshot, exception ->
                     if (exception != null) {
                         Log.d("FireStore Operation", " users - ${exception.message}")
-                        exception.message?.let { Response.Error(it) }?.let { trySend(it) }?.isFailure
+                        exception.message?.let { Response.Error(it) }
+                            ?.let { trySend(it) }?.isFailure
                     } else {
                         val users = snapshot?.toObjects(User::class.java) ?: emptyList()
                         Log.d("FireStore Operation", " users - $users")
@@ -205,7 +221,7 @@ class UserRepository @Inject constructor(
                 }
             }
             emitAll(snapshotFlow)
-        }catch (e : Exception){
+        } catch (e: Exception) {
             e.message?.let { Response.Error(it) }?.let { emit(it) }
         }
 
