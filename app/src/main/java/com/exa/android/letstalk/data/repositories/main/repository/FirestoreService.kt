@@ -7,6 +7,7 @@ import com.exa.android.letstalk.utils.models.Chat
 import com.exa.android.letstalk.utils.models.Message
 import com.exa.android.letstalk.utils.models.User
 import com.exa.android.letstalk.utils.Response
+import com.exa.android.letstalk.utils.models.Call
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.CollectionReference
@@ -17,6 +18,7 @@ import com.google.firebase.firestore.toObject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -140,7 +142,10 @@ class FirestoreService @Inject constructor(
         }
     }
 
-    private suspend fun doesChatIdExist(chatCollection: CollectionReference, chatId: String): Boolean {
+    private suspend fun doesChatIdExist(
+        chatCollection: CollectionReference,
+        chatId: String
+    ): Boolean {
         val querySnapshot = chatCollection
             .whereEqualTo("id", chatId)
             .limit(1) // Use limit to minimize query time
@@ -161,7 +166,12 @@ class FirestoreService @Inject constructor(
             senderId = currentUser!!,
             message = text,
             replyTo = replyTo,
-            members = members.ifEmpty { listOf(currentUser, getUserIdFromChatId(chatId,currentUser)) }
+            members = members.ifEmpty {
+                listOf(
+                    currentUser,
+                    getUserIdFromChatId(chatId, currentUser)
+                )
+            }
         )
         try {
             val messageRef = chatCollection.document(chatId).collection("messages")
@@ -323,9 +333,12 @@ class FirestoreService @Inject constructor(
                 if (deleteFor == 2) {
                     batch.update(messageRef, mapOf("message" to "deleted"))
                 } else {
-                    batch.update(messageRef, mapOf("members" to FieldValue.arrayRemove(currentUser)))
+                    batch.update(
+                        messageRef,
+                        mapOf("members" to FieldValue.arrayRemove(currentUser))
+                    )
                     val members = messageRef.get().await().get("members") as List<String>
-                    if(members.isEmpty())batch.delete(messageRef)
+                    if (members.isEmpty()) batch.delete(messageRef)
                 }
             }
             batch.commit().await()
@@ -448,7 +461,7 @@ class FirestoreService @Inject constructor(
                     val user = document.toObject<User>()?.copy(userId = userId)
 
                     //if (user != null && user.userId != currentUser) {
-                    if (user != null){
+                    if (user != null) {
                         userDetails.add(user)
                     }
                     remainingUsers--
@@ -528,6 +541,17 @@ class FirestoreService @Inject constructor(
                                     chatList.removeIf { it.id == chatId }
                                     if (chat != null) {
                                         chat.unreadMessages = chat.lastMessageCnt - lastMessageCnt
+                                        if(!chat.group){
+                                            userCollection.document(getUserIdFromChatId(chatId, currentUser!!)).addSnapshotListener{snapshot, exception->
+                                                if(exception != null){
+                                                    return@addSnapshotListener
+                                                }
+                                                val name = snapshot?.getString("name")
+                                                if (name != null){
+                                                    chat.name = name
+                                                }
+                                            }
+                                        }
                                         chatList.add(chat)
                                     }
 
@@ -548,6 +572,47 @@ class FirestoreService @Inject constructor(
             chatListeners.forEach { it.remove() }
         }
     }
+
+
+    fun makeCall(call: Call, onSuccess: () -> Unit, onFailure: () -> Unit) {
+        userCollection.document(call.receiverId).update("call", call).addOnSuccessListener {
+            onSuccess()
+        }.addOnFailureListener {
+            onFailure()
+        }
+    }
+
+    fun trackCall(): Flow<Response<Call?>> = callbackFlow {
+        trySend(Response.Loading)
+        var lastKnownCall: Call? = null
+        try {
+            val listenerRegistration =
+                userCollection.document(currentUser!!).addSnapshotListener { snapshot, exception ->
+                    if (exception != null) {
+                        trySend(Response.Error(exception.message ?: "Error tracking call"))
+                        return@addSnapshotListener
+                    }
+
+                    snapshot?.let {
+                        val newCall = it.get("call") as? Call
+
+                        // Only emit if the call field has changed
+                        if (newCall != lastKnownCall) {
+                            lastKnownCall = newCall
+                            trySend(Response.Success(newCall))
+                        }
+                    }
+                }
+
+            // Close callbackFlow when cancelled
+            awaitClose {
+                listenerRegistration.remove()
+            }
+        } catch (e: Exception) {
+            trySend(Response.Error(e.message ?: "Error tracking call"))
+        }
+    }
+
 }
 
 
@@ -596,3 +661,9 @@ class FirestoreService @Inject constructor(
         }
     }.flowOn(Dispatchers.IO)
 */
+
+
+
+
+
+

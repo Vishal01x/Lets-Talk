@@ -3,11 +3,13 @@ package com.exa.android.letstalk.data.repositories.main.ViewModel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.exa.android.letstalk.data.repositories.main.repository.FirestoreService
 import com.exa.android.letstalk.utils.models.Chat
 import com.exa.android.letstalk.utils.models.Message
 import com.exa.android.letstalk.utils.models.User
 import com.exa.android.letstalk.utils.Response
+import com.exa.android.letstalk.utils.models.Call
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -32,6 +34,9 @@ class ChatViewModel @Inject constructor(
     private val _membersDetails = MutableStateFlow<Response<List<User>>>(Response.Loading)
     val membersDetail : StateFlow<Response<List<User>>> = _membersDetails
 
+    private val _curCall = MutableStateFlow<Call?>(null)
+    val curCall : StateFlow<Call?> = _curCall
+
     val curUser = MutableStateFlow("")
 
     init {
@@ -40,6 +45,7 @@ class ChatViewModel @Inject constructor(
             repo.currentUser?.let { user ->
                 curUser.value = user
                 getChatList()
+                repo.trackCall()
             } ?: run {
                 _chatList.value = Response.Error("Current user is null")
             }
@@ -104,7 +110,6 @@ class ChatViewModel @Inject constructor(
         }
     }
 
-
     fun getMessages(chatId : String) {
         viewModelScope.launch {
             repo.getMessages(chatId).collect { response ->
@@ -130,4 +135,30 @@ class ChatViewModel @Inject constructor(
             }
         }
     }
+
+
+
+    fun makeCall(call : Call, onSuccess : () -> Unit, onFailure : () -> Unit){
+        viewModelScope.launch {
+            repo.makeCall(call, onSuccess = onSuccess, onFailure = onFailure)
+        }
+    }
+
+    fun trackCall(){
+        viewModelScope.launch {
+            repo.trackCall().collect { response ->
+                when(val r = response){
+                    is Response.Success -> {
+                        _curCall.value = r.data
+                    }
+                    else ->{
+
+                    }
+
+                }
+
+            }
+        }
+    }
+
 }

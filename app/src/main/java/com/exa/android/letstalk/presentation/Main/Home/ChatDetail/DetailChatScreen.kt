@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -42,6 +43,7 @@ import com.exa.android.letstalk.utils.Response
 import com.exa.android.letstalk.utils.helperFun.getUserIdFromChatId
 import com.exa.android.letstalk.utils.models.Call
 import com.exa.android.letstalk.utils.models.CallType
+import com.exa.android.letstalk.utils.showToast
 import com.google.gson.Gson
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -60,6 +62,9 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
     //val responseChatRoomDetail by userVM.chatRoomDetail.collectAsState() // Other User Details in form of response from UserViewModel
     val responseMembersDetail by viewModel.membersDetail.collectAsState() // Members Details in form of response from ChatViewModel
     val chatRoomStatus by userVM.chatRoomStatus.observeAsState() // Other User Status like online, offline, typing
+
+    val curCall by viewModel.curCall.collectAsState()
+
     // val chatRoomDetail: MutableState<Chat?> = remember { mutableStateOf(Chat()) } // fetching data from responseUserDetail when Success
     val chatMessages: MutableState<List<Message>> = remember { mutableStateOf(emptyList()) }
     var members by remember { mutableStateOf(emptyList<User>()) }
@@ -70,6 +75,7 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
     val focusRequester = remember { FocusRequester() } // to request focus of keyboard
     val focusManager = LocalFocusManager.current // handling focus like show or not show keyboard
     val clipboardManager = LocalClipboardManager.current
+    val context = LocalContext.current
     val coroutineScope =
         rememberCoroutineScope() // to handle asynchronous here for calling viewMode.delete
 
@@ -93,6 +99,7 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
 //            Log.d("Detail Chat", "Error in userDetail")
 //        }
 //    }
+
 
     when (val response = responseChatMessages) {
         is Response.Loading -> {
@@ -154,6 +161,15 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
                         callerId = curUserId,
                         receiverId = getUserIdFromChatId(chat.id, curUserId),
                         isVideoCall = CallType.VOICE
+                    )
+                    viewModel.makeCall(
+                        call,
+                        onSuccess = {
+                            showToast(context = context, "Wait for recipient response")
+                        },
+                        onFailure = {
+                            showToast(context = context, "Recipient is on Another Call, Try Again Later")
+                        }
                     )
                 },
                 onVideoCallClick = {

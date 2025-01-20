@@ -24,7 +24,7 @@ data class Message(
 
 data class Chat(
     var id: String = "",
-    val name: String = "",
+    var name: String = "",
     val profilePicture: String? = "",
     val group : Boolean = false,
     val lastMessage: String = "",
