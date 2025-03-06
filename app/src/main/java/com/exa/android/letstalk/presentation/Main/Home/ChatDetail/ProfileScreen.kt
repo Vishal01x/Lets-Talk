@@ -22,7 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.exa.android.letstalk.data.repositories.main.ViewModel.ChatViewModel
+import com.exa.android.letstalk.data.domain.main.ViewModel.ChatViewModel
 
 @Composable
 fun ProfileScreen(viewModel : ChatViewModel = hiltViewModel()) {

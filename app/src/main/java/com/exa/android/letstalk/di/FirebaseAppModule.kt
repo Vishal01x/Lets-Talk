@@ -25,4 +25,5 @@ class AuthModule {
     @Provides
     @Singleton
     fun provideRealTimeFirebase() = FirebaseDatabase.getInstance()
+
 }

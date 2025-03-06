@@ -1,20 +1,9 @@
 package com.exa.android.khacheri.screens.Main.Home.ChatDetail
-
 import android.util.Log
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -22,22 +11,9 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
+import androidx.compose.material3.*
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,12 +26,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.exa.android.letstalk.R
+import com.exa.android.letstalk.presentation.Main.Home.ChatDetail.components.header.DeleteMessageDialog
 import com.exa.android.letstalk.utils.helperFun.formatTimestamp
 import com.exa.android.letstalk.utils.models.Chat
+import com.exa.android.letstalk.utils.models.Message
 import com.exa.android.letstalk.utils.models.Status
 import com.exa.android.letstalk.utils.models.User
-import com.exa.android.letstalk.R
-import com.exa.android.letstalk.utils.models.Message
 
 
 @Composable
@@ -78,8 +55,8 @@ fun ChatHeader(
     Card(
         elevation = CardDefaults.cardElevation(8.dp),
         colors = CardDefaults.cardColors(Color.White),
-        shape = RectangleShape,
-        modifier = Modifier.clickable(enabled = (selectedMessages.isEmpty())) { onProfileClick() }
+        shape = RectangleShape
+        // modifier = Modifier.clickable(enabled = (selectedMessages.isEmpty())) { onProfileClick() }
     ) {
         if (selectedMessages.isNotEmpty()) { // if messages are selected then show Header options and hide other profile
             HeaderWithOptions(
@@ -99,6 +76,7 @@ fun ChatHeader(
                 curUser = curUser,
                 members = members,
                 onBackClick = { onBackClick() },
+                onProfileClick = { onProfileClick() },
                 onVoiceCallClick = { onVoiceCallClick() },
                 onVideoCallClick = { onVideoCallClick() }
             )
@@ -278,6 +256,7 @@ fun HeaderWithProfile(
     curUser: String,
     members: List<User>,
     onBackClick: () -> Unit,
+    onProfileClick: () -> Unit,
     onVoiceCallClick: () -> Unit,
     onVideoCallClick: () -> Unit
 ) {
@@ -314,7 +293,9 @@ fun HeaderWithProfile(
 
         // User Name and Status
         Column(
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f).clickable {
+                onProfileClick()
+            }
         ) {
             // Chat Name
             Text(
@@ -363,7 +344,7 @@ fun HeaderWithProfile(
             )
         }
 
-        // Video Call Icon
+         //Video Call Icon
         IconButton(onClick = onVideoCallClick) {
             Icon(
                 painter = painterResource(id = R.drawable.video),
@@ -372,6 +353,7 @@ fun HeaderWithProfile(
                 modifier = Modifier.size(24.dp)
             )
         }
+        //CallButton()
 
         // Voice Call Icon
         IconButton(onClick = onVoiceCallClick) {
@@ -483,82 +465,6 @@ fun HeaderWithProfile(
          backgroundColor = Color.White
      )*/
 }
-
-@Composable
-fun DeleteMessageDialog(
-    allFromCurrentUser: Boolean,
-    anyDeleted: Boolean,
-    onDelete: (deleteOption: String) -> Unit,
-    onCancel: () -> Unit
-) {
-    // State to track the selected option
-    var selectedOption by remember { mutableStateOf<String?>(null) }
-
-    AlertDialog(
-        onDismissRequest = {
-            onCancel()
-        },
-        dismissButton = {
-            OutlinedButton(onClick = { onCancel() }) {
-                Text(text = "Cancel")
-            }
-        },
-        confirmButton = {
-            Button(
-                onClick = {
-                    if(!allFromCurrentUser || anyDeleted){
-                        onDelete("Delete for Me")
-                    }else{
-                        selectedOption?.let { onDelete(it) }
-                    }
-                },
-                enabled = (selectedOption != null || !allFromCurrentUser || anyDeleted), // Enabled only if an option is selected
-                colors = ButtonDefaults.buttonColors(
-                    if (selectedOption != null || !allFromCurrentUser || anyDeleted) Color.Red else Color.Gray
-                )
-            ) {
-                Text(text = "Delete", color = Color.White)
-            }
-        },
-        title = {
-            Text(text = "Delete message?")
-        },
-        text = {
-            Column {
-                if (allFromCurrentUser && !anyDeleted)
-                    Text(text = "You can delete messages for everyone or just for yourself.")
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Radio Buttons for options
-                val options = mutableListOf("Delete for Me", "Delete for Everyone")
-                if (allFromCurrentUser && !anyDeleted) {
-                    options.forEach { option ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .selectable(
-                                    selected = selectedOption == option,
-                                    onClick = { selectedOption = option }
-                                ),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            RadioButton(
-                                selected = selectedOption == option,
-                                onClick = { selectedOption = option }
-                            )
-                            Text(
-                                text = option,
-                                modifier = Modifier.padding(start = 8.dp)
-                            )
-                        }
-                    }
-                }
-            }
-        },
-        modifier = Modifier.background(Color.White)
-    )
-}
-
 
 fun getVisibleIcons(selectedMessages: Set<Message>, curUser: String): List<IconsName> {
     if (selectedMessages.isEmpty()) return emptyList()

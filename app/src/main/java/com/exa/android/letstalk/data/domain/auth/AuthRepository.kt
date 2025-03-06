@@ -1,13 +1,11 @@
-package com.exa.android.letstalk.data.repositories.auth
+package com.exa.android.letstalk.data.domain.auth
 
 
 import com.exa.android.letstalk.utils.Response
-import com.google.android.gms.tasks.Tasks
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -16,6 +14,8 @@ class AuthRepository @Inject constructor(
     private val firebaseAuth: FirebaseAuth
 ) {
     fun isUserLoggedIn(): Boolean = firebaseAuth.currentUser != null
+
+    fun getUid(): String = firebaseAuth.currentUser?.uid ?: ""
 
     fun registerUser(email: String, password: String): Flow<Response<Boolean>> = flow {
         emit(Response.Loading)

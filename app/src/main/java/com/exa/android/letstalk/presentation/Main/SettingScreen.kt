@@ -11,7 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.exa.android.letstalk.data.repositories.main.ViewModel.ChatViewModel
+import com.exa.android.letstalk.data.domain.main.ViewModel.ChatViewModel
 
 @Composable
 fun SettingScreen(

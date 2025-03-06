@@ -33,6 +33,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,9 +51,10 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.exa.android.letstalk.R
-import com.exa.android.letstalk.data.repositories.main.ViewModel.UserViewModel
+import com.exa.android.letstalk.data.domain.main.ViewModel.UserViewModel
 import com.exa.android.letstalk.utils.helperFun.AudioWaveForm
 import com.exa.android.letstalk.utils.models.Message
+import com.exa.android.letstalk.utils.models.ScheduleType
 import com.exa.android.letstalk.utils.models.User
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -73,6 +75,7 @@ fun NewMessageSection(
     onTextMessageSend: (String, Message?) -> Unit,
     onRecordingSend: () -> Unit,
     onAddClick: () -> Unit,
+    onClockClick: () -> Unit,
     onSendOrDiscard: () -> Unit,
     onDone: () -> Unit
 ) {
@@ -81,6 +84,7 @@ fun NewMessageSection(
     var recordingTime by remember { mutableStateOf("00:00") }
     var elapsedSeconds by remember { mutableStateOf(0) } // Tracks total elapsed seconds
     var timerJob by remember { mutableStateOf<Job?>(null) }
+    val isMessageScheduled by viewModel.scheduleMessageType.collectAsState()
 
     fun startTimer() {
         timerJob?.cancel()
@@ -126,10 +130,12 @@ fun NewMessageSection(
             replyTo = replyTo,
             members = members,
             focusRequester = focusRequester,
+            isMessageScheduled = isMessageScheduled != ScheduleType.NONE,
             onSendClick = { message, replyTo ->
                 onSendOrDiscard()
                 onTextMessageSend(message, replyTo)
             },
+            onClockClick = onClockClick,
             onAddClick = onAddClick,
             onMicClick = { isRecording = true },
             onTyping = { message ->
@@ -177,7 +183,9 @@ fun SendTFMessage(
     replyTo: Message?,
     members: List<User?>,
     focusRequester: FocusRequester,
+    isMessageScheduled: Boolean,
     onSendClick: (String, Message?) -> Unit,
+    onClockClick: () -> Unit,
     onAddClick: () -> Unit,
     onMicClick: () -> Unit,
     onTyping: (msg: String) -> Unit,
@@ -191,7 +199,6 @@ fun SendTFMessage(
         shape = RectangleShape,
         modifier = Modifier.padding(bottom = 8.dp)
     ) {
-        Log.d("New Message", "replyTo - $replyTo")
         Column {
             if (replyTo != null) {
                 Box(
@@ -218,6 +225,15 @@ fun SendTFMessage(
                         imageVector = Icons.Default.Add,
                         contentDescription = "Add",
                         tint = Color.Black
+                    )
+                }
+
+                IconButton(onClick = onClockClick) {
+                    androidx.compose.material.Icon(
+                        painter = if(isMessageScheduled)painterResource(R.drawable.alarm_dark)else painterResource(R.drawable.alarm_light),
+                        contentDescription = "Add",
+                        tint = Color.Black,
+                        modifier = Modifier.size(24.dp)
                     )
                 }
 

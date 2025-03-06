@@ -3,7 +3,7 @@ package com.exa.android.letstalk.utils
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
-import com.exa.android.letstalk.data.repositories.main.ViewModel.UserViewModel
+import com.exa.android.letstalk.data.domain.main.ViewModel.UserViewModel
 
 class MyLifecycleObserver(
     private val viewModel: UserViewModel,

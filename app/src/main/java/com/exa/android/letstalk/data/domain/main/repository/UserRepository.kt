@@ -1,4 +1,4 @@
-package com.exa.android.letstalk.data.repositories.main.repository
+package com.exa.android.letstalk.data.domain.main.repository
 
 import android.util.Log
 import androidx.lifecycle.LiveData
@@ -8,7 +8,6 @@ import com.exa.android.letstalk.utils.models.Chat
 import com.exa.android.letstalk.utils.models.Status
 import com.exa.android.letstalk.utils.models.User
 import com.exa.android.letstalk.utils.Response
-import com.exa.android.letstalk.utils.models.Call
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
@@ -208,7 +207,7 @@ class UserRepository @Inject constructor(
                     } else {
                         val users = snapshot?.toObjects(User::class.java) ?: emptyList()
                         Log.d("FireStore Operation", " users - $users")
-                        val updatedUsers = users.filter { it.userId != currentUser }
+                        val updatedUsers = users.filter { it.userId != currentUser }.sortedBy { it.name }
                         val result = trySend(Response.Success(updatedUsers))
                         if (result.isFailure) {
                             // Log or handle the failure (optional)

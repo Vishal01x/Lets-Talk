@@ -1,10 +1,9 @@
-package com.exa.android.letstalk.data.repositories.main.ViewModel
+package com.exa.android.letstalk.data.domain.main.ViewModel
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.exa.android.letstalk.data.repositories.main.repository.FirestoreService
+import com.exa.android.letstalk.data.domain.main.repository.FirestoreService
 import com.exa.android.letstalk.utils.models.Chat
 import com.exa.android.letstalk.utils.models.Message
 import com.exa.android.letstalk.utils.models.User

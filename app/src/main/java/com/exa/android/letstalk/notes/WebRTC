@@ -1,0 +1,60 @@
+WebRTC stands for web real time communication. IT eanbles sending voice, video,
+and any arbitrary data across browsers in real time in peer to peer fashion.
+
+P2P is a tech wgere two clients can communicate directly with each other. It reduces load on servers, reduces
+latency of messages, and increase privacy.
+
+1. SDP - Session Description Protocol. It contains info like video codec, timing etc. It is sent to other user using
+signaling servers and used to negotiate the session's parameters.
+
+2. Signaling Server - It is a third party server, with a purpose to exchange messages between two users. It often uses
+webSocket(but can be any real time server) to exchange info between 2 peers like offer data, answer data,
+and ICE candidate.
+Thus, Signaling server uses REAL TIME SERVER allows 2 peers to securely exchange connection data in the form of SDP objects
+but never touches the data itself, that is actually transmitted between the peers themselves via WebRTC.
+
+STUN SERVER - Session Traversal Utilities for NAT(Network Address Translation)
+Since IP address is required for making connection but in real world users/browsers often sit behind the firewalls and IP add
+that constantly changes due to NAT(translates internal private IP addresses to external public IP Addresses).
+
+STUN server helps in determining public facing IP(an external network address) to find the other user.
+Therefore, we first request for public IP to server that in response provide your public IP, now we send this
+IP to other opponent(remote peer). It also go through similar process and send us its public facing IP.
+
+TURN server - Traversal using Relays around NAT
+sometimes ip provided by stun doesn't work then we use turn that relay media(instead of direct message exchange
+a third party server forward messages) through it.
+
+Thus a STUN server is used to get an external network address and TURN servers are used to relay traffic if the direct (peer-to-peer)
+connection fails.
+Every TURN server supports STUN. A TURN server is a STUN server with additional built-in relaying functionality.
+
+4.ICE - Interactive connectivity Establishment
+standard method for NAT traversal. ICE works to punch open ports. means sending udp packets no. of time to establish connecion.
+It connects media through NAt by conducting connectivity checks.
+
+ICE collects all available candidates (local IP addresses, reflexive addresses — STUN ones, and relayed addresses — TURN ones).
+All the collected addresses are then sent to the remote peer via SDP.
+
+Once the WebRTC Client has all the collected ICE addresses of itself and its peer, it starts initiating a series of connectivity checks.
+These checks essentially try sending media over the various addresses until success.
+
+The algorithm then decides which ICE candidate is the best and will be used to transmit the real data.
+
+
+Now let's recap all the things we learned so far and see how they work together.
+
+So when two peers peer-1 and peer-2 want to communicate with each other, first peer-1 sends an
+Offer(SDP object) to peer-2 via the signaling server.
+
+Peer-2 then accepts this offer and sends an answer(SDP object) back to peer-1 via the signaling server.
+
+Now, peer-1 and peer-2 communicate with a STUN server to find their public-facing IPs. In case if this
+does not work due to firewalls or NAT-related issues then the 2 peers can use a TURN server instead to relay media vai the TURN server.
+
+The peers now exchange their IP and port pairs called ICE candidates. The ICE candidates are exchanged
+ via the signaling server.
+
+At this point, the WebRTC session is connected and the peers can either exchange data directly (P2P)
+between themselves or relay it via a TURN server.
+

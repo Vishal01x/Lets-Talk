@@ -1,0 +1,78 @@
+For handling Reply
+create a a replyUI where a box inside a box is created and to show some difference from main message
+provide a lighter 40% of white that reduces the visibility of main box color it like mixing white color
+in blue color.
+Maintain on rightSwipe : as rightSwipe reply will be generated for that for that use pointerInput and within
+that use onHorizontalDrag and observe its dragAmount if greater that 100 then invoke onReply that will pass to
+parent and from parent pass it to new message section and then its child.
+Vibration - We also manage a vibration effect for 50 milliseconds using VibratorManager
+Animation - Apply animation of rightSwipe using offsetX that measures the dragAmount and create animation
+using AnimationSpec and passed tween for smooth animation and maintain speed using the timeDuration like 600
+Show UI at NewMessage - as rightSwipe triggers onReply gets invoked and passed to parent where we maintain a
+repliedMessage state and set its value to replyMessage and pass it to NewMessage with a replied message where
+we create a ui of the replied message over keyboard and provide a close option also to user, as the close will
+trigger the repliedMessage state will set to null that result dismissal of ui over keyboard also make keyboard unfocused.
+Focus Keyboard - as the rightSwipe triggers we need to reply message means we require keyboard therefore we focus keyboard
+into action, for that we create focusManager and focusRequester at parent and set focusRequester to request focus from
+keyboard using onReply lambda and pass this to newMessage composable where it requests focus.
+onDone - it is used that as replyMessage cancels we need to make keyboard unfocused it's a lambda triggers on close reply
+and using focusManager we discard request.
+In Message Bubble when we click the reply section it scrolls to that particular message for that we use replied message id
+and searched its index/position in list by searching and use listState to scroll to the particular message
+
+
+
+// TextField attributes.
+onKeyboardOptions - it is used to show options to user like next, done etc using imeAction(ImeAction.Done).
+onKeyboardAction - it is used to perform the options we show to user like onNext, onDone here we maintain onDone
+so as the user type message and instead of using send button he can also send message using keyboard Done click.
+
+
+Detail Chat consists of three components
+1. Chat Header
+2. Message List
+3. New Messages
+
+About SelectedMessages State -> We create state variable that maintains set of selected messagesId and we pass it to
+MessagesList for further see Message List section. Updation of SelectedMessages using lambda
+onUnselectMessage of ChatHeader ->  empty it,
+UpdateSelection of MessageList -> update it.
+Why maintain ->  it is used for maintaining the selectedMessages and pass it to chatHeader for showing Profile/Options if
+greater than 0 and also show text in HeaderWithOptions. Another it passed in Message List for maintaining select/Unselect
+messages, updateMessages.
+
+Chat Header - consists of two portion
+(i). HeaderWithProfile
+(ii). HeaderWithOptions
+
+(i). HeaderWithProfile -
+It is portion where the details of other users are seen like its profile photo, name, status - online/typing/last seen
+for it firstly I get the , otherUserDetails, otherUserStatus using viewModel for finding userDetail firstly i get its response
+from UserViewModel then pass it to ChatDetail form where then further pass to HeaderWithProfile
+
+
+(ii). HeaderWithOptions -> to implement options when selectedMessage is greater that 0
+PlaceIcons - this is used to manage placing icons, it takes list of IconData(a data class -> that consists iconType which a sealed class
+name IconType(that has two objects ImageVector, Painter to provide icon from Icons.Default as well as from drawable), contentDescription and
+lambda to handle on Click for each Icon) and implement two start for showing unselectIcon and Text of total selectedMessages,
+endIcons - icons like copy, start, forward and delete as well as a composable lambda invocation named iconContent to implement Icon that takes
+iconData, rotationAngle(used to maintain for icon if want to rotate, by default 0f) its a default lambda that is optional to implement.
+ Here we use it to call for rotating icon of reply to 180 for use for forward. It will be used further or if needed to specify some modifiers, etc
+ for some particular icons.
+
+Why is it actually needed?
+Since we need to have no. of icons with same ui and style as well as onClick handle so instead of code redundantly for each Icon we just create its
+list for details and send to PlaceIcons, now its task is to place icons and text means placing them and further call
+iconContent to define the style of icon using IconButton to handle on Click easily.
+
+Handling onClick on Icons step wise functionality ->
+1. onUnselectMessagesClick - when it invokes we pass lambda to ChatHeader and further to Detail Chat where we have a state var
+selectedMessages of set, we make it emptySet means unselect all messages
+2. onForwardClick
+3. onCopyClick
+4. onDeleteClick - here as the deleteCall we implement it in DetailChat and call it within a coroutineScope to maintain asynchronous call
+ChatViewModel deleteMessages by passing otherUserId and messagesList of selectedMessages, and expect a lambda from it that invoke when the
+message successfully deleting for making the selectedMessage to emptySet, if we directly modify selectedMessages it causes instant recomposition and
+leads no deletion therefore we have two options is to create new variable and set emptySet and other is to use onComplete lambda.
+
+MessagesList -

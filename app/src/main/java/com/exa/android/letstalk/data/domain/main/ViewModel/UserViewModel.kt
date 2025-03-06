@@ -1,14 +1,17 @@
-package com.exa.android.letstalk.data.repositories.main.ViewModel
+package com.exa.android.letstalk.data.domain.main.ViewModel
 
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.exa.android.letstalk.data.repositories.main.repository.UserRepository
+import com.exa.android.letstalk.data.domain.main.repository.UserRepository
 import com.exa.android.letstalk.utils.models.Chat
 import com.exa.android.letstalk.utils.models.Status
 import com.exa.android.letstalk.utils.models.User
 import com.exa.android.letstalk.utils.Response
+import com.exa.android.letstalk.utils.models.ScheduleType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -29,10 +32,17 @@ class UserViewModel @Inject constructor(private val userRepository: UserReposito
     private val _allUsers = MutableStateFlow<Response<List<User?>>>(Response.Loading)
     val allUsers: StateFlow<Response<List<User?>>> = _allUsers
 
+    private val _scheduleMessageType = MutableStateFlow(ScheduleType.NONE)
+    val scheduleMessageType: StateFlow<ScheduleType> = _scheduleMessageType
+
     var curUser: String? = null
 
     init {
         curUser = userRepository.currentUser
+    }
+
+    fun updateScheduleMessageType(scheduleType: ScheduleType) {
+        _scheduleMessageType.value = scheduleType
     }
 
     fun updateOnlineStatus(userId: String, isOnline: Boolean) {

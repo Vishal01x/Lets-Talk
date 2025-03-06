@@ -37,7 +37,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.exa.android.letstalk.data.repositories.main.ViewModel.ChatViewModel
+import com.exa.android.letstalk.data.domain.main.ViewModel.ChatViewModel
 import com.exa.android.letstalk.presentation.navigation.component.HomeRoute
 import com.exa.android.letstalk.utils.helperFun.generateChatId
 import com.exa.android.letstalk.utils.models.Chat

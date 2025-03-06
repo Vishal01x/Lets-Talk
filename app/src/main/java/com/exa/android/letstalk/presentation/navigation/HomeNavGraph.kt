@@ -7,7 +7,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
-import com.exa.android.letstalk.data.repositories.main.ViewModel.ChatViewModel
+import com.exa.android.letstalk.data.domain.main.ViewModel.ChatViewModel
 import com.exa.android.letstalk.presentation.Main.Home.AllUserScreen
 import com.exa.android.letstalk.presentation.Main.Home.ChatDetail.DetailChatScreen
 import com.exa.android.letstalk.presentation.Main.Home.ChatDetail.ProfileScreen

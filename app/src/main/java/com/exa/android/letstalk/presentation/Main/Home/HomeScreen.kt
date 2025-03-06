@@ -40,12 +40,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.exa.android.letstalk.data.repositories.main.ViewModel.ChatViewModel
+import com.exa.android.letstalk.data.domain.main.ViewModel.ChatViewModel
 import com.exa.android.letstalk.presentation.navigation.component.HomeRoute
 import com.exa.android.letstalk.presentation.navigation.component.ScreenPurpose
 import com.exa.android.letstalk.presentation.navigation.component.SheetState
@@ -53,16 +55,31 @@ import com.exa.android.letstalk.AppManager.curBottomSheetState
 import com.exa.android.letstalk.AppManager.setCurChat
 import com.exa.android.letstalk.AppManager.switchSheetState
 import com.exa.android.letstalk.R
+import com.exa.android.letstalk.data.domain.main.ViewModel.ZegoViewModel
 import com.exa.android.letstalk.presentation.Main.Home.components.ChatListItem
 import com.exa.android.letstalk.presentation.Main.Home.components.StoryItem
 import com.exa.android.letstalk.presentation.auth.components.ShowLoader
+import com.exa.android.letstalk.utils.Constants
 import com.exa.android.letstalk.utils.Response
 import com.google.gson.Gson
 
 import kotlinx.coroutines.launch
 
 @Composable
-fun HomeScreen(navController: NavController, viewModel: ChatViewModel) {
+fun HomeScreen(navController: NavController, viewModel: ChatViewModel, zegoViewModel : ZegoViewModel = hiltViewModel()) {
+    val context = LocalContext.current
+    val curUser = viewModel.curUser.collectAsState().value
+
+    LaunchedEffect(Unit) {
+        curUser?.let {
+            zegoViewModel.initZego(
+                appID = Constants.APP_ID,
+                appSign = Constants.APPSign,
+                userID = curUser,
+                userName = curUser
+            )
+        }
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
 

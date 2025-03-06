@@ -1,6 +1,9 @@
-package com.exa.android.letstalk.data.repositories.main.repository
+package com.exa.android.letstalk.data.domain.main.repository
 
+import android.content.Context
 import android.util.Log
+import com.exa.android.letstalk.data.fm.postNotificationToUsers
+import com.exa.android.letstalk.data.fm.subscribeForNotifications
 import com.exa.android.letstalk.utils.helperFun.generateChatId
 import com.exa.android.letstalk.utils.helperFun.getUserIdFromChatId
 import com.exa.android.letstalk.utils.models.Chat
@@ -15,10 +18,10 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.toObject
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -30,7 +33,8 @@ import javax.inject.Inject
 
 class FirestoreService @Inject constructor(
     private val auth: FirebaseAuth,
-    private val db: FirebaseFirestore
+    private val db: FirebaseFirestore,
+    @ApplicationContext val context : Context
 ) {
     private val userCollection = db.collection("users")
     private val chatCollection = db.collection("chats")
@@ -82,6 +86,10 @@ class FirestoreService @Inject constructor(
         updateUserChatList(otherUser, chatId)
         updateChatParticipants(chatId, listOf(currentUser, otherUser))
         updateChatDetail(chat) {
+            //for push notification subscribe channel
+            subscribeForNotifications(chatId){
+                Log.d("FireStore Operation", "Subscribed to topic : $it")
+            }
             onComplete()
         }
     }
@@ -102,9 +110,7 @@ class FirestoreService @Inject constructor(
                 group = true
             )
         )
-
         val allGroupMembers = groupMembers + currentUser
-
         val aboutData = mapOf(
             "admin" to listOf(currentUser),
             "groupMembers" to allGroupMembers
@@ -120,6 +126,10 @@ class FirestoreService @Inject constructor(
         chatRef.collection("about").document("info").set(aboutData).addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 Log.d("FireStore Operation", "Successfully Group is Created")
+                //for push notification subscribe channel
+                subscribeForNotifications(chatId){
+                    Log.d("FireStore Operation", "Subscribed to topic : $it")
+                }
                 onComplete(chatId) // Call onComplete when successful
             } else {
                 // Handle errors if necessary
@@ -178,6 +188,12 @@ class FirestoreService @Inject constructor(
 
             messageRef.document(message.messageId).set(message)
                 .addOnSuccessListener {
+                    postNotificationToUsers(
+                        channelID = chatId,
+                        senderName = message.senderId,
+                        messageContent = message.message,
+                        appContext = context
+                    )
                     Log.d(
                         "FireStore Operation",
                         "New message added Successfully"
@@ -209,7 +225,6 @@ class FirestoreService @Inject constructor(
             Log.d("FireStore Operation", "error in sending message - ${e.message}")
         }
     }
-
 
     private val job = SupervisorJob()
     private val scope = CoroutineScope(Dispatchers.IO + job)
@@ -401,7 +416,6 @@ class FirestoreService @Inject constructor(
                 emit(Response.Error(e.message ?: "Failed to load messages"))
             }
         }
-
 
 //    suspend fun getChatMembers(chatId : String) : Flow<Response<List<User?>>> = callbackFlow{
 //        trySend(Response.Loading)

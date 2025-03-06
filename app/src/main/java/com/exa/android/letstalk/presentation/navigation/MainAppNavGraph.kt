@@ -6,11 +6,10 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
-import com.exa.android.letstalk.data.repositories.main.ViewModel.ChatViewModel
+import com.exa.android.letstalk.data.domain.main.ViewModel.ChatViewModel
 import com.exa.android.letstalk.presentation.Main.SettingScreen
 import com.exa.android.letstalk.presentation.Main.StatusScreen
 import com.exa.android.letstalk.presentation.navigation.component.MainRoute
-import com.exa.android.letstalk.presentation.navigation.homeNavGraph
 
 fun NavGraphBuilder.mainAppNavGraph(navController: NavHostController) {
 

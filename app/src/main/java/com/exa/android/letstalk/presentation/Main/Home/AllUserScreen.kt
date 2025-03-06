@@ -32,8 +32,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.exa.android.letstalk.R
-import com.exa.android.letstalk.data.repositories.main.ViewModel.ChatViewModel
-import com.exa.android.letstalk.data.repositories.main.ViewModel.UserViewModel
+import com.exa.android.letstalk.data.domain.main.ViewModel.ChatViewModel
+import com.exa.android.letstalk.data.domain.main.ViewModel.UserViewModel
 import com.exa.android.letstalk.presentation.navigation.component.HomeRoute
 import com.exa.android.letstalk.presentation.navigation.component.ScreenPurpose
 import com.exa.android.letstalk.utils.helperFun.generateChatId

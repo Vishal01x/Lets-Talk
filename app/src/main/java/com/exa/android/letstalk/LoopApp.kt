@@ -6,6 +6,7 @@ import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
 class LoopApp : Application() {
+
     override fun onCreate() {
         super.onCreate()
         // Initialize Firebase
