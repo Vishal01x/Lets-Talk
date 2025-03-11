@@ -13,6 +13,7 @@ data class User(
 
 data class Message(
     val messageId: String = UUID.randomUUID().toString(),
+    val chatId : String = "",
     val senderId: String = "",
     val receiverId: String = "",
     val message: String = "",

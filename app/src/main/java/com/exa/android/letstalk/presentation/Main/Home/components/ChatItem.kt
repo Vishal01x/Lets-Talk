@@ -31,6 +31,7 @@ import com.exa.android.letstalk.utils.helperFun.formatTimestamp
 import com.exa.android.letstalk.utils.models.Chat
 import com.exa.android.letstalk.R
 import com.exa.android.letstalk.presentation.Main.components.CircularUserImage
+import com.exa.android.letstalk.utils.helperFun.getOtherUserName
 
 @Composable
 fun ChatListItem(chat: Chat, zoomImage: (Int) -> Unit, openChat: (userId :String) -> Unit) {

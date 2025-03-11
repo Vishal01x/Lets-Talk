@@ -52,7 +52,7 @@ fun SearchScreen(navController: NavController, viewModel: ChatViewModel) {
     var query by remember { mutableStateOf("") }
     var isSearching by remember { mutableStateOf(true) }
     val searchResult by viewModel.searchResult.collectAsState()
-    val curUserId by viewModel.curUser.collectAsState()
+    val curUserId by viewModel.curUserId.collectAsState()
 
     Column(
         modifier = Modifier

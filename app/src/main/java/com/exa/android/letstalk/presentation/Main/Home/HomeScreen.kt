@@ -61,6 +61,7 @@ import com.exa.android.letstalk.presentation.Main.Home.components.StoryItem
 import com.exa.android.letstalk.presentation.auth.components.ShowLoader
 import com.exa.android.letstalk.utils.Constants
 import com.exa.android.letstalk.utils.Response
+import com.exa.android.letstalk.utils.helperFun.getOtherUserName
 import com.google.gson.Gson
 
 import kotlinx.coroutines.launch
@@ -68,7 +69,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun HomeScreen(navController: NavController, viewModel: ChatViewModel, zegoViewModel : ZegoViewModel = hiltViewModel()) {
     val context = LocalContext.current
-    val curUser = viewModel.curUser.collectAsState().value
+    val curUser = viewModel.curUserId.collectAsState().value
 
     LaunchedEffect(Unit) {
         curUser?.let {
@@ -177,7 +178,6 @@ fun AddStoryItem() {
         )
     }
 }
-
 @Composable
 fun ChatsSection(navController: NavController, viewModel: ChatViewModel) {
     val chatList by viewModel.chatList.collectAsState()

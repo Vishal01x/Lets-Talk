@@ -1,6 +1,7 @@
 package com.exa.android.letstalk.utils.helperFun
 
 import android.content.Context
+import android.util.Log
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -19,6 +20,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.exa.android.letstalk.utils.models.Message
 import java.io.File
 import kotlin.random.Random
 import java.text.SimpleDateFormat
@@ -113,6 +115,37 @@ fun generateChatId(user1: String? = null, user2: String? = null): String {
     }
     return UUID.randomUUID().toString()
 }
+fun getOtherUserName(chatName: String, chatId: String, currentUser: String): String {
+    val users = chatName.split("-").map { it.trim() }
+    val chats = chatId.split("-").map { it.trim() }
+    val trimmedCurrentUser = currentUser.trim()
+    Log.d("checkingName", "Users: $users, Chats: $chats, Current User: $trimmedCurrentUser")
+    return if (chats.size == 2 && users.size == 2 && chats.contains(trimmedCurrentUser)) {
+        if (chats[0] == trimmedCurrentUser) users[1] else users[0]
+    } else {
+        chatName // Return same if no valid other user
+    }
+}
+
+
+fun generateMessage(
+    currentUser: String,
+    chatId: String,
+    text: String,
+    replyTo : Message? = null,
+    members: List<String> = emptyList()
+): Message =  Message(
+    chatId = chatId,
+    senderId = currentUser,
+    message = text,
+    replyTo = replyTo,
+    members = members.ifEmpty {
+        listOf(
+            currentUser,
+            getUserIdFromChatId(chatId, currentUser)
+        )
+    }
+)
 
 fun getUserIdFromChatId(chatId: String, currentUser: String): String {
     return chatId.split('-').filter { it != currentUser }.joinToString("")

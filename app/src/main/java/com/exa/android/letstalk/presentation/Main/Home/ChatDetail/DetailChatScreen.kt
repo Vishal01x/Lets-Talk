@@ -21,6 +21,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.exa.android.khacheri.screens.Main.Home.ChatDetail.ChatHeader
 import com.exa.android.letstalk.data.domain.main.ViewModel.ChatViewModel
+import com.exa.android.letstalk.data.domain.main.ViewModel.ScheduledMessageViewModel
 import com.exa.android.letstalk.data.domain.main.ViewModel.UserViewModel
 import com.exa.android.letstalk.data.domain.main.ViewModel.ZegoViewModel
 import com.exa.android.letstalk.presentation.Main.Home.ChatDetail.components.MessageList
@@ -32,6 +33,7 @@ import com.exa.android.letstalk.utils.models.Chat
 import com.exa.android.letstalk.utils.models.Message
 import com.exa.android.letstalk.utils.models.User
 import com.exa.android.letstalk.utils.Response
+import com.exa.android.letstalk.utils.helperFun.generateMessage
 import com.exa.android.letstalk.utils.helperFun.getUserIdFromChatId
 import com.exa.android.letstalk.utils.models.Call
 import com.exa.android.letstalk.utils.models.CallType
@@ -48,9 +50,11 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
     val chatViewModel: ChatViewModel = hiltViewModel()  // ChatViewModel for communicating with FireStore Service
     val userViewModel: UserViewModel = hiltViewModel()   // UserViewModel for communicating with User Repository
     val zegoViewModel: ZegoViewModel = hiltViewModel()
+    val scheduleMessageViewModel : ScheduledMessageViewModel = hiltViewModel()
 
     val responseChatMessages by chatViewModel.messages.collectAsState() // all the chats of cur and other User
-    val curUserId by chatViewModel.curUser.collectAsState()  // cur User Id
+    val curUserId by chatViewModel.curUserId.collectAsState()  // cur User Id
+    //val curUser by chatViewModel.curUser.collectAsState() // cur User Details
     //val responseChatRoomDetail by userVM.chatRoomDetail.collectAsState() // Other User Details in form of response from UserViewModel
     val responseMembersDetail by chatViewModel.membersDetail.collectAsState() // Members Details in form of response from ChatViewModel
     val chatRoomStatus by userViewModel.chatRoomStatus.observeAsState() // Other User Status like online, offline, typing
@@ -126,25 +130,22 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
                 curUserId,
                 chat.id,
                 userViewModel,
+                scheduleMessageViewModel,
                 focusRequester,
                 onTextMessageSend = { text, replyTo ->
+                    val membersId = members.map { it.userId }
                     sendMessage(
-                        chatViewModel,
-                        chat,
-                        text,
-                        replyTo,
-                        members,
-                        chatMessages.value
+                        chatViewModel, scheduleMessageViewModel,
+                        generateMessage(curUserId,chat.id, text, replyTo, membersId),
+                        chat, chatMessages.value
                     )
-                    if(userViewModel.scheduleMessageType.value == ScheduleType.ONCE)
-                    userViewModel.updateScheduleMessageType(ScheduleType.NONE)
                 },
                 onAddClick = {},
                 onClockClick = {
-                    if(userViewModel.scheduleMessageType.value == ScheduleType.NONE){
+                    if(scheduleMessageViewModel.scheduleMessageType.value == ScheduleType.NONE){
                     showScheduleDialog.value = true
                 }else{
-                userViewModel.updateScheduleMessageType(ScheduleType.NONE)
+                scheduleMessageViewModel.updateScheduleMessageType(ScheduleType.NONE)
                 showToast(context,"Message Scheduling Deactivated")
             }},
                 onSendOrDiscard = { replyMessage = null },
@@ -169,7 +170,8 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
                 MessageSchedulerDialog(
                     onDismiss = { showScheduleDialog.value = false },
                     onConfirm = {scheduledTime, scheduledType ->
-                        userViewModel.updateScheduleMessageType(scheduledType)
+                        scheduleMessageViewModel.updateScheduleMessageType(scheduledType)
+                        scheduleMessageViewModel.setTime(scheduledTime)
                     }
                 )
             }
@@ -220,25 +222,29 @@ private fun deleteMessages(viewModel: ChatViewModel, selectedMessages: Set<Messa
     }
 }
 
-private fun sendMessage(viewModel: ChatViewModel, chat: Chat, text: String, replyTo: Message?, members: List<User>, chatMessages: List<Message>) {
-    val memberIds = members.map { it.userId }
-    //viewModel.createChatAndSendMessage(chat.id, text, replyTo, memberIds)
-    val membersId = members.map { it.userId }
+private fun sendMessage(chatViewModel: ChatViewModel, scheduledMessageViewModel: ScheduledMessageViewModel,message: Message,chat : Chat,chatMessages: List<Message>) {
+
     if (chatMessages.isEmpty() && !chat.group) {
-        viewModel.createChat(chat) {
-            viewModel.createChatAndSendMessage(
-                chat.id,
-                text,
-                replyTo,
-                membersId
-            )
+        chatViewModel.createChat(chat) {
+            if(scheduledMessageViewModel.scheduleMessageType.value != ScheduleType.NONE){
+                scheduledMessageViewModel.scheduleMessage(message, scheduledMessageViewModel.scheduleTime.value)
+                if(scheduledMessageViewModel.scheduleMessageType.value == ScheduleType.ONCE)
+                    scheduledMessageViewModel.updateScheduleMessageType(ScheduleType.NONE)
+            }else {
+                chatViewModel.createChatAndSendMessage(
+                    message
+                )
+            }
         }
     } else {
-        viewModel.createChatAndSendMessage(
-            chat.id,
-            text,
-            replyTo,
-            membersId
-        )
+        if(scheduledMessageViewModel.scheduleMessageType.value != ScheduleType.NONE){
+            scheduledMessageViewModel.scheduleMessage(message, scheduledMessageViewModel.scheduleTime.value)
+            if(scheduledMessageViewModel.scheduleMessageType.value == ScheduleType.ONCE)
+                scheduledMessageViewModel.updateScheduleMessageType(ScheduleType.NONE)
+        }else {
+            chatViewModel.createChatAndSendMessage(
+                message
+            )
+        }
     }
 }

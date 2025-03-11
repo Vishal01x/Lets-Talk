@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import com.exa.android.letstalk.R
 import com.exa.android.letstalk.presentation.Main.Home.ChatDetail.components.header.DeleteMessageDialog
 import com.exa.android.letstalk.utils.helperFun.formatTimestamp
+import com.exa.android.letstalk.utils.helperFun.getOtherUserName
 import com.exa.android.letstalk.utils.models.Chat
 import com.exa.android.letstalk.utils.models.Message
 import com.exa.android.letstalk.utils.models.Status
@@ -297,9 +298,16 @@ fun HeaderWithProfile(
                 onProfileClick()
             }
         ) {
+
+            val displayName = if (!chat.group) {
+                getOtherUserName(chat.name, chat.id, curUser)
+            } else {
+                chat.name
+            }
+
             // Chat Name
             Text(
-                text = chat.name,
+                text = displayName,
                 style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
                 color = Color.Black,
                 maxLines = 1,
@@ -308,9 +316,10 @@ fun HeaderWithProfile(
             )
 
             // Chat Status
-            Log.d("checkingStatus", chat.group.toString())
+
             val statusText = when {
-                !chat.group && status != null -> {
+                !(chat.group) && status != null -> {
+
                     when {
                         status.typingTo == curUser -> "typing..."
                         status.isOnline -> "Online"

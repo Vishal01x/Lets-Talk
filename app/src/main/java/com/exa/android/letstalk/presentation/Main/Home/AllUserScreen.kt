@@ -50,7 +50,7 @@ fun AllUserScreen(
     forwardMessages: List<String>
 ) {
     val chatViewModel : ChatViewModel = hiltViewModel()
-    val curUserId  = chatViewModel.curUser.collectAsState()
+    val curUserId  = chatViewModel.curUserId.collectAsState()
     when (purpose) {
         ScreenPurpose.NEW_CHAT -> {
             AllUserUi(navController){user->

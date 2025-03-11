@@ -73,7 +73,9 @@ dependencies {
     implementation(libs.firebase.auth.ktx)
     implementation(libs.firebase.messaging.ktx)
     implementation(libs.volley)
-    implementation(libs.material) //firebase messaging
+    implementation(libs.material)
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.androidx.hilt.common) //firebase messaging
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

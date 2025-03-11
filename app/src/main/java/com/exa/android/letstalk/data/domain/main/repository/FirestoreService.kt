@@ -10,6 +10,8 @@ import com.exa.android.letstalk.utils.models.Chat
 import com.exa.android.letstalk.utils.models.Message
 import com.exa.android.letstalk.utils.models.User
 import com.exa.android.letstalk.utils.Response
+import com.exa.android.letstalk.utils.helperFun.generateMessage
+import com.exa.android.letstalk.utils.helperFun.getOtherUserName
 import com.exa.android.letstalk.utils.models.Call
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
@@ -22,7 +24,10 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.emitAll
@@ -34,11 +39,16 @@ import javax.inject.Inject
 class FirestoreService @Inject constructor(
     private val auth: FirebaseAuth,
     private val db: FirebaseFirestore,
-    @ApplicationContext val context : Context
+    @ApplicationContext val context: Context
 ) {
     private val userCollection = db.collection("users")
     private val chatCollection = db.collection("chats")
-    val currentUser = auth.currentUser?.uid
+    val currentUserId = auth.currentUser?.uid
+
+    suspend fun getCurUser(): User? {
+        val user = userCollection.document(currentUserId!!).get().await()
+        return user.toObject(User::class.java)
+    }
 
     //search user based on the phone number
     fun searchUser(phone: String): Flow<Response<User?>> = flow {
@@ -75,22 +85,39 @@ class FirestoreService @Inject constructor(
     }
 
 
-    suspend fun createChat(
-        chat: Chat,
-        onComplete: () -> Unit
-    ) {
+    suspend fun createChat(chat: Chat, onComplete: () -> Unit) = coroutineScope {
         val chatId = chat.id
-        val otherUser = getUserIdFromChatId(chatId, currentUser!!)
+        val currentUserId = currentUserId ?: return@coroutineScope  // Prevent null crash
+        val otherUserId = getUserIdFromChatId(chatId, currentUserId)
 
-        updateUserChatList(currentUser, chatId)
-        updateUserChatList(otherUser, chatId)
-        updateChatParticipants(chatId, listOf(currentUser, otherUser))
-        updateChatDetail(chat) {
-            //for push notification subscribe channel
-            subscribeForNotifications(chatId){
-                Log.d("FireStore Operation", "Subscribed to topic : $it")
+        try {
+            // Launch parallel tasks
+           /* val updateCurrentUserChat = async { updateUserChatList(currentUserId, chatId) }
+            val updateOtherUserChat = async { updateUserChatList(otherUserId, chatId) }
+            val updateParticipants =
+                async { updateChatParticipants(chatId, listOf(currentUserId, otherUserId)) }
+            val updateChatDetails = async { updateChatDetail(chat) }
+
+            // Wait for all tasks to complete
+            updateCurrentUserChat.await()
+            updateOtherUserChat.await()
+            updateParticipants.await()
+            updateChatDetails.await()
+*/
+            updateUserChatList(currentUserId, chatId)
+            updateUserChatList(otherUserId, chatId)
+            updateChatParticipants(chatId, listOf(currentUserId, otherUserId))
+            updateChatDetail(chat)
+
+            // Subscribe to push notifications
+            subscribeForNotifications(chatId) { token ->
+                Log.d("FireStore Operation", "Subscribed to topic: $token")
             }
+
+            // Call completion handler after all operations are successful
             onComplete()
+        } catch (e: Exception) {
+            Log.e("FireStore Operation", "Error creating chat: ${e.message}")
         }
     }
 
@@ -102,45 +129,60 @@ class FirestoreService @Inject constructor(
     ) {
         val chatId = generateChatId()
         val chatRef = chatCollection.document(chatId)
-        updateChatDetail(
-            Chat(
-                id = chatId,
-                name = groupName,
-                profilePicture = groupProfile,
-                group = true
+
+        coroutineScope {
+            // Create chat detail
+            val updateChatDetailTask = async {
+                updateChatDetail(
+                    Chat(
+                        id = chatId,
+                        name = groupName,
+                        profilePicture = groupProfile,
+                        group = true
+                    )
+                )
+            }
+
+            // Prepare all group members
+            val allGroupMembers = groupMembers + currentUserId
+            val aboutData = mapOf(
+                "admin" to listOf(currentUserId),
+                "groupMembers" to allGroupMembers
             )
-        )
-        val allGroupMembers = groupMembers + currentUser
-        val aboutData = mapOf(
-            "admin" to listOf(currentUser),
-            "groupMembers" to allGroupMembers
-        )
 
-        allGroupMembers.forEach { member ->
-            if (member != null) {
-                updateUserChatList(member, chatId)
-            }
-        }
-
-        // Save the 'about' section
-        chatRef.collection("about").document("info").set(aboutData).addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                Log.d("FireStore Operation", "Successfully Group is Created")
-                //for push notification subscribe channel
-                subscribeForNotifications(chatId){
-                    Log.d("FireStore Operation", "Subscribed to topic : $it")
+            // Update each user's chat list in parallel
+            val updateUserChatTasks = allGroupMembers.map { member ->
+                async {
+                    if (member != null) {
+                        updateUserChatList(member, chatId)
+                    }
                 }
-                onComplete(chatId) // Call onComplete when successful
-            } else {
-                // Handle errors if necessary
-                task.exception?.printStackTrace()
             }
+
+            // Save the 'about' section
+            val updateAboutTask = async {
+                chatRef.collection("about").document("info").set(aboutData).await()
+            }
+
+            // Wait for all Firestore operations to complete
+//            updateChatDetailTask.await()
+//            updateUserChatTasks.awaitAll()
+//            updateAboutTask.await()
+
+            // Subscribe to notifications after successful creation
+            subscribeForNotifications(chatId) {
+                Log.d("FireStore Operation", "Subscribed to topic : $it")
+            }
+
+            Log.d("FireStore Operation", "Successfully Group is Created")
+            onComplete(chatId) // Call onComplete when everything is done
         }
     }
 
+
     private suspend fun checkAndCreateChat(receiver: User) {
         val receiverId = receiver.userId
-        val chatId = generateChatId(currentUser!!, receiverId)
+        val chatId = generateChatId(currentUserId!!, receiverId)
         val chatExists = doesChatIdExist(chatCollection, chatId)
         if (!chatExists) {
             createChat(
@@ -167,29 +209,15 @@ class FirestoreService @Inject constructor(
 
 
     suspend fun createChatAndSendMessage(
-        chatId: String,
-        text: String,
-        replyTo: Message?,
-        members: List<String?>
+        message: Message
     ) {
-        val message = Message(
-            senderId = currentUser!!,
-            message = text,
-            replyTo = replyTo,
-            members = members.ifEmpty {
-                listOf(
-                    currentUser,
-                    getUserIdFromChatId(chatId, currentUser)
-                )
-            }
-        )
         try {
-            val messageRef = chatCollection.document(chatId).collection("messages")
+            val messageRef = chatCollection.document(message.chatId).collection("messages")
 
             messageRef.document(message.messageId).set(message)
                 .addOnSuccessListener {
                     postNotificationToUsers(
-                        channelID = chatId,
+                        channelID = message.chatId,
                         senderName = message.senderId,
                         messageContent = message.message,
                         appContext = context
@@ -199,13 +227,13 @@ class FirestoreService @Inject constructor(
                         "New message added Successfully"
                     )
                 }
-                .addOnFailureListener { Log.d("FireStoreService", "New message added Failed") }
+                .addOnFailureListener { Log.d("FireStore Operation", "New message added Failed") }
 
             // Update last message and timestamp in the chat document
-            updateLastMessage(chatId, message.message)
+            updateLastMessage(message.chatId, message.message)
 
             //Update last message cnt for each member
-            updateUserLastMessageCnt(chatId, message.senderId)
+            updateUserLastMessageCnt(message.chatId, message.senderId)
 
 
             // Insert or update the chat document for both users
@@ -237,10 +265,13 @@ class FirestoreService @Inject constructor(
                     messages.forEach { message ->
                         checkAndCreateChat(receiver)
                         createChatAndSendMessage(
-                            generateChatId(currentUser, receiver.userId),
-                            message,
-                            null,
-                            listOf(currentUser, receiver.userId)
+                            generateMessage(
+                                currentUserId!!,
+                                generateChatId(currentUserId, receiver.userId),
+                                message,
+                                null,
+                                listOf(currentUserId, receiver.userId)
+                            )
                         ) // Call your existing logic
                     }
                 }
@@ -289,7 +320,7 @@ class FirestoreService @Inject constructor(
     private fun updateMessageStatusToSeen(chatId: String, messages: List<Message>) {
         val batch = db.batch()
         for (message in messages.reversed()) {
-            if (message.senderId == currentUser || message.status == "seen") break
+            if (message.senderId == currentUserId || message.status == "seen") break
             val messageRef = chatCollection
                 .document(chatId)
                 .collection("messages")
@@ -350,7 +381,7 @@ class FirestoreService @Inject constructor(
                 } else {
                     batch.update(
                         messageRef,
-                        mapOf("members" to FieldValue.arrayRemove(currentUser))
+                        mapOf("members" to FieldValue.arrayRemove(currentUserId))
                     )
                     val members = messageRef.get().await().get("members") as List<String>
                     if (members.isEmpty()) batch.delete(messageRef)
@@ -393,7 +424,7 @@ class FirestoreService @Inject constructor(
                                             chatSnapshot?.getLong("lastMessageCnt") ?: 0
                                         updateUserLastMessageCnt(
                                             chatId,
-                                            currentUser!!,
+                                            currentUserId!!,
                                             lastMessageCnt
                                         )
                                     }
@@ -496,7 +527,6 @@ class FirestoreService @Inject constructor(
 
     fun getChatList(userId: String): Flow<Response<List<Chat>>> = callbackFlow {
         trySend(Response.Loading)
-
         val userDocument = userCollection.document(userId)
         val chatListeners = mutableListOf<ListenerRegistration>()
         val chatList = mutableListOf<Chat>()
@@ -533,8 +563,22 @@ class FirestoreService @Inject constructor(
 //                    chatListeners.clear()
 //                    chatList.clear()
 
+
+                    CoroutineScope(Dispatchers.IO).launch {
+                        chatIdCnt.forEach { (chatId, lastMessageCnt) ->
+                            subscribeForNotifications(
+                                chatId,
+                                onComplete = { token ->
+                                    Log.d("FireStore Operation", "Subscribed to topic: $token for $chatId")
+                                }
+                            )
+                        }
+                    }
+
+
                     // Step 2: Add listeners for each user's chat
                     chatIdCnt.forEach { (chatId, lastMessageCnt) ->
+
                         val chatDocument = chatCollection.document(chatId)
 
                         val chatListener =
@@ -555,19 +599,14 @@ class FirestoreService @Inject constructor(
                                     chatList.removeIf { it.id == chatId }
                                     if (chat != null) {
                                         chat.unreadMessages = chat.lastMessageCnt - lastMessageCnt
-                                        if(!chat.group){
-                                            userCollection.document(getUserIdFromChatId(chatId, currentUser!!)).addSnapshotListener{snapshot, exception->
-                                                if(exception != null){
-                                                    return@addSnapshotListener
-                                                }
-                                                val name = snapshot?.getString("name")
-                                                if (name != null){
-                                                    chat.name = name
-                                                }
-                                            }
+                                        chat.name = if (!chat.group) {
+                                            getOtherUserName(chat.name, chat.id, currentUserId!!)
+                                        } else {
+                                            chat.name
                                         }
-                                        chatList.add(chat)
+                                        chatList.add(chat) // Ensures it's inside the if block
                                     }
+
 
                                     val sortedChatList =
                                         chatList.sortedByDescending { it.lastMessageTimestamp.toDate() }
@@ -601,22 +640,23 @@ class FirestoreService @Inject constructor(
         var lastKnownCall: Call? = null
         try {
             val listenerRegistration =
-                userCollection.document(currentUser!!).addSnapshotListener { snapshot, exception ->
-                    if (exception != null) {
-                        trySend(Response.Error(exception.message ?: "Error tracking call"))
-                        return@addSnapshotListener
-                    }
+                userCollection.document(currentUserId!!)
+                    .addSnapshotListener { snapshot, exception ->
+                        if (exception != null) {
+                            trySend(Response.Error(exception.message ?: "Error tracking call"))
+                            return@addSnapshotListener
+                        }
 
-                    snapshot?.let {
-                        val newCall = it.get("call") as? Call
+                        snapshot?.let {
+                            val newCall = it.get("call") as? Call
 
-                        // Only emit if the call field has changed
-                        if (newCall != lastKnownCall) {
-                            lastKnownCall = newCall
-                            trySend(Response.Success(newCall))
+                            // Only emit if the call field has changed
+                            if (newCall != lastKnownCall) {
+                                lastKnownCall = newCall
+                                trySend(Response.Success(newCall))
+                            }
                         }
                     }
-                }
 
             // Close callbackFlow when cancelled
             awaitClose {

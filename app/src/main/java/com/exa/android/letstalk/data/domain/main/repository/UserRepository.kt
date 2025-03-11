@@ -37,6 +37,12 @@ class UserRepository @Inject constructor(
     private val chatCollection = db.collection("chats")
     private val userStatusRef = rdb.getReference("/status/$currentUser")
 
+
+    suspend fun getCurUser(): User? {
+        val user = userCollection.document(currentUser!!).get().await()
+        return user.toObject(User::class.java)
+    }
+
     suspend fun updateUserStatus(curUser: String, isOnline: Boolean) {
         val data = mapOf(
             "isOnline" to if (isOnline) true else false,
@@ -44,7 +50,7 @@ class UserRepository @Inject constructor(
         )
         try {
             userStatusRef.updateChildren(data).await()
-            Log.d("Firebase Operation", "User status updated for $curUser.")
+            Log.d("Firebase Operation", "User status updated for $curUser to $data.")
         } catch (e: Exception) {
             Log.e("Firebase Operation", "Failed to update user status", e)
         }
@@ -53,7 +59,7 @@ class UserRepository @Inject constructor(
     fun observeUserConnectivity() {
         val onlineStatus = mapOf(
             "isOnline" to true,
-            "lastSeen" to null,
+            "lastSeen" to Timestamp.now().seconds,
             "typingTo" to ""
         )
         val offlineStatus = mapOf(
@@ -61,7 +67,7 @@ class UserRepository @Inject constructor(
             "lastSeen" to Timestamp.now().seconds,
             "typingTo" to ""
         )
-
+        Log.d("Firebase Operation", "User status updated for $currentUser to $onlineStatus.")
         val connectRef = rdb.getReference(".info/connected")
         connectRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -180,8 +186,16 @@ class UserRepository @Inject constructor(
         val liveData = MutableLiveData<Status?>()
         path.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val status =
-                    snapshot.getValue(Status::class.java) ?: Status() // Default to Status()
+                //Log.d("Firebase Operation", "Firebase Raw Data - ${snapshot.value.toString()}") // Print raw Firebase data
+
+                val dataMap = snapshot.value as? Map<String, Any>
+
+                val isOnline = dataMap?.get("isOnline") as? Boolean ?: false
+                val lastSeen = dataMap?.get("lastSeen") as? Long
+                val typingTo = dataMap?.get("typingTo") as? String ?: ""
+
+                val status = Status(isOnline, lastSeen, typingTo)// Default to Status()
+
                 liveData.postValue(status)
                 Log.d("Firebase Operation", status.toString())
             }

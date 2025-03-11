@@ -1,2 +1,5 @@
 Still I have applied data store for uid but in future to get rid of login screen all time
 during start of app, I will need to stay splash screen untill the authStatus is loading
+
+
+require post notificaation permission dialog

@@ -1,7 +1,5 @@
 package com.exa.android.letstalk.data.domain.main.ViewModel
 
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -32,18 +30,12 @@ class UserViewModel @Inject constructor(private val userRepository: UserReposito
     private val _allUsers = MutableStateFlow<Response<List<User?>>>(Response.Loading)
     val allUsers: StateFlow<Response<List<User?>>> = _allUsers
 
-    private val _scheduleMessageType = MutableStateFlow(ScheduleType.NONE)
-    val scheduleMessageType: StateFlow<ScheduleType> = _scheduleMessageType
-
-    var curUser: String? = null
+    var curUserId: String? = null
 
     init {
-        curUser = userRepository.currentUser
+        curUserId = userRepository.currentUser
     }
 
-    fun updateScheduleMessageType(scheduleType: ScheduleType) {
-        _scheduleMessageType.value = scheduleType
-    }
 
     fun updateOnlineStatus(userId: String, isOnline: Boolean) {
         viewModelScope.launch {

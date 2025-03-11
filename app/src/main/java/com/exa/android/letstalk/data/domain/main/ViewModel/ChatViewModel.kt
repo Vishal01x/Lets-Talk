@@ -8,7 +8,9 @@ import com.exa.android.letstalk.utils.models.Chat
 import com.exa.android.letstalk.utils.models.Message
 import com.exa.android.letstalk.utils.models.User
 import com.exa.android.letstalk.utils.Response
+import com.exa.android.letstalk.utils.helperFun.generateMessage
 import com.exa.android.letstalk.utils.models.Call
+import com.exa.android.letstalk.utils.models.ScheduleType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -36,20 +38,29 @@ class ChatViewModel @Inject constructor(
     private val _curCall = MutableStateFlow<Call?>(null)
     val curCall : StateFlow<Call?> = _curCall
 
-    val curUser = MutableStateFlow("")
+    val curUserId = MutableStateFlow("")
+    val curUser = MutableStateFlow<User?>(null)
 
     init {
         viewModelScope.launch {
             // Set current user and fetch chat list
-            repo.currentUser?.let { user ->
-                curUser.value = user
+            repo.currentUserId?.let { user ->
+                curUserId.value = user
                 getChatList()
+                getCurUser()
                 repo.trackCall()
             } ?: run {
                 _chatList.value = Response.Error("Current user is null")
             }
         }
     }
+
+    private fun getCurUser(){
+        viewModelScope.launch {
+            curUser.value = repo.getCurUser()
+        }
+    }
+
 
     fun insertUser(userName: String, phone: String) {
         viewModelScope.launch {
@@ -66,6 +77,7 @@ class ChatViewModel @Inject constructor(
     }
 
     fun createChat(chat: Chat, onComplete: () -> Unit){
+        chat.name = "${curUser.value?.name}-${chat.name}"
         viewModelScope.launch {
             repo.createChat(chat){
                 onComplete()
@@ -88,9 +100,9 @@ class ChatViewModel @Inject constructor(
         }
     }
 
-    fun createChatAndSendMessage(chatId: String, message: String, replyTo : Message?, members : List<String>) {
+    fun createChatAndSendMessage(message: Message) {
         viewModelScope.launch {
-            repo.createChatAndSendMessage(chatId, message, replyTo, members)
+            repo.createChatAndSendMessage(message)
         }
     }
 
@@ -129,9 +141,9 @@ class ChatViewModel @Inject constructor(
 
     fun getChatList() {
         viewModelScope.launch {
-            repo.getChatList(curUser.value).collect { response ->
-                _chatList.value = response
-            }
+                repo.getChatList(curUserId.value).collect { response ->
+                    _chatList.value = response
+                }
         }
     }
 

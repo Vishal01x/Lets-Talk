@@ -1,6 +1,5 @@
 package com.exa.android.letstalk.presentation.Main.Home.ChatDetail.components
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -51,8 +50,10 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.exa.android.letstalk.R
+import com.exa.android.letstalk.data.domain.main.ViewModel.ScheduledMessageViewModel
 import com.exa.android.letstalk.data.domain.main.ViewModel.UserViewModel
 import com.exa.android.letstalk.utils.helperFun.AudioWaveForm
+import com.exa.android.letstalk.utils.helperFun.getUserIdFromChatId
 import com.exa.android.letstalk.utils.models.Message
 import com.exa.android.letstalk.utils.models.ScheduleType
 import com.exa.android.letstalk.utils.models.User
@@ -70,7 +71,8 @@ fun NewMessageSection(
     members: List<User?>,
     curUser: String,
     typingTo: String,
-    viewModel: UserViewModel,
+    userViewModel: UserViewModel,
+    scheduledMessageViewModel: ScheduledMessageViewModel,
     focusRequester: FocusRequester,
     onTextMessageSend: (String, Message?) -> Unit,
     onRecordingSend: () -> Unit,
@@ -84,7 +86,7 @@ fun NewMessageSection(
     var recordingTime by remember { mutableStateOf("00:00") }
     var elapsedSeconds by remember { mutableStateOf(0) } // Tracks total elapsed seconds
     var timerJob by remember { mutableStateOf<Job?>(null) }
-    val isMessageScheduled by viewModel.scheduleMessageType.collectAsState()
+    val isMessageScheduled by scheduledMessageViewModel.scheduleMessageType.collectAsState()
 
     fun startTimer() {
         timerJob?.cancel()
@@ -141,17 +143,17 @@ fun NewMessageSection(
             onTyping = { message ->
                 if (message.isEmpty()) {
                     if (!isGroup)
-                        viewModel.setTypingStatus(curUser, "")
-                    else viewModel.setTypingStatus(typingTo, "") // here typing to is groupChatId
+                        userViewModel.setTypingStatus(curUser, "")
+                    else userViewModel.setTypingStatus(typingTo, "") // here typing to is groupChatId
                 } else if (message.isNotEmpty()) {
                     if (!isGroup)
-                        viewModel.setTypingStatus(curUser, typingTo)
+                        userViewModel.setTypingStatus(curUser, getUserIdFromChatId(typingTo, curUser))
                     else
-                        viewModel.setTypingStatus(
+                        userViewModel.setTypingStatus(
                             typingTo,
                             curUser
                         ) // for group in chatID set curUser typing
-                    viewModel.setTypingStatus(curUser, typingTo)
+                    userViewModel.setTypingStatus(curUser, typingTo)
                 }
             },
             onDiscardReply = { onSendOrDiscard() },
