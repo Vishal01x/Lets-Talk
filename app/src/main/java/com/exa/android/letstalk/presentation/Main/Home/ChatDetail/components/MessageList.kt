@@ -207,12 +207,12 @@ fun MessageBubble(
                     .widthIn(max = (0.7 * LocalConfiguration.current.screenWidthDp).dp) // occupy 70% of screen only
                     .background(
                         color = if (isHighlighted) bubbleColor.copy(alpha = 0.6f) else bubbleColor,
-                        shape = RoundedCornerShape(8.dp)
+                        shape = RoundedCornerShape(12.dp)
                     )
-                    .padding(horizontal = 8.dp, vertical = 8.dp)
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
                 Box(modifier = Modifier
-                    .fillMaxWidth()
+                    //.fillMaxWidth()
                     .clickable(enabled = selectedMessagesSize <= 0 && message.message != "deleted") {
                         message.replyTo?.let {
                             onReplyClick(
@@ -233,7 +233,7 @@ fun MessageBubble(
                 if (message.message == "deleted") {
                     Text(
                         text = if (message.senderId == curUserId) "You deleted this message" else "This message was deleted",
-                        style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 16.sp),
+                        style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 24.sp),
                         color = if (message.senderId == curUserId)Color.White.copy(alpha = 0.8F) else Color.Black.copy(alpha = 0.8F),
                         fontWeight = FontWeight.Normal,
                         fontStyle = FontStyle.Italic
@@ -241,7 +241,7 @@ fun MessageBubble(
                 } else {
                     Text(
                         text = message.message,
-                        style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 16.sp),
+                        style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 24.sp),
                         color = if (curUserId == message.senderId) Color.White else Color.Black,
                         fontWeight = FontWeight.Medium
                     )

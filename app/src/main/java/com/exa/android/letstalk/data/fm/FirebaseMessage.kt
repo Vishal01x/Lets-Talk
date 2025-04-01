@@ -37,7 +37,9 @@ suspend fun subscribeForNotifications(chatId: String, onComplete: (String) -> Un
 fun postNotificationToUsers(
     channelID: String,
     senderName: String,
+    senderId : String,
     messageContent: String,
+    imageUrl: String?,
     appContext: Context
 ) {
     val fcmUrl = "https://fcm.googleapis.com/v1/projects/loop-it-d337e/messages:send"
@@ -45,9 +47,16 @@ fun postNotificationToUsers(
     val jsonBody = JSONObject().apply {
         put("message", JSONObject().apply {
             put("topic", channelID)
-            put("notification", JSONObject().apply {
-                put("title", "New message in $channelID")
-                put("body", "$senderName: $messageContent")
+//            put("notification", JSONObject().apply {
+//                put("title", "$senderName")
+//                put("body", "$messageContent")
+//            })
+            put("data", JSONObject().apply {
+                put("title", "$senderName")
+                put("chatId", "$channelID")
+                put("body", "$messageContent")
+                put("imageUrl", "$imageUrl")
+                put("senderId", "$senderId")
             })
         })
     }

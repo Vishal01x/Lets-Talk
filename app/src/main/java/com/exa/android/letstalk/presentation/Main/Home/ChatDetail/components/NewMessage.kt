@@ -272,6 +272,7 @@ fun SendTFMessage(
                                 if (text.isNotEmpty())
                                     onSendClick(text, replyTo)
                                 message = ""
+                                onTyping(message)
                             }
                         )
                     )
@@ -392,9 +393,9 @@ fun ReplyUi(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(4.dp))
+            .clip(RoundedCornerShape(12.dp))
             .background(if (showCross) Color(0xFFf6f6f6) else Color.White.copy(alpha = 0.4f))
-            .padding(vertical = 8.dp, horizontal = 8.dp)
+            .padding(vertical = 12.dp, horizontal = 8.dp)
     ) {
         Column(verticalArrangement = Arrangement.SpaceEvenly) {
             (if(user?.userId != curUser)user?.name else "You")?.let {

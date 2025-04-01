@@ -8,6 +8,7 @@ import com.exa.android.letstalk.utils.models.Chat
 import com.exa.android.letstalk.utils.models.Message
 import com.exa.android.letstalk.utils.models.User
 import com.exa.android.letstalk.utils.Response
+import com.exa.android.letstalk.utils.helperFun.generateChatName
 import com.exa.android.letstalk.utils.helperFun.generateMessage
 import com.exa.android.letstalk.utils.models.Call
 import com.exa.android.letstalk.utils.models.ScheduleType
@@ -77,7 +78,7 @@ class ChatViewModel @Inject constructor(
     }
 
     fun createChat(chat: Chat, onComplete: () -> Unit){
-        chat.name = "${curUser.value?.name}-${chat.name}"
+        chat.name = generateChatName(chat.id, curUserId.value, curUser?.value?.name?:"", chat.name)
         viewModelScope.launch {
             repo.createChat(chat){
                 onComplete()
@@ -100,9 +101,9 @@ class ChatViewModel @Inject constructor(
         }
     }
 
-    fun createChatAndSendMessage(message: Message) {
+    fun createChatAndSendMessage(message: Message, imageUrl : String? = null) {
         viewModelScope.launch {
-            repo.createChatAndSendMessage(message)
+            repo.createChatAndSendMessage(message, curUser.value, imageUrl)
         }
     }
 

@@ -1,5 +1,7 @@
 package com.exa.android.letstalk.presentation.Main.Home
 
+import android.app.Activity
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -71,8 +73,12 @@ fun HomeScreen(navController: NavController, viewModel: ChatViewModel, zegoViewM
     val context = LocalContext.current
     val curUser = viewModel.curUserId.collectAsState().value
 
+    BackHandler(true){
+        (context as? Activity)?.finish()
+    }
+
     LaunchedEffect(Unit) {
-        curUser?.let {
+        curUser.let {
             zegoViewModel.initZego(
                 appID = Constants.APP_ID,
                 appSign = Constants.APPSign,

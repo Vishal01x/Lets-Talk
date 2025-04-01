@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import com.exa.android.letstalk.data.fm.postNotificationToUsers
 import com.exa.android.letstalk.data.fm.subscribeForNotifications
+import com.exa.android.letstalk.utils.CurChatManager.activeChatId
 import com.exa.android.letstalk.utils.helperFun.generateChatId
 import com.exa.android.letstalk.utils.helperFun.getUserIdFromChatId
 import com.exa.android.letstalk.utils.models.Chat
@@ -209,7 +210,7 @@ class FirestoreService @Inject constructor(
 
 
     suspend fun createChatAndSendMessage(
-        message: Message
+        message: Message, user : User? = null, imageUrl : String? = null // for post notification
     ) {
         try {
             val messageRef = chatCollection.document(message.chatId).collection("messages")
@@ -218,8 +219,10 @@ class FirestoreService @Inject constructor(
                 .addOnSuccessListener {
                     postNotificationToUsers(
                         channelID = message.chatId,
-                        senderName = message.senderId,
+                        senderName = user?.name.toString()?: message.senderId,
+                        senderId = message.senderId,
                         messageContent = message.message,
+                        imageUrl = imageUrl,
                         appContext = context
                     )
                     Log.d(
@@ -295,16 +298,32 @@ class FirestoreService @Inject constructor(
         val chatDoc = chatCollection.document(chatId)
         val snapshot = chatDoc.get().await()
 
-        if (snapshot.exists()) {
-            // Document exists, perform update
-            chatDoc.update(
-                "lastMessage", message,
-                "lastMessageTimestamp", Timestamp.now(),
-                // "lastMessageCnt" to FieldValue.increment(1)
-//                "unreadMessages.$userId1", 0
-            ).await()
+        try {
+            if (!snapshot.exists()) {
+                // If the document doesn't exist, create it
+                chatDoc.set(
+                    mapOf(
+                        "lastMessage" to message,
+                        "lastMessageTimestamp" to Timestamp.now(),
+                        "lastMessageCnt" to 1
+                    )
+                ).await()
+            } else {
+                // If the document exists, update it
+                chatDoc.update(
+                    mapOf(
+                        "lastMessage" to message,
+                        "lastMessageTimestamp" to Timestamp.now(),
+                        "lastMessageCnt" to FieldValue.increment(1)
+                    )
+                ).await()
+            }
+            Log.d("0", "Chat document updated successfully!")
+        } catch (e: Exception) {
+            Log.e("Firestore Update", "Error updating chat document: ${e.message}")
         }
     }
+
 
     private fun updateUserLastMessageCnt(
         chatId: String,
@@ -422,11 +441,13 @@ class FirestoreService @Inject constructor(
                                     .addSnapshotListener { chatSnapshot, chatException ->
                                         val lastMessageCnt =
                                             chatSnapshot?.getLong("lastMessageCnt") ?: 0
-                                        updateUserLastMessageCnt(
-                                            chatId,
-                                            currentUserId!!,
-                                            lastMessageCnt
-                                        )
+                                        if(activeChatId == chatId) {
+                                            updateUserLastMessageCnt(
+                                                chatId,
+                                                currentUserId!!,
+                                                lastMessageCnt
+                                            )
+                                        }
                                     }
 
                                 val result = trySend(Response.Success(messages))
@@ -565,7 +586,7 @@ class FirestoreService @Inject constructor(
 
 
                     CoroutineScope(Dispatchers.IO).launch {
-                        chatIdCnt.forEach { (chatId, lastMessageCnt) ->
+                        chatIdCnt.forEach { (chatId, lastMessageCnt) -> // each device is needed to subscribe for push notification
                             subscribeForNotifications(
                                 chatId,
                                 onComplete = { token ->

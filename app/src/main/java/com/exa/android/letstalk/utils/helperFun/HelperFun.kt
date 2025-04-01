@@ -127,6 +127,21 @@ fun getOtherUserName(chatName: String, chatId: String, currentUser: String): Str
     }
 }
 
+fun generateChatName(chatId: String, curUserId: String, curUserName: String, otherUserName: String): String {
+    // Determine the position of the current user in the chat based on the chat ID
+    val chatUsers = chatId.split("-").map { it.trim() }
+
+    return if (chatUsers.size == 2) {
+        if (chatUsers[0] == curUserId) {
+            "$curUserName-$otherUserName"  // Current user on the left
+        } else {
+            "$otherUserName-$curUserName"  // Current user on the right
+        }
+    } else {
+        // Fallback if chat ID doesn't match expected structure
+        chatId
+    }
+}
 
 fun generateMessage(
     currentUser: String,

@@ -30,10 +30,11 @@ class UserViewModel @Inject constructor(private val userRepository: UserReposito
     private val _allUsers = MutableStateFlow<Response<List<User?>>>(Response.Loading)
     val allUsers: StateFlow<Response<List<User?>>> = _allUsers
 
-    var curUserId: String? = null
+    private val _curUserId = MutableStateFlow<String?>(null)
+    val curUserId: StateFlow<String?> = _curUserId
 
     init {
-        curUserId = userRepository.currentUser
+        _curUserId.value = userRepository.currentUser
     }
 
 

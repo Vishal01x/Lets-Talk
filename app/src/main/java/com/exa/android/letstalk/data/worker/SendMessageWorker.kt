@@ -14,10 +14,10 @@ import dagger.assisted.AssistedInject
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
-
-class SendMessagesWorker(
-     context: Context,
-     workerParams: WorkerParameters,
+@HiltWorker
+class SendMessagesWorker@AssistedInject constructor(
+    @Assisted context: Context,
+    @Assisted workerParams: WorkerParameters,
     private val scheduledMessageRepository: ScheduledMessageRepository,
     private val firestoreService: FirestoreService
 ) : CoroutineWorker(context, workerParams) {

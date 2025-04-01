@@ -29,6 +29,7 @@ import com.exa.android.letstalk.presentation.Main.Home.ChatDetail.components.New
 import com.exa.android.letstalk.presentation.navigation.component.HomeRoute
 import com.exa.android.letstalk.presentation.navigation.component.ScreenPurpose
 import com.exa.android.letstalk.presentation.Main.Home.components.MessageSchedulerDialog
+import com.exa.android.letstalk.utils.CurChatManager.activeChatId
 import com.exa.android.letstalk.utils.models.Chat
 import com.exa.android.letstalk.utils.models.Message
 import com.exa.android.letstalk.utils.models.User
@@ -52,7 +53,7 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
     val zegoViewModel: ZegoViewModel = hiltViewModel()
     val scheduleMessageViewModel : ScheduledMessageViewModel = hiltViewModel()
 
-    val responseChatMessages by chatViewModel.messages.collectAsState() // all the chats of cur and other User
+    val responseChatMessages by remember {chatViewModel.messages}.collectAsState() // all the chats of cur and other User
     val curUserId by chatViewModel.curUserId.collectAsState()  // cur User Id
     //val curUser by chatViewModel.curUser.collectAsState() // cur User Details
     //val responseChatRoomDetail by userVM.chatRoomDetail.collectAsState() // Other User Details in form of response from UserViewModel
@@ -78,6 +79,7 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
         chatViewModel.getMessages(chat.id)
         chatViewModel.fetchChatMembersDetails(chat.id)
         userViewModel.observeChatRoomStatus(chat.id, chat.group)
+        activeChatId = chat.id
     }
 
     when (val response = responseChatMessages) {
@@ -96,6 +98,7 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
         onDispose {
             if (chat.group) userViewModel.setTypingStatus(chat.id, "")
             else userViewModel.setTypingStatus(curUserId, "")
+            activeChatId = null
         }
     }
 
@@ -232,7 +235,7 @@ private fun sendMessage(chatViewModel: ChatViewModel, scheduledMessageViewModel:
                     scheduledMessageViewModel.updateScheduleMessageType(ScheduleType.NONE)
             }else {
                 chatViewModel.createChatAndSendMessage(
-                    message
+                    message, chat.profilePicture
                 )
             }
         }
@@ -243,7 +246,7 @@ private fun sendMessage(chatViewModel: ChatViewModel, scheduledMessageViewModel:
                 scheduledMessageViewModel.updateScheduleMessageType(ScheduleType.NONE)
         }else {
             chatViewModel.createChatAndSendMessage(
-                message
+                message, chat.profilePicture
             )
         }
     }

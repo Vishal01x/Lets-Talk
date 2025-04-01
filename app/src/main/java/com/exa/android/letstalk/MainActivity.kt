@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.net.ConnectivityManager
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -18,7 +19,6 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.exa.android.letstalk.data.domain.main.ViewModel.UserViewModel
-import com.exa.android.letstalk.presentation.auth.viewmodels.AuthViewModel
 import com.exa.android.letstalk.presentation.navigation.AppNavigation
 import com.exa.android.letstalk.presentation.navigation.component.AuthRoute
 import com.exa.android.letstalk.presentation.navigation.component.HomeRoute
@@ -40,12 +40,21 @@ class MainActivity : FragmentActivity() {
 
         val curUser = userViewModel.curUserId
 
-        curUser?.let {
+        curUser.value?.let {
             val lifecycleObserver = MyLifecycleObserver(userViewModel, it)
             lifecycle.addObserver(lifecycleObserver)
         }
         setContent {
-            LetsTalkTheme {
+            LetsTalkTheme(dynamicColor = false) {
+//                val navController = rememberNavController()
+//
+//                // Get senderId from Intent (if app opened from notification)
+//                val senderId = intent?.getStringExtra("senderId")
+//
+//                // Pass senderId to the navigation logic
+//                ChatApp(navController, senderId) for directly opening chat from pending but still passing chat into it causing error
+                // so firstly ensure passing chatid only and get chatroom detail from firebase then only we can open
+                // for it see code
                 UpdateStatus(this)
                 App()
             }
@@ -74,13 +83,16 @@ fun UpdateStatus(context: Context) {
 fun App() {
 
 
-    val viewModel: AuthViewModel = hiltViewModel()
-    val isLoggedIn = viewModel.authStatus.collectAsState().equals(true)
+//    val viewModel: AuthViewModel = hiltViewModel()
+//    val isLoggedIn = viewModel.authStatus.collectAsState().equals(true)
 
+    val viewModel: UserViewModel = hiltViewModel()
+    val isLoggedIn by viewModel.curUserId.collectAsState()
+    Log.d("isLoggedIn", isLoggedIn.toString())
     val navController = rememberNavController()
-    OnBackPressed(navController = navController) // handle on back pressed like finish activity on Home
+    //OnBackPressed(navController = navController) // handle on back pressed like finish activity on Home
     // and back pressed else get back to home from other screen
-    AppNavigation(navController, isLoggedIn) // initiate navigation
+    AppNavigation(navController, isLoggedIn != null) // initiate navigation
 }
 
 

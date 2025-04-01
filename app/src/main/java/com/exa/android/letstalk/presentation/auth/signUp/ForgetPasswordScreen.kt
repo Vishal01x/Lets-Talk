@@ -1,32 +1,18 @@
 package com.exa.android.letstalk.presentation.auth.signUp
 
 import android.util.Patterns
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.EaseInOutQuad
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -34,28 +20,20 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.exa.android.letstalk.presentation.navigation.component.AuthRoute
+import com.exa.android.letstalk.presentation.auth.components.InputField
+import com.exa.android.letstalk.presentation.auth.components.ShowLoader
 import com.exa.android.letstalk.presentation.auth.viewmodels.AuthViewModel
-import com.exa.android.letstalk.presentation.auth.components.AccountInfo
 import com.exa.android.letstalk.utils.Response
 import com.exa.android.letstalk.utils.showToast
 
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ForgetPasswordScreen(navController: NavController) {
+fun HandleForgetPassword(onComplete : () -> Unit) {
     val viewModel: AuthViewModel = hiltViewModel()
     val authStatus by viewModel.authStatus.collectAsState()
     val context = LocalContext.current
@@ -73,7 +51,7 @@ fun ForgetPasswordScreen(navController: NavController) {
             is Response.Success -> {
                 isLoading = false
                 showToast(context,"Reset Password link is shared to email")
-                navController.navigate(AuthRoute.Login.route)
+                onComplete()
             }
 
             is Response.Error -> {
@@ -88,7 +66,71 @@ fun ForgetPasswordScreen(navController: NavController) {
         }
     }
 
-    // Animate button color and background gradient
+    Column(modifier = Modifier.fillMaxSize()) {
+
+
+        InputField(
+            "youremail@xyz.com", Icons.Default.Email, email, errorMessage,
+            onValueChange = { email = it },
+            onImeAction = {
+                if (Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                    viewModel.resetPassword(email)
+                } else {
+                    errorMessage = "Correct Your Email"
+                }
+            }
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+
+        if (errorMessage.isNotEmpty() && errorMessage != "User not logged in") {
+            Text(text = errorMessage, color = MaterialTheme.colorScheme.error)
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text("Email Login ->",
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.clickable {
+                onComplete()
+            })
+
+        Spacer(Modifier.weight(1f))
+
+        val isEnabled = email.isNotEmpty()
+
+
+        Button(
+            onClick = {
+                if (Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                    viewModel.resetPassword(email)
+                } else {
+                    errorMessage = "Correct Your Email"
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp),
+            colors = ButtonDefaults.buttonColors(if (isEnabled) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurface),
+            enabled = isEnabled
+        ) {
+            if (isLoading) ShowLoader()
+            else {
+                Text(
+                    text = "Continue",
+                    color = if (isEnabled) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                        .7f
+                    ),
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        }
+    }
+
+
+   /* // Animate button color and background gradient
     val backgroundColor by animateColorAsState(
         targetValue = if (isLoading) Color(0xFFB3E5FC) else Color(0xFF03A9F4),
         animationSpec = tween(durationMillis = 500)
@@ -191,5 +233,5 @@ fun ForgetPasswordScreen(navController: NavController) {
             }
 
         }
-    }
+    }*/
 }
