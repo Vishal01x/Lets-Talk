@@ -21,6 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -54,21 +55,29 @@ fun MessageList(
     updateMessages: (Set<Message>) -> Unit,
     onReply: (message: Message) -> Unit
 ) {
-    // State for selected messages and showing options
-    Log.d("checkingSelected", selectedMessages.toString())
     var highlightedIndex by remember { mutableStateOf<Int?>(null) }
     val renderedIndex = remember { mutableStateMapOf<String, Int>() }
-
-    // LazyColumn state and coroutine scope for scrolling
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
+    var hasScrolledToUnread by remember { mutableStateOf(false) }
 
-    // LazyColumn for displaying the message bubbles
+    LaunchedEffect(messages.size, unreadMessages) {
+        if (messages.isNotEmpty() && unreadMessages > 0 && !hasScrolledToUnread) {
+            hasScrolledToUnread = true
+            val targetIndex = messages.size - unreadMessages
+            listState.animateScrollToItem(targetIndex)
+        }
+    }
+
     LazyColumn(
-        state = listState
+        state = listState,
+        reverseLayout = true
     ) {
-        itemsIndexed(messages) { index, message ->
+        itemsIndexed(messages.reversed()) { index, message ->
+            val reversedIndex = messages.lastIndex - index
+
             renderedIndex[message.messageId] = index
+
             if (message.members.contains(curUserId)) {
                 MessageBubble(
                     message = message,
@@ -89,9 +98,7 @@ fun MessageList(
                         onReply(message)
                     },
                     onReplyClick = { id ->
-                        coroutineScope.launch {// since using launched effect i was not able to re-scroll to the same message again and again
-                            // and if we try to maintain any variable so we need to update it that causes re-composition that leads it to scroll till mid and before reaching
-                            // re-scroll to end
+                        coroutineScope.launch {
                             scrollToMessage(id, renderedIndex, listState)
                             renderedIndex[id]?.let { index ->
                                 highlightedIndex = index
@@ -102,17 +109,35 @@ fun MessageList(
                     }
                 )
             }
-        }
-    }
-
-    // LaunchedEffect to handle scrolling to unread messages once
-    LaunchedEffect(messages.size, unreadMessages) {
-        if (messages.isNotEmpty()) {
-            coroutineScope.launch {
-                val targetIndex =
-                    if (unreadMessages > 0) messages.size - unreadMessages else messages.size - 1
-                listState.animateScrollToItem(targetIndex)
+            // Show unread separator right after the message before unread ones
+            if (reversedIndex == messages.size - unreadMessages && unreadMessages > 0) {
+                UnreadMessageSeparator()
             }
+        }
+
+    }
+}
+
+
+@Composable
+fun UnreadMessageSeparator() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        horizontalArrangement = Arrangement.Center
+    ) {
+        Surface(
+            shape = RoundedCornerShape(12.dp),
+            color = Color(0xFFE0E0E0),
+            modifier = Modifier.padding(horizontal = 16.dp)
+        ) {
+            Text(
+                text = "Unread Messages",
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                style = MaterialTheme.typography.labelMedium,
+                color = Color.DarkGray
+            )
         }
     }
 }
@@ -166,26 +191,28 @@ fun MessageBubble(
                                 }
                             },
                             onHorizontalDrag = { change, dragAmount ->
-                                coroutineScope.launch {
-                                    offsetX.snapTo(offsetX.value + dragAmount)
-                                }
-                                if (offsetX.value > 100) {
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                        vibrator?.vibrate(
-                                            VibrationEffect.createOneShot(
-                                                50,
-                                                VibrationEffect.DEFAULT_AMPLITUDE
-                                            )
-                                        )
-                                        onReply(message) // send reply message to messageList using Lambda
-                                        coroutineScope.launch {
-                                            offsetX.animateTo(
-                                                0f,
-                                                animationSpec = tween(durationMillis = 600)
-                                            )
-                                        }
+                                if (dragAmount > 0) {
+                                    coroutineScope.launch {
+                                        offsetX.snapTo(offsetX.value + dragAmount)
                                     }
-                                    change.consume()
+                                    if (offsetX.value > 100) {
+                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                            vibrator?.vibrate(
+                                                VibrationEffect.createOneShot(
+                                                    50,
+                                                    VibrationEffect.DEFAULT_AMPLITUDE
+                                                )
+                                            )
+                                            onReply(message) // send reply message to messageList using Lambda
+                                            coroutineScope.launch {
+                                                offsetX.animateTo(
+                                                    0f,
+                                                    animationSpec = tween(durationMillis = 600)
+                                                )
+                                            }
+                                        }
+                                        change.consume()
+                                    }
                                 }
                             }
                         )
@@ -234,7 +261,9 @@ fun MessageBubble(
                     Text(
                         text = if (message.senderId == curUserId) "You deleted this message" else "This message was deleted",
                         style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 24.sp),
-                        color = if (message.senderId == curUserId)Color.White.copy(alpha = 0.8F) else Color.Black.copy(alpha = 0.8F),
+                        color = if (message.senderId == curUserId) Color.White.copy(alpha = 0.8F) else Color.Black.copy(
+                            alpha = 0.8F
+                        ),
                         fontWeight = FontWeight.Normal,
                         fontStyle = FontStyle.Italic
                     )
@@ -328,3 +357,4 @@ suspend fun scrollToMessage(
         listState.animateScrollToItem(index)
     }
 }
+

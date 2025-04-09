@@ -1,6 +1,7 @@
 package com.exa.android.letstalk.presentation.Main.Home.ChatDetail
 
 import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,6 +19,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import com.exa.android.khacheri.screens.Main.Home.ChatDetail.ChatHeader
 import com.exa.android.letstalk.data.domain.main.ViewModel.ChatViewModel
@@ -34,6 +38,7 @@ import com.exa.android.letstalk.utils.models.Chat
 import com.exa.android.letstalk.utils.models.Message
 import com.exa.android.letstalk.utils.models.User
 import com.exa.android.letstalk.utils.Response
+import com.exa.android.letstalk.utils.clearChatNotifications
 import com.exa.android.letstalk.utils.helperFun.generateMessage
 import com.exa.android.letstalk.utils.helperFun.getUserIdFromChatId
 import com.exa.android.letstalk.utils.models.Call
@@ -71,6 +76,7 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
     val focusManager = LocalFocusManager.current // handling focus like show or not show keyboard
     val clipboardManager = LocalClipboardManager.current
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
     var showScheduleDialog = remember{ mutableStateOf(false)}
     val coroutineScope = rememberCoroutineScope() // to handle asynchronous here for calling viewMode.delete
 
@@ -94,13 +100,42 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
         else -> {}
     }
 
-    DisposableEffect(Unit) { // when the user while typing navigate to somewhere else then update its typingTo null
+//    DisposableEffect(Unit) { // when the user while typing navigate to somewhere else then update its typingTo null
+//        onDispose {
+//            if (chat.group) userViewModel.setTypingStatus(chat.id, "")
+//            else userViewModel.setTypingStatus(curUserId, "")
+//            activeChatId = null
+//        }
+//    }
+
+    //Lifecycle Observer: Ensures activeChatId updates when app resumes
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_RESUME -> {
+                    clearChatNotifications(context, chat.id)
+                    activeChatId = chat.id // Update chat ID when app resumes
+                    Log.d("ChatScreen", "App Resumed: ActiveChatId updated to $activeChatId")
+                }
+                Lifecycle.Event.ON_STOP -> {
+                    activeChatId = null // Reset chat when app goes to background
+                    Log.d("ChatScreen", "App in Background: ActiveChatId Cleared")
+                }
+                else -> {}
+            }
+        }
+
+        lifecycleOwner.lifecycle.addObserver(observer)
+
         onDispose {
             if (chat.group) userViewModel.setTypingStatus(chat.id, "")
             else userViewModel.setTypingStatus(curUserId, "")
-            activeChatId = null
+            activeChatId = null // Reset when leaving chat screen
+
+            //keyboardController?.hide()
         }
     }
+
 
     Scaffold(
         topBar = {

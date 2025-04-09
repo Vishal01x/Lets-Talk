@@ -1,7 +1,6 @@
 package com.exa.android.letstalk.data.fm
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -32,37 +31,44 @@ class FirebaseMessageService : FirebaseMessagingService() {
 
     override fun onMessageReceived(message: RemoteMessage) {
         Log.d("FireStore Operation", "From: ${message.from} Data: ${message.notification}")
-//        message.notification?.let {
         val senderId = message.data["senderId"] ?: ""
         if (!senderId.isNullOrEmpty() && senderId == Firebase.auth.currentUser?.uid) return
         val chatId = message.data["chatId"] ?: ""
         if (!chatId.isNullOrEmpty() && chatId == activeChatId) return
-       // val imageUrl = message.data["imageUrl"] ?: "https://fakestoreapi.com/img/71-3HjGNDUL._AC_SY879._SX._UX._SY._UY_.jpg"
+        // val imageUrl = message.data["imageUrl"] ?: "https://fakestoreapi.com/img/71-3HjGNDUL._AC_SY879._SX._UX._SY._UY_.jpg"
         val imageUrl = "https://www.w3schools.com/w3images/avatar2.png"
         //change it to above when using images
         val title = message.data["title"]
         val body = message.data["body"]
 
-        showNotification(title, body, imageUrl)
+        showNotification(chatId, title, body, imageUrl)
         // showNotification(it.title, it.body, imageUrl)
         //}
     }
 
-    private fun showNotification(title: String?, message: String?, imageUrl: String?) {
-        val channelId = "messages"
-        val notificationId = Random().nextInt(1000)
+    private fun showNotification(
+        chatId: String?,
+        senderName: String?,
+        message: String?,
+        imageUrl: String?
+    ) {
+        if (chatId == null || message == null) return
 
-        // ✅ Check and Request Notification Permission for Android 13+ (API 33+)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
-                != PackageManager.PERMISSION_GRANTED
-            ) {
-                Log.e("Post Notification", "Notification permission not granted!")
-                return
-            }
+        val channelId = "messages"
+        val notificationId = chatId.hashCode()
+
+        // 🚫 Android 13+ requires POST_NOTIFICATIONS permission check
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            Log.e("FirebaseMsgService", "Notification permission not granted!")
+            return
         }
 
-        // ✅ Create Notification Channel (For Android 8+)
+        // ✅ Notification channel for Android O+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 channelId,
@@ -75,51 +81,47 @@ class FirebaseMessageService : FirebaseMessagingService() {
             notificationManager?.createNotificationChannel(channel)
         }
 
-        // ✅ Intent to open MainActivity and navigate to ChatScreen
+        // ✅ Intent to open MainActivity and go to the chat
         val intent = Intent(this, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            putExtra("senderId", title)  // Pass senderId for navigation
+            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            putExtra("senderId", senderName)
         }
 
-        // ✅ Create PendingIntent
         val pendingIntent = PendingIntent.getActivity(
-            this,
-            notificationId,
-            intent,
+            this, notificationId, intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        // ✅ Define "Person" for the sender
-        val personBuild = Person.Builder()
-            .setName(title ?: "User")
+        // ✅ Build Person object for MessagingStyle
+        val personBuilder = Person.Builder().setName(senderName ?: "User")
+        if (imageUrl.isNullOrEmpty()) {
+            personBuilder.setIcon(IconCompat.createWithResource(this, R.drawable.chat_img3))
+        }
+        val person = personBuilder.build()
 
+        // ✅ Load previous messages from SharedPreferences (per chat)
+        val sharedPreferences = getSharedPreferences("chat_notifications", Context.MODE_PRIVATE)
+        val messagesSet = sharedPreferences.getStringSet(chatId, mutableSetOf())!!.toMutableSet()
+        messagesSet.add("$senderName: $message") // 👈 Append latest message
+        sharedPreferences.edit().putStringSet(chatId, messagesSet).apply()
 
-        // Optional: Use a default user icon
-        if (imageUrl.isNullOrEmpty()) personBuild.setIcon(
-            IconCompat.createWithResource(
-                this,
-                R.drawable.chat_img3
-            )
-        )
-
-        val person = personBuild.build()
-
-        // ✅ Use MessagingStyle for better message categorization
+        // ✅ Use MessagingStyle to group messages
         val messagingStyle = NotificationCompat.MessagingStyle(person)
-            .setConversationTitle(title)
-            .addMessage(message ?: "New Message", System.currentTimeMillis(), person)
+            .setConversationTitle(senderName)
+        messagesSet.forEach {
+            messagingStyle.addMessage(it, System.currentTimeMillis(), person)
+        }
 
-        // ✅ Build Notification with the "Conversation" style
         val builder = NotificationCompat.Builder(this, channelId)
             .setSmallIcon(R.drawable.ic_chat)
-            .setStyle(messagingStyle)  // 🔥 Makes it a conversation notification
+            .setStyle(messagingStyle)
             .setCategory(NotificationCompat.CATEGORY_MESSAGE)
-            .setShortcutId(title ?: "chat") // 🔥 Groups messages from the same sender
+            .setShortcutId(senderName ?: "chat")
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
 
-        // ✅ Load Profile Image (Optional)
+        // ✅ Load image as large icon using Glide (optional)
         if (!imageUrl.isNullOrEmpty()) {
             Glide.with(this)
                 .asBitmap()
@@ -130,7 +132,7 @@ class FirebaseMessageService : FirebaseMessagingService() {
                         resource: Bitmap,
                         transition: com.bumptech.glide.request.transition.Transition<in Bitmap>?
                     ) {
-                        builder.setLargeIcon(resource) // Set circular image as large icon
+                        builder.setLargeIcon(resource)
                         NotificationManagerCompat.from(this@FirebaseMessageService)
                             .notify(notificationId, builder.build())
                     }
@@ -138,8 +140,7 @@ class FirebaseMessageService : FirebaseMessagingService() {
                     override fun onLoadCleared(placeholder: Drawable?) {}
                 })
         } else {
-            NotificationManagerCompat.from(this)
-                .notify(notificationId, builder.build())
+            NotificationManagerCompat.from(this).notify(notificationId, builder.build())
         }
     }
 }

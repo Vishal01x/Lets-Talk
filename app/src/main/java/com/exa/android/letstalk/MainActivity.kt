@@ -26,6 +26,7 @@ import com.exa.android.letstalk.presentation.navigation.component.MainRoute
 import com.exa.android.letstalk.ui.theme.LetsTalkTheme
 import com.exa.android.letstalk.utils.MyLifecycleObserver
 import com.exa.android.letstalk.utils.NetworkCallbackReceiver
+import com.exa.android.letstalk.utils.clearAllNotifications
 import com.exa.android.letstalk.utils.helperFun.permissionHandling
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -59,6 +60,8 @@ class MainActivity : FragmentActivity() {
                 App()
             }
         }
+
+        clearAllNotifications(this)
         permissionHandling(this)
     }
 }

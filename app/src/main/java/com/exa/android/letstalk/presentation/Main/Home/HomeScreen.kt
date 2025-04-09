@@ -97,9 +97,7 @@ fun HomeScreen(navController: NavController, viewModel: ChatViewModel, zegoViewM
                 .padding(top = 2.dp)
         ) {
             HeaderSection(navController)
-            Spacer(modifier = Modifier.height(12.dp))
-            StoriesSection()
-            Spacer(modifier = Modifier.height(16.dp))
+
             ChatsSection(navController, viewModel)
         }
         if (curBottomSheetState.value == SheetState.SHOW) {
@@ -118,7 +116,7 @@ fun HeaderSection(navController: NavController) {
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
-            text = "Mengobrol",
+            text = "Let's Talk",
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             fontSize = 22.sp
@@ -193,6 +191,13 @@ fun ChatsSection(navController: NavController, viewModel: ChatViewModel) {
         contentPadding = PaddingValues(horizontal = 12.dp), // Avoid spacing issues
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
+
+        item{
+            Spacer(modifier = Modifier.height(12.dp))
+            StoriesSection()
+            Spacer(modifier = Modifier.height(12.dp))
+        }
+
         // Add a title to the chat list
         item {
             ChatTitle()

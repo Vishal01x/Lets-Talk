@@ -93,18 +93,18 @@ class FirestoreService @Inject constructor(
 
         try {
             // Launch parallel tasks
-           /* val updateCurrentUserChat = async { updateUserChatList(currentUserId, chatId) }
-            val updateOtherUserChat = async { updateUserChatList(otherUserId, chatId) }
-            val updateParticipants =
-                async { updateChatParticipants(chatId, listOf(currentUserId, otherUserId)) }
-            val updateChatDetails = async { updateChatDetail(chat) }
+            /* val updateCurrentUserChat = async { updateUserChatList(currentUserId, chatId) }
+             val updateOtherUserChat = async { updateUserChatList(otherUserId, chatId) }
+             val updateParticipants =
+                 async { updateChatParticipants(chatId, listOf(currentUserId, otherUserId)) }
+             val updateChatDetails = async { updateChatDetail(chat) }
 
-            // Wait for all tasks to complete
-            updateCurrentUserChat.await()
-            updateOtherUserChat.await()
-            updateParticipants.await()
-            updateChatDetails.await()
-*/
+             // Wait for all tasks to complete
+             updateCurrentUserChat.await()
+             updateOtherUserChat.await()
+             updateParticipants.await()
+             updateChatDetails.await()
+ */
             updateUserChatList(currentUserId, chatId)
             updateUserChatList(otherUserId, chatId)
             updateChatParticipants(chatId, listOf(currentUserId, otherUserId))
@@ -199,18 +199,21 @@ class FirestoreService @Inject constructor(
         chatCollection: CollectionReference,
         chatId: String
     ): Boolean {
-        val querySnapshot = chatCollection
-            .whereEqualTo("id", chatId)
-            .limit(1) // Use limit to minimize query time
-            .get()
-            .await()
+//        val querySnapshot = chatCollection
+//            .whereEqualTo("id", chatId)
+//            .limit(1) // Use limit to minimize query time
+//            .get()
+//            .await()
 
-        return !querySnapshot.isEmpty
+//        return !querySnapshot.isEmpty
+
+        val document = chatCollection.document(chatId).get().await()
+        return document.exists()
     }
 
 
     suspend fun createChatAndSendMessage(
-        message: Message, user : User? = null, imageUrl : String? = null // for post notification
+        message: Message, user: User? = null, imageUrl: String? = null // for post notification
     ) {
         try {
             val messageRef = chatCollection.document(message.chatId).collection("messages")
@@ -219,7 +222,7 @@ class FirestoreService @Inject constructor(
                 .addOnSuccessListener {
                     postNotificationToUsers(
                         channelID = message.chatId,
-                        senderName = user?.name.toString()?: message.senderId,
+                        senderName = user?.name.toString() ?: message.senderId,
                         senderId = message.senderId,
                         messageContent = message.message,
                         imageUrl = imageUrl,
@@ -274,7 +277,8 @@ class FirestoreService @Inject constructor(
                                 message,
                                 null,
                                 listOf(currentUserId, receiver.userId)
-                            )
+                            ),
+                            receiver
                         ) // Call your existing logic
                     }
                 }
@@ -435,20 +439,23 @@ class FirestoreService @Inject constructor(
                                 val messages =
                                     snapshot?.toObjects(Message::class.java) ?: emptyList()
 
-                                updateMessageStatusToSeen(chatId, messages)
-                                // try to optimise it
-                                chatCollection.document(chatId)
-                                    .addSnapshotListener { chatSnapshot, chatException ->
-                                        val lastMessageCnt =
-                                            chatSnapshot?.getLong("lastMessageCnt") ?: 0
-                                        if(activeChatId == chatId) {
-                                            updateUserLastMessageCnt(
-                                                chatId,
-                                                currentUserId!!,
-                                                lastMessageCnt
-                                            )
+                                if (activeChatId == chatId) {
+                                    updateMessageStatusToSeen(chatId, messages)
+                                    // try to optimise it
+                                    chatCollection.document(chatId)
+                                        .addSnapshotListener { chatSnapshot, chatException ->
+                                            val lastMessageCnt =
+                                                chatSnapshot?.getLong("lastMessageCnt") ?: 0
+
+                                            if(activeChatId == chatId) {
+                                                updateUserLastMessageCnt(
+                                                    chatId,
+                                                    currentUserId!!,
+                                                    lastMessageCnt
+                                                )
+                                            }
                                         }
-                                    }
+                                }
 
                                 val result = trySend(Response.Success(messages))
                                 if (result.isFailure) {
@@ -590,7 +597,10 @@ class FirestoreService @Inject constructor(
                             subscribeForNotifications(
                                 chatId,
                                 onComplete = { token ->
-                                    Log.d("FireStore Operation", "Subscribed to topic: $token for $chatId")
+                                    Log.d(
+                                        "FireStore Operation",
+                                        "Subscribed to topic: $token for $chatId"
+                                    )
                                 }
                             )
                         }
