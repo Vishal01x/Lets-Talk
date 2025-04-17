@@ -23,6 +23,8 @@ import com.exa.android.letstalk.presentation.navigation.AppNavigation
 import com.exa.android.letstalk.presentation.navigation.component.AuthRoute
 import com.exa.android.letstalk.presentation.navigation.component.HomeRoute
 import com.exa.android.letstalk.presentation.navigation.component.MainRoute
+import com.exa.android.letstalk.presentation.test.FileUploaderDownloaderUI
+import com.exa.android.letstalk.presentation.test.MediaUploaderScreen
 import com.exa.android.letstalk.ui.theme.LetsTalkTheme
 import com.exa.android.letstalk.utils.MyLifecycleObserver
 import com.exa.android.letstalk.utils.NetworkCallbackReceiver
@@ -57,12 +59,14 @@ class MainActivity : FragmentActivity() {
                 // so firstly ensure passing chatid only and get chatroom detail from firebase then only we can open
                 // for it see code
                 UpdateStatus(this)
-                App()
+                App(this)
+                //MediaUploaderScreen(this)
+                //FileUploaderDownloaderUI()
             }
         }
 
         clearAllNotifications(this)
-        permissionHandling(this)
+
     }
 }
 
@@ -83,7 +87,7 @@ fun UpdateStatus(context: Context) {
 }
 
 @Composable
-fun App() {
+fun App(context : FragmentActivity) {
 
 
 //    val viewModel: AuthViewModel = hiltViewModel()
@@ -95,7 +99,8 @@ fun App() {
     val navController = rememberNavController()
     //OnBackPressed(navController = navController) // handle on back pressed like finish activity on Home
     // and back pressed else get back to home from other screen
-    AppNavigation(navController, isLoggedIn != null) // initiate navigation
+    AppNavigation(navController, isLoggedIn != null, context) // initiate navigation
+
 }
 
 

@@ -20,6 +20,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.exa.android.letstalk.utils.models.Media
 import com.exa.android.letstalk.utils.models.Message
 import java.io.File
 import kotlin.random.Random
@@ -147,12 +148,14 @@ fun generateMessage(
     currentUser: String,
     chatId: String,
     text: String,
+    media : Media? = null,
     replyTo : Message? = null,
     members: List<String> = emptyList()
 ): Message =  Message(
     chatId = chatId,
     senderId = currentUser,
     message = text,
+    media = media,
     replyTo = replyTo,
     members = members.ifEmpty {
         listOf(

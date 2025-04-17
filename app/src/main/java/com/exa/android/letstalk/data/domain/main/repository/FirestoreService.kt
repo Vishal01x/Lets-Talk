@@ -93,7 +93,7 @@ class FirestoreService @Inject constructor(
 
         try {
             // Launch parallel tasks
-            /* val updateCurrentUserChat = async { updateUserChatList(currentUserId, chatId) }
+             val updateCurrentUserChat = async { updateUserChatList(currentUserId, chatId) }
              val updateOtherUserChat = async { updateUserChatList(otherUserId, chatId) }
              val updateParticipants =
                  async { updateChatParticipants(chatId, listOf(currentUserId, otherUserId)) }
@@ -104,11 +104,11 @@ class FirestoreService @Inject constructor(
              updateOtherUserChat.await()
              updateParticipants.await()
              updateChatDetails.await()
- */
-            updateUserChatList(currentUserId, chatId)
-            updateUserChatList(otherUserId, chatId)
-            updateChatParticipants(chatId, listOf(currentUserId, otherUserId))
-            updateChatDetail(chat)
+
+//            updateUserChatList(currentUserId, chatId)
+//            updateUserChatList(otherUserId, chatId)
+//            updateChatParticipants(chatId, listOf(currentUserId, otherUserId))
+//            updateChatDetail(chat)
 
             // Subscribe to push notifications
             subscribeForNotifications(chatId) { token ->
@@ -275,6 +275,7 @@ class FirestoreService @Inject constructor(
                                 currentUserId!!,
                                 generateChatId(currentUserId, receiver.userId),
                                 message,
+                                null,
                                 null,
                                 listOf(currentUserId, receiver.userId)
                             ),

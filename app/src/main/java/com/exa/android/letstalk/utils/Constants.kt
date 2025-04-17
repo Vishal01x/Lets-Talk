@@ -10,4 +10,9 @@ object Constants {
 
         const val APP_ID : Long = 1209499523
         const val APPSign = "371a74a49c9630b81beca00c084ff38703d3643ef658403a656ed85ce4098633"
+
+        const val CLOUDINARY_BASE_URL = "https://api.cloudinary.com/"
+        const val CLOUDINARY_UPLOAD_PRESET = "media_uploads"
+
+        const val APP_NAME = "Let's Talk"
     }

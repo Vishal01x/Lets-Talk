@@ -76,7 +76,7 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.hilt.common)
-  //firebase messaging
+    //firebase messaging
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -138,5 +138,15 @@ dependencies {
     implementation("com.maxkeppeler.sheets-compose-dialogs:calendar:1.0.2")
 
 
+    // All:
+    implementation("com.cloudinary:cloudinary-android:3.0.2")
+
+// Download + Preprocess:
+    implementation("com.cloudinary:cloudinary-android-download:3.0.2")
+    implementation("com.cloudinary:cloudinary-android-preprocess:3.0.2")
+
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
 }

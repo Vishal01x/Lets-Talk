@@ -42,6 +42,16 @@ import com.exa.android.letstalk.utils.helperFun.getVibrator
 import com.exa.android.letstalk.utils.models.Message
 import com.exa.android.letstalk.utils.models.User
 import com.exa.android.letstalk.R
+import com.exa.android.letstalk.presentation.Main.Home.ChatDetail.components.media.checkAndOpenOrDownloadMedia
+import com.exa.android.letstalk.presentation.Main.Home.ChatDetail.components.media.docs.DocumentMessageItem
+import com.exa.android.letstalk.presentation.Main.Home.ChatDetail.components.media.downloadMedia
+import com.exa.android.letstalk.presentation.Main.Home.ChatDetail.components.media.getFileNameFromUrl
+import com.exa.android.letstalk.presentation.Main.Home.ChatDetail.components.media.image.ImageMessageContent
+import com.exa.android.letstalk.presentation.Main.Home.ChatDetail.components.media.image.downloadImageToAppFolder
+import com.exa.android.letstalk.presentation.Main.Home.ChatDetail.components.media.image.openImageIntent
+import com.exa.android.letstalk.presentation.Main.Home.ChatDetail.components.media.openFileWithIntent
+import com.exa.android.letstalk.presentation.Main.Home.ChatDetail.components.media.video.VideoMessageItem
+import com.exa.android.letstalk.utils.models.MediaType
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -268,12 +278,49 @@ fun MessageBubble(
                         fontStyle = FontStyle.Italic
                     )
                 } else {
-                    Text(
-                        text = message.message,
-                        style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 24.sp),
-                        color = if (curUserId == message.senderId) Color.White else Color.Black,
-                        fontWeight = FontWeight.Medium
-                    )
+                    if (message.media == null) {
+                        Text(
+                            text = message.message,
+                            style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 24.sp),
+                            color = if (curUserId == message.senderId) Color.White else Color.Black,
+                            fontWeight = FontWeight.Medium
+                        )
+                    } else {
+                        val fileName = getFileNameFromUrl(message.media.mediaUrl)
+                        when (message.media.mediaType) {
+                            MediaType.IMAGE -> {
+                                ImageMessageContent(
+                                    imageUrl = message.media.mediaUrl,
+                                    onDownloadClick = {
+
+                                        downloadMedia(
+                                            context, message.media.mediaUrl,
+                                            fileName = fileName
+                                        )
+                                        //openImageIntent(context,message.media.mediaUrl)
+                                    },
+                                    onImageClick = {
+                                        openImageIntent(context, message.media.mediaUrl)
+                                    }
+                                )
+                            }
+
+                            MediaType.VIDEO -> {
+                                VideoMessageItem(message.media.mediaUrl, fileName)
+                            }
+
+                            MediaType.AUDIO -> TODO()
+                            MediaType.DOCUMENT -> {
+                                DocumentMessageItem(
+                                    fileUrl = message.media.mediaUrl,
+                                    fileName = getFileNameFromUrl(message.media.mediaUrl)
+                                )
+                            }
+
+                            MediaType.LOCATION -> TODO()
+                            MediaType.CONTACT -> TODO()
+                        }
+                    }
                 }
 
                 Row(

@@ -2,6 +2,8 @@ package com.exa.android.letstalk.presentation.Main.Home.ChatDetail
 
 import android.content.Context
 import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,6 +27,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import com.exa.android.khacheri.screens.Main.Home.ChatDetail.ChatHeader
 import com.exa.android.letstalk.data.domain.main.ViewModel.ChatViewModel
+import com.exa.android.letstalk.data.domain.main.ViewModel.MediaSharingViewModel
 import com.exa.android.letstalk.data.domain.main.ViewModel.ScheduledMessageViewModel
 import com.exa.android.letstalk.data.domain.main.ViewModel.UserViewModel
 import com.exa.android.letstalk.data.domain.main.ViewModel.ZegoViewModel
@@ -33,6 +36,7 @@ import com.exa.android.letstalk.presentation.Main.Home.ChatDetail.components.New
 import com.exa.android.letstalk.presentation.navigation.component.HomeRoute
 import com.exa.android.letstalk.presentation.navigation.component.ScreenPurpose
 import com.exa.android.letstalk.presentation.Main.Home.components.MessageSchedulerDialog
+import com.exa.android.letstalk.presentation.test.createTempFileFromUri
 import com.exa.android.letstalk.utils.CurChatManager.activeChatId
 import com.exa.android.letstalk.utils.models.Chat
 import com.exa.android.letstalk.utils.models.Message
@@ -57,6 +61,7 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
     val userViewModel: UserViewModel = hiltViewModel()   // UserViewModel for communicating with User Repository
     val zegoViewModel: ZegoViewModel = hiltViewModel()
     val scheduleMessageViewModel : ScheduledMessageViewModel = hiltViewModel()
+    val mediaSharingRepository : MediaSharingViewModel = hiltViewModel()
 
     val responseChatMessages by remember {chatViewModel.messages}.collectAsState() // all the chats of cur and other User
     val curUserId by chatViewModel.curUserId.collectAsState()  // cur User Id
@@ -80,6 +85,25 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
     var showScheduleDialog = remember{ mutableStateOf(false)}
     val coroutineScope = rememberCoroutineScope() // to handle asynchronous here for calling viewMode.delete
 
+    val filePickerLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri ->
+        uri?.let {
+            coroutineScope.launch {
+//                val file = mediaSharingRepository.createTempFileFromUri(context, uri)
+                val media = mediaSharingRepository.uploadFileToCloudinary(context, uri)
+                Log.d("Storage Cloudinary", "Uploaded URL: ${media.toString()}")
+
+                val membersId = members.map { it.userId }
+                sendMessage(
+                    chatViewModel, scheduleMessageViewModel,
+                    generateMessage(curUserId,chat.id, "", media, null, membersId),
+                    chat, chatMessages.value
+                )
+            }
+
+        }
+    }
 
     LaunchedEffect(chat.id) { // on ChatClick
         chatViewModel.getMessages(chat.id)
@@ -174,11 +198,13 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
                     val membersId = members.map { it.userId }
                     sendMessage(
                         chatViewModel, scheduleMessageViewModel,
-                        generateMessage(curUserId,chat.id, text, replyTo, membersId),
+                        generateMessage(curUserId,chat.id, text, null, replyTo, membersId),
                         chat, chatMessages.value
                     )
                 },
-                onAddClick = {},
+                onAddClick = {
+                     filePickerLauncher.launch("*/*")
+                },
                 onClockClick = {
                     if(scheduleMessageViewModel.scheduleMessageType.value == ScheduleType.NONE){
                     showScheduleDialog.value = true
