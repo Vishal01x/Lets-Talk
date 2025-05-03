@@ -50,7 +50,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.exa.android.letstalk.R
-import com.exa.android.letstalk.data.domain.main.ViewModel.ScheduledMessageViewModel
+import com.exa.android.letstalk.data.local.room.ScheduledMessageViewModel
 import com.exa.android.letstalk.data.domain.main.ViewModel.UserViewModel
 import com.exa.android.letstalk.utils.helperFun.AudioWaveForm
 import com.exa.android.letstalk.utils.helperFun.getUserIdFromChatId

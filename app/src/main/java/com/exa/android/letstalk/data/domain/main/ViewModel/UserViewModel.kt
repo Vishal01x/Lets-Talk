@@ -33,6 +33,9 @@ class UserViewModel @Inject constructor(private val userRepository: UserReposito
     private val _curUserId = MutableStateFlow<String?>(null)
     val curUserId: StateFlow<String?> = _curUserId
 
+    private val _userProfile = MutableStateFlow<Response<User>?>(null)
+    val userProfile: StateFlow<Response<User>?> = _userProfile
+
     init {
         _curUserId.value = userRepository.currentUser
     }
@@ -50,7 +53,7 @@ class UserViewModel @Inject constructor(private val userRepository: UserReposito
         }
     }
 
-    fun updateUnreadMessages(chatId : String) {
+    fun updateUnreadMessages(chatId: String) {
         viewModelScope.launch {
             userRepository.updateUnreadMessages(chatId)
         }
@@ -62,13 +65,13 @@ class UserViewModel @Inject constructor(private val userRepository: UserReposito
         }
     }
 
-    fun observeChatRoomStatus(chatId: String, isGroup : Boolean = false) {
+    fun observeChatRoomStatus(chatId: String, isGroup: Boolean = false) {
         userRepository.getChatRoomStatus(chatId, isGroup).observeForever { status ->
             _chatRoomStatus.value = status ?: Status() // Ensure non-null status
         }
     }
 
-    fun getChatRoomDetail(chatId : String) {
+    fun getChatRoomDetail(chatId: String) {
         viewModelScope.launch {
             userRepository.getChatRoomDetail(chatId)
                 .catch { exception ->
@@ -90,6 +93,16 @@ class UserViewModel @Inject constructor(private val userRepository: UserReposito
                 }
                 .collect { response ->
                     _allUsers.value = response
+                }
+        }
+    }
+
+
+    fun getUserProfile(userId: String?) {
+        viewModelScope.launch {
+            userRepository.getUserProfile(userId)
+                .collect { response ->
+                    _userProfile.value = response
                 }
         }
     }

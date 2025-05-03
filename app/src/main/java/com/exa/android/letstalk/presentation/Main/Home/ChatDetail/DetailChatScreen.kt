@@ -8,6 +8,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -26,9 +32,10 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import com.exa.android.khacheri.screens.Main.Home.ChatDetail.ChatHeader
+import com.exa.android.letstalk.AppManager.switchSheetState
 import com.exa.android.letstalk.data.domain.main.ViewModel.ChatViewModel
 import com.exa.android.letstalk.data.domain.main.ViewModel.MediaSharingViewModel
-import com.exa.android.letstalk.data.domain.main.ViewModel.ScheduledMessageViewModel
+import com.exa.android.letstalk.data.local.room.ScheduledMessageViewModel
 import com.exa.android.letstalk.data.domain.main.ViewModel.UserViewModel
 import com.exa.android.letstalk.data.domain.main.ViewModel.ZegoViewModel
 import com.exa.android.letstalk.presentation.Main.Home.ChatDetail.components.MessageList
@@ -36,7 +43,7 @@ import com.exa.android.letstalk.presentation.Main.Home.ChatDetail.components.New
 import com.exa.android.letstalk.presentation.navigation.component.HomeRoute
 import com.exa.android.letstalk.presentation.navigation.component.ScreenPurpose
 import com.exa.android.letstalk.presentation.Main.Home.components.MessageSchedulerDialog
-import com.exa.android.letstalk.presentation.test.createTempFileFromUri
+import com.exa.android.letstalk.presentation.navigation.component.ProfileRoute
 import com.exa.android.letstalk.utils.CurChatManager.activeChatId
 import com.exa.android.letstalk.utils.models.Chat
 import com.exa.android.letstalk.utils.models.Message
@@ -49,6 +56,7 @@ import com.exa.android.letstalk.utils.models.Call
 import com.exa.android.letstalk.utils.models.CallType
 import com.exa.android.letstalk.utils.models.ScheduleType
 import com.exa.android.letstalk.utils.showToast
+import com.exa.android.reflekt.loopit.presentation.main.Home.ChatDetail.component.media.mediaSelectionSheet.MediaPickerHandler
 import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -57,13 +65,15 @@ import java.util.*
 
 @Composable
 fun DetailChatScreen(navController: NavController, chat: Chat) {
-    val chatViewModel: ChatViewModel = hiltViewModel()  // ChatViewModel for communicating with FireStore Service
-    val userViewModel: UserViewModel = hiltViewModel()   // UserViewModel for communicating with User Repository
+    val chatViewModel: ChatViewModel =
+        hiltViewModel()  // ChatViewModel for communicating with FireStore Service
+    val userViewModel: UserViewModel =
+        hiltViewModel()   // UserViewModel for communicating with User Repository
     val zegoViewModel: ZegoViewModel = hiltViewModel()
-    val scheduleMessageViewModel : ScheduledMessageViewModel = hiltViewModel()
-    val mediaSharingRepository : MediaSharingViewModel = hiltViewModel()
+    val scheduleMessageViewModel: ScheduledMessageViewModel = hiltViewModel()
+    val mediaSharingViewModel: MediaSharingViewModel = hiltViewModel()
 
-    val responseChatMessages by remember {chatViewModel.messages}.collectAsState() // all the chats of cur and other User
+    val responseChatMessages by remember { chatViewModel.messages }.collectAsState() // all the chats of cur and other User
     val curUserId by chatViewModel.curUserId.collectAsState()  // cur User Id
     //val curUser by chatViewModel.curUser.collectAsState() // cur User Details
     //val responseChatRoomDetail by userVM.chatRoomDetail.collectAsState() // Other User Details in form of response from UserViewModel
@@ -82,25 +92,15 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
     val clipboardManager = LocalClipboardManager.current
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
-    var showScheduleDialog = remember{ mutableStateOf(false)}
-    val coroutineScope = rememberCoroutineScope() // to handle asynchronous here for calling viewMode.delete
+    var showScheduleDialog = remember { mutableStateOf(false) }
+    val coroutineScope =
+        rememberCoroutineScope() // to handle asynchronous here for calling viewMode.delete
 
     val filePickerLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.GetContent()
     ) { uri ->
         uri?.let {
-            coroutineScope.launch {
-//                val file = mediaSharingRepository.createTempFileFromUri(context, uri)
-                val media = mediaSharingRepository.uploadFileToCloudinary(context, uri)
-                Log.d("Storage Cloudinary", "Uploaded URL: ${media.toString()}")
 
-                val membersId = members.map { it.userId }
-                sendMessage(
-                    chatViewModel, scheduleMessageViewModel,
-                    generateMessage(curUserId,chat.id, "", media, null, membersId),
-                    chat, chatMessages.value
-                )
-            }
 
         }
     }
@@ -141,10 +141,12 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
                     activeChatId = chat.id // Update chat ID when app resumes
                     Log.d("ChatScreen", "App Resumed: ActiveChatId updated to $activeChatId")
                 }
+
                 Lifecycle.Event.ON_STOP -> {
                     activeChatId = null // Reset chat when app goes to background
                     Log.d("ChatScreen", "App in Background: ActiveChatId Cleared")
                 }
+
                 else -> {}
             }
         }
@@ -160,12 +162,32 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
         }
     }
 
+    MediaPickerHandler(
+        showAll = true,
+        onLaunch = { uri ->
+            coroutineScope.launch {
+//                val file = mediaSharingRepository.createTempFileFromUri(context, uri)
+                val media = mediaSharingViewModel.uploadFileToCloudinary(context, uri)
+                Log.d("Storage Cloudinary", "Uploaded URL: ${media.toString()}")
+
+                val membersId = members.map { it.userId }
+                sendMessage(
+                    chatViewModel, scheduleMessageViewModel,
+                    generateMessage(curUserId, chat.id, "", media, null, membersId),
+                    chat, chatMessages.value
+                )
+            }
+        }
+    )
 
     Scaffold(
         topBar = {
             ChatHeader(
                 chat, chatRoomStatus, curUserId, members, selectedMessages,
-                onProfileClick = { navigateToProfile(navController, chat) },
+                onProfileClick = {
+                    val otherUserId = getUserIdFromChatId(chat.id, curUserId)
+                    navController.navigate(ProfileRoute.OtherProfileScreen.createRoute(otherUserId))
+                },
                 onBackClick = { navController.popBackStack() },
                 onVoiceCallClick = { makeVoiceCall(chatViewModel, curUserId, chat, context) },
                 onVideoCallClick = { startVideoCall(zegoViewModel, members) },
@@ -178,8 +200,14 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
                     forwardMessages(selectedMessages, navController)
                     selectedMessages = emptySet()
                 },
-                onDeleteClick = { deleteFor->
-                    deleteMessages(chatViewModel, selectedMessages, chat.id, deleteFor, coroutineScope)
+                onDeleteClick = { deleteFor ->
+                    deleteMessages(
+                        chatViewModel,
+                        selectedMessages,
+                        chat.id,
+                        deleteFor,
+                        coroutineScope
+                    )
                     selectedMessages = emptySet()
                 }
             )
@@ -198,23 +226,25 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
                     val membersId = members.map { it.userId }
                     sendMessage(
                         chatViewModel, scheduleMessageViewModel,
-                        generateMessage(curUserId,chat.id, text, null, replyTo, membersId),
+                        generateMessage(curUserId, chat.id, text, null, replyTo, membersId),
                         chat, chatMessages.value
                     )
                 },
                 onAddClick = {
-                     filePickerLauncher.launch("*/*")
+                    mediaSharingViewModel.showMediaPickerSheet = true
+                    //filePickerLauncher.launch("*/*")
                 },
                 onClockClick = {
-                    if(scheduleMessageViewModel.scheduleMessageType.value == ScheduleType.NONE){
-                    showScheduleDialog.value = true
-                }else{
-                scheduleMessageViewModel.updateScheduleMessageType(ScheduleType.NONE)
-                showToast(context,"Message Scheduling Deactivated")
-            }},
+                    if (scheduleMessageViewModel.scheduleMessageType.value == ScheduleType.NONE) {
+                        showScheduleDialog.value = true
+                    } else {
+                        scheduleMessageViewModel.updateScheduleMessageType(ScheduleType.NONE)
+                        showToast(context, "Message Scheduling Deactivated")
+                    }
+                },
                 onSendOrDiscard = { replyMessage = null },
                 onDone = { focusManager.clearFocus() },
-                onRecordingSend = {  }
+                onRecordingSend = { }
             )
         }
     ) { paddingValues ->
@@ -225,15 +255,19 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
                 .padding(paddingValues)
         ) {
             MessageList(
-                chatMessages.value, curUserId, members, chat.unreadMessages.toInt(), selectedMessages,
+                chatMessages.value,
+                curUserId,
+                members,
+                chat.unreadMessages.toInt(),
+                selectedMessages,
                 updateMessages = { selectedMessages = it },
                 onReply = { replyMessage = it; focusRequester.requestFocus() }
             )
 
-            if(showScheduleDialog.value){
+            if (showScheduleDialog.value) {
                 MessageSchedulerDialog(
                     onDismiss = { showScheduleDialog.value = false },
-                    onConfirm = {scheduledTime, scheduledType ->
+                    onConfirm = { scheduledTime, scheduledType ->
                         scheduleMessageViewModel.updateScheduleMessageType(scheduledType)
                         scheduleMessageViewModel.setTime(scheduledTime)
                     }
@@ -248,8 +282,17 @@ private fun navigateToProfile(navController: NavController, chat: Chat) {
     // navController.navigate(ChatInfo.ProfileScreen.createRoute(chatJson))
 }
 
-private fun makeVoiceCall(viewModel: ChatViewModel, curUserId: String, chat: Chat, context: Context) {
-    val call = Call(callerId = curUserId, receiverId = getUserIdFromChatId(chat.id, curUserId), isVideoCall = CallType.VOICE)
+private fun makeVoiceCall(
+    viewModel: ChatViewModel,
+    curUserId: String,
+    chat: Chat,
+    context: Context
+) {
+    val call = Call(
+        callerId = curUserId,
+        receiverId = getUserIdFromChatId(chat.id, curUserId),
+        isVideoCall = CallType.VOICE
+    )
     viewModel.makeCall(call,
         onSuccess = { showToast(context, "Wait for recipient response") },
         onFailure = { showToast(context, "Recipient is on another call, try again later") }
@@ -261,9 +304,20 @@ private fun startVideoCall(zegoViewModel: ZegoViewModel, members: List<User>) {
     zegoViewModel.startCall(users, true)
 }
 
-private fun copyMessages(selectedMessages: Set<Message>, clipboardManager: ClipboardManager, coroutineScope: CoroutineScope) {
+private fun copyMessages(
+    selectedMessages: Set<Message>,
+    clipboardManager: ClipboardManager,
+    coroutineScope: CoroutineScope
+) {
     coroutineScope.launch {
-        val formattedMessages = selectedMessages.joinToString("\n") { "[${SimpleDateFormat("dd-MM-yyyy HH:mm", Locale.getDefault()).format(Date(it.timestamp.seconds * 1000L))}] ${it.senderId}: ${it.message}" }
+        val formattedMessages = selectedMessages.joinToString("\n") {
+            "[${
+                SimpleDateFormat(
+                    "dd-MM-yyyy HH:mm",
+                    Locale.getDefault()
+                ).format(Date(it.timestamp.seconds * 1000L))
+            }] ${it.senderId}: ${it.message}"
+        }
         clipboardManager.setText(AnnotatedString(formattedMessages))
     }
 }
@@ -271,11 +325,22 @@ private fun copyMessages(selectedMessages: Set<Message>, clipboardManager: Clipb
 private fun forwardMessages(selectedMessages: Set<Message>, navController: NavController) {
     val messagesText = selectedMessages.map { it.message }
     val jsonString = Gson().toJson(messagesText)
-    navController.navigate(HomeRoute.AllUserScreen.createRoute(ScreenPurpose.FORWARD_MESSAGES, jsonString))
+    navController.navigate(
+        HomeRoute.AllUserScreen.createRoute(
+            ScreenPurpose.FORWARD_MESSAGES,
+            jsonString
+        )
+    )
     // navigate to forward screen where we have all users
 }
 
-private fun deleteMessages(viewModel: ChatViewModel, selectedMessages: Set<Message>, chatId: String, deleteFor : Int, coroutineScope: CoroutineScope) {
+private fun deleteMessages(
+    viewModel: ChatViewModel,
+    selectedMessages: Set<Message>,
+    chatId: String,
+    deleteFor: Int,
+    coroutineScope: CoroutineScope
+) {
     coroutineScope.launch {
         viewModel.deleteMessages(
             selectedMessages.map { it.messageId }, chatId,
@@ -286,26 +351,42 @@ private fun deleteMessages(viewModel: ChatViewModel, selectedMessages: Set<Messa
     }
 }
 
-private fun sendMessage(chatViewModel: ChatViewModel, scheduledMessageViewModel: ScheduledMessageViewModel,message: Message,chat : Chat,chatMessages: List<Message>) {
+private fun sendMessage(
+    chatViewModel: ChatViewModel,
+    scheduledMessageViewModel: ScheduledMessageViewModel,
+    message: Message,
+    chat: Chat,
+    chatMessages: List<Message>
+) {
 
     if (chatMessages.isEmpty() && !chat.group) {
         chatViewModel.createChat(chat) {
-            if(scheduledMessageViewModel.scheduleMessageType.value != ScheduleType.NONE){
-                scheduledMessageViewModel.scheduleMessage(message, scheduledMessageViewModel.scheduleTime.value)
-                if(scheduledMessageViewModel.scheduleMessageType.value == ScheduleType.ONCE)
+            if (scheduledMessageViewModel.scheduleMessageType.value != ScheduleType.NONE) {
+                scheduledMessageViewModel.scheduleMessage(
+                    message,
+                    scheduledMessageViewModel.scheduleTime.value,
+                    chat.name,
+                    chat.profilePicture ?: ""
+                )
+                if (scheduledMessageViewModel.scheduleMessageType.value == ScheduleType.ONCE)
                     scheduledMessageViewModel.updateScheduleMessageType(ScheduleType.NONE)
-            }else {
+            } else {
                 chatViewModel.createChatAndSendMessage(
                     message, chat.profilePicture
                 )
             }
         }
     } else {
-        if(scheduledMessageViewModel.scheduleMessageType.value != ScheduleType.NONE){
-            scheduledMessageViewModel.scheduleMessage(message, scheduledMessageViewModel.scheduleTime.value)
-            if(scheduledMessageViewModel.scheduleMessageType.value == ScheduleType.ONCE)
+        if (scheduledMessageViewModel.scheduleMessageType.value != ScheduleType.NONE) {
+            scheduledMessageViewModel.scheduleMessage(
+                message,
+                scheduledMessageViewModel.scheduleTime.value,
+                chat.name,
+                chat.profilePicture ?: ""
+            )
+            if (scheduledMessageViewModel.scheduleMessageType.value == ScheduleType.ONCE)
                 scheduledMessageViewModel.updateScheduleMessageType(ScheduleType.NONE)
-        }else {
+        } else {
             chatViewModel.createChatAndSendMessage(
                 message, chat.profilePicture
             )

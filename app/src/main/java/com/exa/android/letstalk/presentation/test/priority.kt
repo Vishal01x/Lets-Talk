@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,7 +30,7 @@ import com.exa.android.letstalk.R
 
 
 @Composable
-fun ChatMessage(
+fun PriorityChatItem(
     profileImage: Painter,
     senderName: String,
     messageText: String,
@@ -62,7 +63,8 @@ fun ChatMessage(
                 fontSize = 14.sp
             )
             Surface(
-                color = Color(0xFF2A2A2A), // Dark bubble background
+               // color = Color(0xFF2A2A2A), // Dark bubble background
+                color = MaterialTheme.colorScheme.surface,
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.padding(top = 2.dp)
             ) {
@@ -71,13 +73,13 @@ fun ChatMessage(
                 ) {
                     Text(
                         text = messageText,
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 14.sp
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = time,
-                        color = Color.Gray,
+                        color = MaterialTheme.colorScheme.onSurface.copy(.4f),
                         fontSize = 10.sp,
                         modifier = Modifier.align(Alignment.End)
                     )
@@ -87,13 +89,13 @@ fun ChatMessage(
     }
 }
 
-@Preview
-@Composable
-fun PreviewChatMessage() {
-    ChatMessage(
-        profileImage = painterResource(id = R.drawable.chat_img3), // Replace with actual image
-        senderName = "Ankit LNCT",
-        messageText = "https://youtu.be/n5bqjJSJzuo?s=i-6YaNmhKue5y6UW3U",
-        time = "00:12"
-    )
-}
+//@Preview
+//@Composable
+//fun PreviewChatMessage() {
+//    ChatMessage(
+//        profileImage = painterResource(id = R.drawable.chat_img3), // Replace with actual image
+//        senderName = "Ankit LNCT",
+//        messageText = "https://youtu.be/n5bqjJSJzuo?s=i-6YaNmhKue5y6UW3U",
+//        time = "00:12"
+//    )
+//}

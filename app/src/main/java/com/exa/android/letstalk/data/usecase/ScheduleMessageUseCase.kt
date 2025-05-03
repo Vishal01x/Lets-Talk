@@ -7,7 +7,6 @@ import android.content.Intent
 import android.util.Log
 import com.exa.android.letstalk.data.broadcast.MessageReceiver
 import com.exa.android.letstalk.data.local.room.ScheduledMessageEntity
-import com.exa.android.letstalk.data.local.room.ScheduledMessageRepository
 import javax.inject.Inject
 
 class ScheduleMessageUseCase @Inject constructor(

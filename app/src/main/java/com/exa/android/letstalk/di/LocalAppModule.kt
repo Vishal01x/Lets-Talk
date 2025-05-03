@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.room.Room
 import com.exa.android.letstalk.data.local.pref.UserPreferences
+import com.exa.android.letstalk.data.local.room.MIGRATION_1_2
 import com.exa.android.letstalk.data.local.room.ScheduleMessageDatabase
 import com.exa.android.letstalk.data.local.room.ScheduledMessageEntity
 import dagger.Module
@@ -48,6 +49,7 @@ object AppModule {
             context,
             ScheduleMessageDatabase::class.java,
             "scheduled_messages_db"
-        ).build()
+        ).addMigrations(MIGRATION_1_2)
+            .build()
     }
 }

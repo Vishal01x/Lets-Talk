@@ -10,12 +10,16 @@ import com.exa.android.letstalk.utils.models.User
 import com.exa.android.letstalk.utils.Response
 import com.exa.android.letstalk.utils.helperFun.generateChatName
 import com.exa.android.letstalk.utils.helperFun.generateMessage
+import com.exa.android.letstalk.utils.helperFun.generateProfilePic
 import com.exa.android.letstalk.utils.models.Call
 import com.exa.android.letstalk.utils.models.ScheduleType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapConcat
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -56,6 +60,26 @@ class ChatViewModel @Inject constructor(
         }
     }
 
+    val searchQuery = MutableStateFlow("")
+
+    val filteredChatList: StateFlow<Response<List<Chat>>> = combine(
+        _chatList,
+        searchQuery
+    ) { chatResponse, query ->
+        if (chatResponse is Response.Success) {
+            val filtered = chatResponse.data.filter { chat ->
+                query.trim().split("\\s+".toRegex()).all { word ->
+                    chat.name.contains(word, ignoreCase = true) ||
+                            chat.lastMessage?.contains(word, ignoreCase = true) == true
+                }
+            }
+            Response.Success(filtered)
+        } else {
+            chatResponse
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Response.Loading)
+
+
     private fun getCurUser(){
         viewModelScope.launch {
             curUser.value = repo.getCurUser()
@@ -79,6 +103,7 @@ class ChatViewModel @Inject constructor(
 
     fun createChat(chat: Chat, onComplete: () -> Unit){
         chat.name = generateChatName(chat.id, curUserId.value, curUser?.value?.name?:"", chat.name)
+        chat.profilePicture = generateProfilePic(chat.id, curUserId.value, curUser?.value?.profilePicture?:"", chat.profilePicture ?: "")
         viewModelScope.launch {
             repo.createChat(chat){
                 onComplete()

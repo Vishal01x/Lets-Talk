@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -34,6 +35,7 @@ import androidx.navigation.NavController
 import com.exa.android.letstalk.R
 import com.exa.android.letstalk.data.domain.main.ViewModel.ChatViewModel
 import com.exa.android.letstalk.data.domain.main.ViewModel.UserViewModel
+import com.exa.android.letstalk.presentation.Main.components.CircularUserImage
 import com.exa.android.letstalk.presentation.navigation.component.HomeRoute
 import com.exa.android.letstalk.presentation.navigation.component.ScreenPurpose
 import com.exa.android.letstalk.utils.helperFun.generateChatId
@@ -291,6 +293,7 @@ fun AllUsersListItem(
     onUserClick: () -> Unit,
     zoomImage: (Int) -> Unit
 ) {
+    val context = LocalContext.current
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -299,15 +302,9 @@ fun AllUsersListItem(
             .padding(horizontal = 4.dp, vertical = 8.dp)
     ) {
         Box {
-            Image(
-                painter = painterResource(R.drawable.chat_img3),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape)
-                //.clickable { zoomImage(R.drawable.chat_img3) }
-            )
+            CircularUserImage(context, user.profilePicture ?: "", Modifier
+                .size(48.dp)
+                .clip(CircleShape))
             if (isSelected) {
                 Icon(
                     imageVector = Icons.Default.Check,

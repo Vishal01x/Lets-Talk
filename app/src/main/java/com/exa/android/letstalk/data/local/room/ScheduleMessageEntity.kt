@@ -6,6 +6,7 @@ import com.exa.android.letstalk.utils.models.Message
 import com.google.firebase.Timestamp
 import java.util.UUID
 
+// ScheduledMessageEntity.kt
 @Entity(tableName = "scheduled_messages")
 data class ScheduledMessageEntity(
     @PrimaryKey
@@ -14,14 +15,15 @@ data class ScheduledMessageEntity(
     val senderId: String = "",
     val receiverId: String = "",
     val message: String = "",
-    var scheduledTime:  Long = 0,
-    val status: String = "scheduled", // Status could be "sent", "delivered", or "read"
-    val replyTo: Message? = null, // store this as a JSON string using type convertor
-    val members: List<String?> = emptyList() // since
+    var scheduledTime: Long = 0,
+    val status: String = "scheduled",
+    val replyTo: Message? = null,
+    val members: List<String?> = emptyList(),
+    val recipientName: String? = null,  // Added for UI
+    val profileImageUri: String? = null  // Added for UI
 )
 
-
-fun Message.toEntity(): ScheduledMessageEntity {
+fun Message.toEntity(recipientName: String, profileImageUri: String): ScheduledMessageEntity {
     return ScheduledMessageEntity(
         messageId = messageId,
         chatId = chatId,
@@ -29,10 +31,11 @@ fun Message.toEntity(): ScheduledMessageEntity {
         receiverId = receiverId,
         message = message,
         replyTo = replyTo,
-        members = members
+        members = members,
+        recipientName = recipientName,
+        profileImageUri = profileImageUri
     )
 }
-
 
 fun ScheduledMessageEntity.toMessage(): Message {
     return Message(

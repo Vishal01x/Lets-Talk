@@ -5,7 +5,6 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import com.exa.android.letstalk.data.broadcast.MessageReceiver
-import com.exa.android.letstalk.data.local.room.ScheduledMessageRepository
 import javax.inject.Inject
 
 class CancelMessageUseCase @Inject constructor(

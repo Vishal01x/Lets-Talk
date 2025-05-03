@@ -24,7 +24,9 @@ import com.exa.android.letstalk.presentation.Main.components.CircularUserImage
 fun StoryItem(image: Int, name: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
 
-        CircularUserImage(imageId = R.drawable.chat_img3,
+
+        Image(painter = painterResource(R.drawable.chat_img3),
+            contentDescription = "",
             modifier = Modifier
             .size(58.dp)
             .clip(CircleShape))

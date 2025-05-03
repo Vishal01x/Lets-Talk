@@ -35,6 +35,8 @@ class MediaSharingViewModel @Inject constructor(
     var downloadFailed by mutableStateOf(false)
         private set
 
+    var showMediaPickerSheet by mutableStateOf(false)
+
 
     suspend fun uploadFileToCloudinary(context: Context, uri: Uri): Media? {
         return withContext(Dispatchers.IO) {

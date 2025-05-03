@@ -23,7 +23,7 @@ class MessageReceiver : BroadcastReceiver() {
                 .setInputData(workDataOf("SCHEDULED_TIME" to time))
                 .setConstraints(
                     Constraints.Builder()
-                       // .setRequiredNetworkType(NetworkType.CONNECTED) // Only run when online
+                        .setRequiredNetworkType(NetworkType.CONNECTED) // Only run when online
                         .build()
                 )
                 .build()

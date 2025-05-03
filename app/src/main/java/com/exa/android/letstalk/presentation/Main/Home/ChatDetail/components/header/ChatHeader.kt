@@ -22,12 +22,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.exa.android.letstalk.R
 import com.exa.android.letstalk.presentation.Main.Home.ChatDetail.components.header.DeleteMessageDialog
+import com.exa.android.letstalk.presentation.Main.components.CircularUserImage
 import com.exa.android.letstalk.utils.helperFun.formatTimestamp
 import com.exa.android.letstalk.utils.helperFun.getOtherUserName
 import com.exa.android.letstalk.utils.models.Chat
@@ -261,6 +263,9 @@ fun HeaderWithProfile(
     onVoiceCallClick: () -> Unit,
     onVideoCallClick: () -> Unit
 ) {
+
+    val context = LocalContext.current
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -280,15 +285,12 @@ fun HeaderWithProfile(
         Spacer(modifier = Modifier.width(4.dp))
 
         // Profile Picture
-        Image(
-            painter = painterResource(id = R.drawable.chat_img3),
-            contentDescription = "Profile Picture",
-            modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .border(1.dp, Color.Black, CircleShape),
-            contentScale = ContentScale.Crop
-        )
+        CircularUserImage(context,chat.profilePicture ?: "", Modifier
+            .size(40.dp)
+            .clip(CircleShape)
+            .border(1.dp, Color.Black, CircleShape)
+            .clickable { onProfileClick() })
+
 
         Spacer(modifier = Modifier.width(8.dp))
 

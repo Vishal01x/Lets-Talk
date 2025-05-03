@@ -16,31 +16,44 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.Divider
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.TextButton
+import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -67,14 +80,25 @@ import com.exa.android.letstalk.utils.helperFun.getOtherUserName
 import com.google.gson.Gson
 
 import kotlinx.coroutines.launch
+import java.net.URLEncoder
 
 @Composable
-fun HomeScreen(navController: NavController, viewModel: ChatViewModel, zegoViewModel : ZegoViewModel = hiltViewModel()) {
+fun HomeScreen(
+    navController: NavController,
+    viewModel: ChatViewModel,
+    zegoViewModel: ZegoViewModel = hiltViewModel()
+) {
     val context = LocalContext.current
     val curUser = viewModel.curUserId.collectAsState().value
+    val searchQuery by viewModel.searchQuery.collectAsState()
+    var isSearching by remember { mutableStateOf(false) }
 
-    BackHandler(true){
-        (context as? Activity)?.finish()
+    BackHandler(true) {
+        if(isSearching){
+            isSearching = false
+        }else {
+            (context as? Activity)?.finish()
+        }
     }
 
     LaunchedEffect(Unit) {
@@ -87,49 +111,127 @@ fun HomeScreen(navController: NavController, viewModel: ChatViewModel, zegoViewM
             )
         }
     }
+    Scaffold(
+        topBar = {
+            HeaderSection(
+                isSearching = isSearching,
+                searchQuery = searchQuery,
+                onQueryChange = { viewModel.searchQuery.value = it },
+                onBackClick = {
+                    isSearching = false
+                    viewModel.searchQuery.value = ""
+                },
+                onSearchClick = { isSearching = true },
+            )
+        },
+        floatingActionButton = {
+            if (curBottomSheetState.value == SheetState.HIDE) {
+                ExtendedFloatingActionButton(
+                    text = { Text("New") },
+                    icon = { Icon(Icons.Default.Add, contentDescription = "Add") },
+                    onClick = {
+                        switchSheetState()
+                    },
+                    shape = RoundedCornerShape(12.dp),
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                )
+            }
+        }
+    ) {
 
-    Box(modifier = Modifier.fillMaxSize()) {
-
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.White)
-                .padding(top = 2.dp)
+                .padding(it)
         ) {
-            HeaderSection(navController)
 
-            ChatsSection(navController, viewModel)
-        }
-        if (curBottomSheetState.value == SheetState.SHOW) {
-            BottomSheetSection(navController)
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background)
+                    .padding(top = 2.dp)
+            ) {
+
+                ChatsSection(navController, viewModel)
+            }
+            if (curBottomSheetState.value == SheetState.SHOW) {
+                BottomSheetSection(navController)
+            }
         }
     }
 }
 
 @Composable
-fun HeaderSection(navController: NavController) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(
-            text = "Let's Talk",
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
-            fontSize = 22.sp
-        )
-        Icon(
-            imageVector = Icons.Default.Search,
-            contentDescription = "Search",
-            tint = Color.Black,
+fun HeaderSection(
+    isSearching: Boolean,
+    searchQuery: String,
+    onQueryChange: (String) -> Unit,
+    onBackClick: () -> Unit,
+    onSearchClick: () -> Unit
+) {
+    if (isSearching) {
+        Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+            BasicTextField(
+                value = searchQuery,
+                onValueChange = onQueryChange,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surface.copy(.8f), CircleShape)
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                singleLine = true,
+                textStyle = MaterialTheme.typography.bodyLarge.copy(
+                    color = MaterialTheme.colorScheme.onSurface
+                ),
+                decorationBox = { innerTextField ->
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(onClick = onBackClick) {
+                            Icon(
+                                imageVector = Icons.Default.ArrowBack,
+                                contentDescription = "Back",
+                                tint = MaterialTheme.colorScheme.secondary
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        Box {
+                            if (searchQuery.isEmpty()) {
+                                Text(
+                                    text = "Search chats...",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            innerTextField()
+                        }
+                    }
+                }
+            )
+        }
+    } else {
+        Row(
             modifier = Modifier
-                .clickable { navController.navigate(HomeRoute.SearchScreen.route) }
-                .padding(8.dp)
-                .size(24.dp)
-        )
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = "Let's Talk",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                fontSize = 22.sp
+            )
+            Icon(
+                imageVector = Icons.Default.Search,
+                contentDescription = "Search",
+                tint = MaterialTheme.colorScheme.secondary,
+                modifier = Modifier
+                    .clickable { onSearchClick() }
+                    .padding(8.dp)
+                    .size(24.dp)
+            )
+        }
     }
 }
 
@@ -182,9 +284,10 @@ fun AddStoryItem() {
         )
     }
 }
+
 @Composable
 fun ChatsSection(navController: NavController, viewModel: ChatViewModel) {
-    val chatList by viewModel.chatList.collectAsState()
+    val chatList by viewModel.filteredChatList.collectAsState()
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -192,7 +295,7 @@ fun ChatsSection(navController: NavController, viewModel: ChatViewModel) {
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
 
-        item{
+        item {
             Spacer(modifier = Modifier.height(12.dp))
             StoriesSection()
             Spacer(modifier = Modifier.height(12.dp))
@@ -241,7 +344,7 @@ fun ChatsSection(navController: NavController, viewModel: ChatViewModel) {
                             openChat = { chatId ->
                                 setCurChat(chat)
                                 val chatJson = Gson().toJson(chat)
-                                val encodedChatJson = java.net.URLEncoder.encode(chatJson, "UTF-8")
+                                val encodedChatJson = URLEncoder.encode(chatJson, "UTF-8")
                                 navController.navigate(
                                     HomeRoute.ChatDetail.createRoute(
                                         encodedChatJson
@@ -309,7 +412,7 @@ fun BottomSheetSection(navController: NavController) {
         onNewChatClick = {
             navController.navigate(HomeRoute.AllUserScreen.createRoute(purpose = ScreenPurpose.NEW_CHAT))
             switchSheetState()
-                         },
+        },
         onNewContactClick = { /*TODO*/ },
         onNewGroupClick = {
             switchSheetState()

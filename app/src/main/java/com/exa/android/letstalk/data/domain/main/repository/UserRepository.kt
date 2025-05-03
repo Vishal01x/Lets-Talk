@@ -239,4 +239,35 @@ class UserRepository @Inject constructor(
         }
 
     }
+
+    fun getUserProfile(userId: String?): Flow<Response<User>> = callbackFlow {
+        trySend(Response.Loading)
+
+        val id: String = if (userId == null && currentUser != null) currentUser else userId ?: ""
+
+        val docRef = userCollection.document(id)
+
+        val listener = docRef.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                trySend(Response.Error(error.message ?: "Unknown Firestore error"))
+                return@addSnapshotListener
+            }
+
+//            val userDataWrapper = snapshot?.toObject(UserDateWrapper::class.java)
+//            val userData =
+//                userDataWrapper?.user ?: User() // Return empty ProfileData if missing
+
+
+            val userData = snapshot?.toObject(User::class.java) ?: User()
+
+            Log.d("FireStore Operation", " users - $userData")
+            trySend(Response.Success(userData))
+        }
+
+        awaitClose { listener.remove() }
+    }
+
+
+    data class UserDateWrapper(val user : User)
+
 }

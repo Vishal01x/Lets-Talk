@@ -144,6 +144,34 @@ fun generateChatName(chatId: String, curUserId: String, curUserName: String, oth
     }
 }
 
+fun getOtherProfilePic(profilePic: String, chatId: String, currentUser: String): String {
+    val users = profilePic.split("-").map { it.trim() }
+    val chats = chatId.split("-").map { it.trim() }
+    val trimmedCurrentUser = currentUser.trim()
+    Log.d("checkingName", "Users: $users, Chats: $chats, Current User: $trimmedCurrentUser")
+    return if (chats.size == 2 && users.size == 2 && chats.contains(trimmedCurrentUser)) {
+        if (chats[0] == trimmedCurrentUser) users[1] else users[0]
+    } else {
+        profilePic // Return same if no valid other user
+    }
+}
+
+fun generateProfilePic(chatId: String, curUserId: String, curUserProfile: String, otherUserProfile: String): String {
+    // Determine the position of the current user in the chat based on the chat ID
+    val chatUsers = chatId.split("-").map { it.trim() }
+
+    return if (chatUsers.size == 2) {
+        if (chatUsers[0] == curUserId) {
+            "$curUserProfile-$otherUserProfile"  // Current user on the left
+        } else {
+            "$otherUserProfile-$curUserProfile"  // Current user on the right
+        }
+    } else {
+        // Fallback if chat ID doesn't match expected structure
+        chatId
+    }
+}
+
 fun generateMessage(
     currentUser: String,
     chatId: String,

@@ -4,12 +4,14 @@ import com.google.firebase.Timestamp
 import java.util.UUID
 
 data class User(
-    val userId: String = "",
+    var userId: String = "",
     val name: String = "",
     val phone: String = "",
-    val profilePicture: String? = ""
+    var profilePicture: String? = "",
+    val about: String = "",
+    val birthDate: String = "",
+    val socialMedia: String = ""
 )
-
 
 data class Message(
     val messageId: String = UUID.randomUUID().toString(),
@@ -32,7 +34,7 @@ data class Media(
 data class Chat(
     var id: String = "",
     var name: String = "",
-    val profilePicture: String? = "",
+    var profilePicture: String? = "",
     val group : Boolean = false,
     val lastMessage: String = "",
     val lastMessageTimestamp: Timestamp = Timestamp.now(),

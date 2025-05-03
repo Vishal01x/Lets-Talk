@@ -17,25 +17,31 @@ import com.exa.android.letstalk.presentation.navigation.component.MainRoute
 import com.exa.android.letstalk.presentation.navigation.component.SheetState
 import com.exa.android.letstalk.AppManager.curBottomSheetState
 import com.exa.android.letstalk.AppManager.switchSheetState
+import com.exa.android.letstalk.presentation.navigation.component.ProfileRoute
+import com.exa.android.letstalk.presentation.navigation.component.ScheduledMessageRoute
 import com.exa.android.letstalk.utils.helperFun.permissionHandling
 
 @Composable
-fun AppNavigation(navController: NavHostController, isLoggedIn: Boolean, context : FragmentActivity) {
+fun AppNavigation(
+    navController: NavHostController,
+    isLoggedIn: Boolean,
+    context: FragmentActivity
+) {
     val currentDestination = navController.currentBackStackEntryAsState().value?.destination?.route
 
     LaunchedEffect(isLoggedIn) {
-        if(isLoggedIn){
+        if (isLoggedIn) {
             permissionHandling(context)
         }
     }
 
     Scaffold(
         bottomBar = {
-            if(currentDestination == HomeRoute.ChatList.route || currentDestination == MainRoute.Profile.route) {
-                if(curBottomSheetState.value == SheetState.HIDE) {
-                    CustomBottomNavigationBar(navController) {
-                        switchSheetState()
-                    }
+            if (currentDestination == HomeRoute.ChatList.route ||
+                currentDestination == ProfileRoute.CurProfileScreen.route ||
+                currentDestination == ScheduledMessageRoute.ScheduledMessageScreen.route) {
+                if (curBottomSheetState.value == SheetState.HIDE) {
+                    CustomBottomNavigationBar(navController)
                 }
             }
         }

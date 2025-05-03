@@ -7,8 +7,8 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.exa.android.letstalk.data.domain.main.repository.FirestoreService
 import com.exa.android.letstalk.data.local.room.ScheduledMessageEntity
-import com.exa.android.letstalk.data.local.room.ScheduledMessageRepository
 import com.exa.android.letstalk.data.local.room.toMessage
+import com.exa.android.letstalk.data.usecase.ScheduledMessageRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -23,6 +23,11 @@ class SendMessagesWorker@AssistedInject constructor(
 ) : CoroutineWorker(context, workerParams) {
 
 //
+
+    init{
+        Log.d("ScheduleMessage", "Sending message: init")
+    }
+
 //    @Inject
 //    lateinit var scheduledMessageRepository: ScheduledMessageRepository
 //    @Inject

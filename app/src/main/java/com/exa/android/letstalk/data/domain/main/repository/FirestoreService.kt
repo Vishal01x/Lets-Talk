@@ -12,6 +12,7 @@ import com.exa.android.letstalk.utils.models.Message
 import com.exa.android.letstalk.utils.models.User
 import com.exa.android.letstalk.utils.Response
 import com.exa.android.letstalk.utils.helperFun.generateMessage
+import com.exa.android.letstalk.utils.helperFun.getOtherProfilePic
 import com.exa.android.letstalk.utils.helperFun.getOtherUserName
 import com.exa.android.letstalk.utils.models.Call
 import com.google.firebase.Timestamp
@@ -93,17 +94,17 @@ class FirestoreService @Inject constructor(
 
         try {
             // Launch parallel tasks
-             val updateCurrentUserChat = async { updateUserChatList(currentUserId, chatId) }
-             val updateOtherUserChat = async { updateUserChatList(otherUserId, chatId) }
-             val updateParticipants =
-                 async { updateChatParticipants(chatId, listOf(currentUserId, otherUserId)) }
-             val updateChatDetails = async { updateChatDetail(chat) }
+            val updateCurrentUserChat = async { updateUserChatList(currentUserId, chatId) }
+            val updateOtherUserChat = async { updateUserChatList(otherUserId, chatId) }
+            val updateParticipants =
+                async { updateChatParticipants(chatId, listOf(currentUserId, otherUserId)) }
+            val updateChatDetails = async { updateChatDetail(chat) }
 
-             // Wait for all tasks to complete
-             updateCurrentUserChat.await()
-             updateOtherUserChat.await()
-             updateParticipants.await()
-             updateChatDetails.await()
+            // Wait for all tasks to complete
+            updateCurrentUserChat.await()
+            updateOtherUserChat.await()
+            updateParticipants.await()
+            updateChatDetails.await()
 
 //            updateUserChatList(currentUserId, chatId)
 //            updateUserChatList(otherUserId, chatId)
@@ -224,7 +225,8 @@ class FirestoreService @Inject constructor(
                         channelID = message.chatId,
                         senderName = user?.name.toString() ?: message.senderId,
                         senderId = message.senderId,
-                        messageContent = message.message,
+                        messageContent = if (message.message.isNullOrEmpty()) message.media?.mediaType?.name
+                            ?: "Media" else message.message,
                         imageUrl = imageUrl,
                         appContext = context
                     )
@@ -448,7 +450,7 @@ class FirestoreService @Inject constructor(
                                             val lastMessageCnt =
                                                 chatSnapshot?.getLong("lastMessageCnt") ?: 0
 
-                                            if(activeChatId == chatId) {
+                                            if (activeChatId == chatId) {
                                                 updateUserLastMessageCnt(
                                                     chatId,
                                                     currentUserId!!,
@@ -635,6 +637,16 @@ class FirestoreService @Inject constructor(
                                             getOtherUserName(chat.name, chat.id, currentUserId!!)
                                         } else {
                                             chat.name
+                                        }
+
+                                        chat.profilePicture = if (!chat.group) {
+                                            getOtherProfilePic(
+                                                chat.profilePicture ?: "",
+                                                chat.id,
+                                                currentUserId!!
+                                            )
+                                        } else {
+                                            chat.profilePicture
                                         }
                                         chatList.add(chat) // Ensures it's inside the if block
                                     }

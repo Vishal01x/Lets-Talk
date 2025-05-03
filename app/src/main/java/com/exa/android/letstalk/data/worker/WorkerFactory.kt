@@ -5,10 +5,10 @@ import androidx.work.ListenableWorker
 import androidx.work.WorkerFactory
 import androidx.work.WorkerParameters
 import com.exa.android.letstalk.data.domain.main.repository.FirestoreService
-import com.exa.android.letstalk.data.local.room.ScheduledMessageRepository
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/*
 @Singleton
 class MyWorkerFactory @Inject constructor(
     private val scheduledMessageRepository: ScheduledMessageRepository,
@@ -31,3 +31,4 @@ class MyWorkerFactory @Inject constructor(
         }
     }
 }
+*/

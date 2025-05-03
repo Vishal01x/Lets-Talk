@@ -3,29 +3,13 @@ package com.exa.android.letstalk.presentation.Main.Home.components
 import android.app.TimePickerDialog
 import android.content.Context
 import android.content.DialogInterface
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.AlertDialog
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.OutlinedButton
-import androidx.compose.material.Text
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableLongState
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
@@ -46,8 +31,7 @@ import com.maxkeppeler.sheets.calendar.models.CalendarTimeline
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.util.Calendar
-import java.util.Locale
+import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,14 +39,13 @@ fun MessageSchedulerDialog(
     onDismiss: () -> Unit,
     onConfirm: (Long, ScheduleType) -> Unit
 ) {
-
     val context = LocalContext.current
     val selectedDateTime = rememberSaveable { mutableLongStateOf(Calendar.getInstance().timeInMillis) }
-    val selectedOption = rememberSaveable { mutableStateOf(ScheduleType.ONCE) }
+    var selectedOption = rememberSaveable { mutableStateOf(ScheduleType.ONCE) }
 
     val formattedDateTime = remember {
         derivedStateOf {
-            DateTimeFormatter.ofPattern("dd/MM/yyyy hh:mm", Locale.getDefault())
+            DateTimeFormatter.ofPattern("dd/MM/yyyy hh:mm a", Locale.getDefault())
                 .format(Instant.ofEpochMilli(selectedDateTime.longValue).atZone(ZoneId.systemDefault()))
         }
     }
@@ -73,21 +56,39 @@ fun MessageSchedulerDialog(
     CalendarDialog(
         state = calendarState,
         config = CalendarConfig(
-            monthSelection = true,
-            disabledTimeline = CalendarTimeline.PAST
+            monthSelection = true
         ),
         selection = CalendarSelection.Date { date ->
-            selectedDateTime.longValue = date.toEpochDay() * 86400000
-            timePicker.show()
+            val selectedMillis = date.toEpochDay() * 86400000
+            val todayStartMillis = Calendar.getInstance().apply {
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }.timeInMillis
+
+            if (selectedMillis < todayStartMillis) {
+                Toast.makeText(context, "Past dates can't be selected", Toast.LENGTH_SHORT).show()
+            } else {
+                selectedDateTime.longValue = selectedMillis
+                timePicker.show()
+            }
         }
     )
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        backgroundColor = MaterialTheme.colors.background,
-        title = { Text("Schedule Message", color = Color.Black, style = MaterialTheme.typography.subtitle1,
-            fontWeight = FontWeight.Bold
-        ) },
+        title = {
+            Text(
+                "Schedule Message",
+                color = MaterialTheme.colorScheme.onSurface,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        containerColor = MaterialTheme.colorScheme.background,
+        textContentColor = MaterialTheme.colorScheme.onBackground,
+        iconContentColor = MaterialTheme.colorScheme.onBackground,
         text = {
             Column(
                 modifier = Modifier.fillMaxWidth(),
@@ -95,15 +96,24 @@ fun MessageSchedulerDialog(
             ) {
                 CustomButton("Set Time", onClick = { calendarState.show() }, isOutlined = false)
 
-                Text(text = "Selected: ${formattedDateTime.value}", fontSize = 14.sp, color = Color.Gray)
+                Text(
+                    text = "Selected: ${formattedDateTime.value}",
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
                 Spacer(modifier = Modifier.height(8.dp))
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center
                 ) {
-                        SelectableOption("ALWAYS", selectedOption.value) { selectedOption.value = ScheduleType.ALWAYS }
+                    SelectableOption("ALWAYS", selectedOption.value) {
+                        selectedOption.value = ScheduleType.ALWAYS
+                    }
                     Spacer(modifier = Modifier.width(8.dp))
-                    SelectableOption("ONCE", selectedOption.value) { selectedOption.value = ScheduleType.NONE }
+                    SelectableOption("ONCE", selectedOption.value) {
+                        selectedOption.value = ScheduleType.ONCE
+                    }
                 }
             }
         },
@@ -121,11 +131,11 @@ fun MessageSchedulerDialog(
 
 @Composable
 fun SelectableOption(text: String, selected: ScheduleType, onSelect: () -> Unit) {
-    val selectedType = ScheduleType.valueOf(text)
+    val isSelected = selected.name == text
     CustomButton(
         text = text,
         onClick = onSelect,
-        isOutlined = selected != selectedType,
+        isOutlined = !isSelected,
         shape = CircleShape
     )
 }
@@ -140,19 +150,24 @@ fun CustomButton(
     if (isOutlined) {
         OutlinedButton(
             onClick = onClick,
-            border = BorderStroke(1.dp, Color(0xFF007AFF)),
             shape = shape,
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black)
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
+            colors = ButtonDefaults.outlinedButtonColors(
+                contentColor = MaterialTheme.colorScheme.primary
+            )
         ) {
-            Text(text, color = Color.Black)
+            Text(text)
         }
     } else {
         Button(
             onClick = onClick,
-            colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF007AFF)),
-            shape = shape
+            shape = shape,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            )
         ) {
-            Text(text, color = Color.White)
+            Text(text)
         }
     }
 }
@@ -163,7 +178,7 @@ fun createTimePicker(context: Context, selectedDateTime: MutableLongState): Time
         context,
         { _, hour, minute ->
             val updatedCalendar = Calendar.getInstance().apply {
-                timeInMillis = selectedDateTime.value
+                timeInMillis = selectedDateTime.longValue
                 set(Calendar.HOUR_OF_DAY, hour)
                 set(Calendar.MINUTE, minute)
             }
@@ -174,20 +189,22 @@ fun createTimePicker(context: Context, selectedDateTime: MutableLongState): Time
         false
     ).apply {
         setOnShowListener {
-            val dialog = this as TimePickerDialog
-            val okColor = ContextCompat.getColor(context, R.color.blue)
-            val cancelColor = ContextCompat.getColor(context, R.color.blue)
+            val okColor = ContextCompat.getColor(context, R.color.yellow)
+            val cancelColor = ContextCompat.getColor(context, R.color.yellow)
 
-            dialog.getButton(DialogInterface.BUTTON_POSITIVE)?.setTextColor(okColor)  // OK Button
-            dialog.getButton(DialogInterface.BUTTON_NEGATIVE)?.setTextColor(cancelColor)
+            getButton(DialogInterface.BUTTON_POSITIVE)?.setTextColor(okColor)
+            getButton(DialogInterface.BUTTON_NEGATIVE)?.setTextColor(cancelColor)
         }
     }
 }
 
-//@Preview
-//@Composable
-//private fun preview() {
-//    MessageSchedulerDialog(
-//        onDismiss = TODO()
-//    ) { }
-//}
+@Preview(showBackground = true)
+@Composable
+fun MessageSchedulerDialogPreview() {
+    MaterialTheme {
+        MessageSchedulerDialog(
+            onDismiss = {},
+            onConfirm = { _, _ -> }
+        )
+    }
+}

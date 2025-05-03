@@ -5,12 +5,14 @@ sealed class AuthRoute(val route : String){
     data object Register : AuthRoute("register")
     data object ForgetPassword : AuthRoute("forget_password")
     data object Welcome : AuthRoute("welcome")
+    data object CreateUser : AuthRoute("create_user")
 }
 
 sealed class MainRoute(val route : String){
     data object Home : MainRoute("home")
-    data object Profile : MainRoute("status")
+    data object Profile : MainRoute("profile")
     data object Setting : MainRoute("setting")
+    data object ScheduledMessage : MainRoute("scheduled_message")
 }
 
 
@@ -35,8 +37,25 @@ sealed class HomeRoute(val route : String){
     }
 }
 
+sealed class ScheduledMessageRoute(val route: String){
+    data object ScheduledMessageScreen : ScheduledMessageRoute("scheduled_message_screen")
+}
+
+sealed class ProfileRoute(val route: String) {
+    data object OtherProfileScreen : ProfileRoute("profile/other_profile?userId={userId}") {
+        fun createRoute(userId: String? = null): String {
+            return "profile/other_profile?userId=$userId"
+        }
+    }
+
+    data object CurProfileScreen : ProfileRoute("profile/my_profile")
+}
+
+
+
+
 sealed class ChatInfo(val route : String){
-    data object ProfileScreen : ChatInfo("profile/{encodedUserJson}"){
+    data object ProfileScreen : ChatInfo("other_profile/{encodedUserJson}"){
         fun createRoute(encodedUserJson : String) : String = "profile/${encodedUserJson}"
     }
 
@@ -67,5 +86,21 @@ enum class ScreenPurpose{
     NEW_CHAT,
     NEW_GROUP,
     FORWARD_MESSAGES
+}
+
+sealed class ProfileType(val name: String) {
+    object MY_PROFILE : ProfileType("SELF")
+    object OTHER_PROFILE : ProfileType("OTHER")
+    object SIGNUP_PROFILE : ProfileType("SIGNUP")
+
+    companion object {
+        fun fromString(value: String?): ProfileType {
+            return when (value) {
+                MY_PROFILE.name -> MY_PROFILE
+                OTHER_PROFILE.name -> OTHER_PROFILE
+                else -> SIGNUP_PROFILE
+            }
+        }
+    }
 }
 

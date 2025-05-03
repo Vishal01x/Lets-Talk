@@ -1,5 +1,6 @@
 package com.exa.android.letstalk.presentation.auth.signUp
 
+import android.util.Log
 import android.util.Patterns
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -39,6 +40,9 @@ import com.exa.android.letstalk.presentation.auth.components.ShowLoader
 import com.exa.android.letstalk.presentation.auth.signIn.CircularIconButton
 import com.exa.android.letstalk.presentation.auth.signIn.TabButton
 import com.exa.android.letstalk.presentation.auth.viewmodels.AuthViewModel
+import com.exa.android.letstalk.presentation.navigation.component.AuthRoute
+import com.exa.android.letstalk.presentation.navigation.component.ProfileRoute
+import com.exa.android.letstalk.presentation.navigation.component.ProfileType
 import com.exa.android.letstalk.utils.Response
 import com.exa.android.letstalk.utils.showToast
 
@@ -56,11 +60,9 @@ fun RegisterScreen(navController: NavController) {
     LaunchedEffect(authStatus) {
         when (authStatus) {
             is Response.Success -> {
+                Log.d("LoginScreen", "navigate to profile")
                 isLoading = false
-                //showToast(context,"User Successfully Login")
-                navController.navigate("main_app") {
-                    popUpTo("auth") { inclusive = true }
-                }
+                navController.navigate(AuthRoute.CreateUser.route)
             }
 
             is Response.Error -> {
