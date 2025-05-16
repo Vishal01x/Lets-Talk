@@ -37,7 +37,6 @@ import com.exa.android.letstalk.data.domain.main.ViewModel.ChatViewModel
 import com.exa.android.letstalk.data.domain.main.ViewModel.MediaSharingViewModel
 import com.exa.android.letstalk.data.local.room.ScheduledMessageViewModel
 import com.exa.android.letstalk.data.domain.main.ViewModel.UserViewModel
-import com.exa.android.letstalk.data.domain.main.ViewModel.ZegoViewModel
 import com.exa.android.letstalk.presentation.Main.Home.ChatDetail.components.MessageList
 import com.exa.android.letstalk.presentation.Main.Home.ChatDetail.components.NewMessageSection
 import com.exa.android.letstalk.presentation.navigation.component.HomeRoute
@@ -69,7 +68,6 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
         hiltViewModel()  // ChatViewModel for communicating with FireStore Service
     val userViewModel: UserViewModel =
         hiltViewModel()   // UserViewModel for communicating with User Repository
-    val zegoViewModel: ZegoViewModel = hiltViewModel()
     val scheduleMessageViewModel: ScheduledMessageViewModel = hiltViewModel()
     val mediaSharingViewModel: MediaSharingViewModel = hiltViewModel()
 
@@ -109,7 +107,6 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
         chatViewModel.getMessages(chat.id)
         chatViewModel.fetchChatMembersDetails(chat.id)
         userViewModel.observeChatRoomStatus(chat.id, chat.group)
-        activeChatId = chat.id
     }
 
     when (val response = responseChatMessages) {
@@ -190,7 +187,7 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
                 },
                 onBackClick = { navController.popBackStack() },
                 onVoiceCallClick = { makeVoiceCall(chatViewModel, curUserId, chat, context) },
-                onVideoCallClick = { startVideoCall(zegoViewModel, members) },
+                onVideoCallClick = { /*startVideoCall(zegoViewModel, members)*/ },
                 onUnselectClick = { selectedMessages = emptySet() },
                 onCopyClick = {
                     copyMessages(selectedMessages, clipboardManager, coroutineScope)
@@ -299,10 +296,10 @@ private fun makeVoiceCall(
     )
 }
 
-private fun startVideoCall(zegoViewModel: ZegoViewModel, members: List<User>) {
-    val users = members.map { it.userId }
-    zegoViewModel.startCall(users, true)
-}
+//private fun startVideoCall(zegoViewModel: ZegoViewModel, members: List<User>) {
+//    val users = members.map { it.userId }
+//    zegoViewModel.startCall(users, true)
+//}
 
 private fun copyMessages(
     selectedMessages: Set<Message>,

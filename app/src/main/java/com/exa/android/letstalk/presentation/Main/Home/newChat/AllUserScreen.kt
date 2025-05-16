@@ -1,7 +1,6 @@
-package com.exa.android.letstalk.presentation.Main.Home
+package com.exa.android.letstalk.presentation.Main.Home.newChat
 
 import android.util.Log
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -24,15 +23,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.exa.android.letstalk.R
 import com.exa.android.letstalk.data.domain.main.ViewModel.ChatViewModel
 import com.exa.android.letstalk.data.domain.main.ViewModel.UserViewModel
 import com.exa.android.letstalk.presentation.Main.components.CircularUserImage
@@ -49,9 +45,11 @@ import java.net.URLEncoder
 fun AllUserScreen(
     navController: NavController,
     purpose: ScreenPurpose,
-    forwardMessages: List<String>
+    forwardMessages: List<String>,
+    newGroupViewModel : NewGroupViewModel
 ) {
     val chatViewModel : ChatViewModel = hiltViewModel()
+
     val curUserId  = chatViewModel.curUserId.collectAsState()
     when (purpose) {
         ScreenPurpose.NEW_CHAT -> {
@@ -69,23 +67,23 @@ fun AllUserScreen(
         }
 
         ScreenPurpose.NEW_GROUP -> {
-            var selectedUsers by remember { mutableStateOf(emptySet<User>()) }
+            val selectedUsers by newGroupViewModel.selectedUsers
             var createGroup by remember { mutableStateOf(false) }
             var loading by remember{ mutableStateOf(false) }
 
             LaunchedEffect(createGroup) {
                 if(createGroup) {
-                    val selectedUsersID = selectedUsers.map{it.userId}
-                    chatViewModel.createGroup("Just Chill", selectedUsersID) {chatId->
-                        val chat = Chat(id = chatId, name = "Just Chill", profilePicture = "", group = true)
-                        val chatJson = Gson().toJson(chat)
-                        val encodedChatJson = URLEncoder.encode(chatJson, "UTF-8")
-                        navController.navigate(HomeRoute.ChatDetail.createRoute(encodedChatJson)){
-                            popUpTo(HomeRoute.AllUserScreen.route){
-                                inclusive = true
-                            }
-                        }
-                    }
+//                    val selectedUsersID = selectedUsers.map{it.userId}
+//                    chatViewModel.createGroup("Just Chill", selectedUsersID) {chatId->
+//                        val chat = Chat(id = chatId, name = "Just Chill", profilePicture = "", group = true)
+//                        val chatJson = Gson().toJson(chat)
+//                        val encodedChatJson = URLEncoder.encode(chatJson, "UTF-8")
+//                        navController.navigate(HomeRoute.ChatDetail.createRoute(encodedChatJson)){
+//                            popUpTo(HomeRoute.AllUserScreen.route){
+//                                inclusive = true
+//                            }
+//                        }
+//                    }
                 }
             }
 
@@ -96,13 +94,14 @@ fun AllUserScreen(
 
             AllUserUi(navController = navController, selectedUsers = selectedUsers,
                 onForwardClick = {
+                    navController.navigate(HomeRoute.CreateGroup.route)
                     createGroup = true
                 }
             ) {user->
                 handleUserClick(
                     selectedUsers,
                     user
-                ) { updatedSet -> selectedUsers = updatedSet }
+                ) { updatedSet -> newGroupViewModel.updateSelectedUsers(updatedSet) }
             }
         }
 
@@ -178,16 +177,18 @@ fun AllUserUi(navController: NavController, selectedUsers: Set<User>? = null, on
         ) {
             items(allUsers) { user ->
                 user?.let {
-                    AllUsersListItem(
-                        user,
-                        isSelected = selectedUsers?.contains(user) ?: false,
-                        onUserClick = {
-                            onUserClick(user)
-                        },
-                        zoomImage = { imageId ->
-                            navController.navigate(HomeRoute.ZoomImage.createRoute(imageId))
-                        }
-                    )
+                    if(user.name.isNotBlank()) {
+                        AllUsersListItem(
+                            user,
+                            isSelected = selectedUsers?.contains(user) ?: false,
+                            onUserClick = {
+                                onUserClick(user)
+                            },
+                            zoomImage = { imageId ->
+                                navController.navigate(HomeRoute.ZoomImage.createRoute(imageId))
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -302,7 +303,7 @@ fun AllUsersListItem(
             .padding(horizontal = 4.dp, vertical = 8.dp)
     ) {
         Box {
-            CircularUserImage(context, user.profilePicture ?: "", Modifier
+            CircularUserImage(context, user.profilePicture ?: "", imageUri = null, Modifier
                 .size(48.dp)
                 .clip(CircleShape))
             if (isSelected) {

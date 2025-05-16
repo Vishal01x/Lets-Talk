@@ -48,7 +48,7 @@ fun ChatListItem(chat: Chat, zoomImage: (Int) -> Unit, openChat: (userId: String
     ) {
 
         CircularUserImage(
-            context, chat.profilePicture ?: "", Modifier
+            context, chat.profilePicture ?: "", null,Modifier
                 .size(48.dp)
                 .clip(CircleShape)
                 .clickable {

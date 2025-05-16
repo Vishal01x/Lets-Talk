@@ -2,8 +2,7 @@ package com.exa.android.letstalk.data.domain.main.repository
 
 import android.content.Context
 import android.util.Log
-import com.exa.android.letstalk.presentation.test.CloudinaryApi
-import com.google.firebase.firestore.FirebaseFirestore
+import com.exa.android.letstalk.data.domain.api.CloudinaryApi
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

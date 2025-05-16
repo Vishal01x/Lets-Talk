@@ -101,7 +101,7 @@ fun OtherProfileScreen(
         }
 
         // Profile Picture
-        CircularUserImage(context,user.profilePicture ?: "",Modifier.size(120.dp)
+        CircularUserImage(context,user.profilePicture ?: "",null,Modifier.size(120.dp)
             .align(Alignment.CenterHorizontally)
             .padding(top = 4.dp)
             .clip(CircleShape)

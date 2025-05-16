@@ -111,11 +111,11 @@ class ChatViewModel @Inject constructor(
         }
     }
 
-    fun createGroup(groupName : String, groupMembers : List<String>, onComplete : (String) -> Unit){
+    fun createGroup(groupName : String, profilePic: String?, groupMembers : List<String>, onComplete : (String, Exception?) -> Unit){
         viewModelScope.launch {
-            repo.createGroup(groupName,groupMembers){chatId->
+            repo.createGroup(groupName,groupMembers, profilePic ?: "example.com"){chatId, e->
                 Log.d("ChatRepo", "lambda retrived")
-                onComplete(chatId)
+                onComplete(chatId, e)
             }
         }
     }

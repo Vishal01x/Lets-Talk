@@ -285,7 +285,7 @@ fun HeaderWithProfile(
         Spacer(modifier = Modifier.width(4.dp))
 
         // Profile Picture
-        CircularUserImage(context,chat.profilePicture ?: "", Modifier
+        CircularUserImage(context,chat.profilePicture ?: "",null, Modifier
             .size(40.dp)
             .clip(CircleShape)
             .border(1.dp, Color.Black, CircleShape)

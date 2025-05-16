@@ -28,6 +28,7 @@ import com.exa.android.letstalk.presentation.auth.components.ShowLoader
 import com.exa.android.letstalk.utils.Response
 import com.exa.android.letstalk.utils.showToast
 
+/*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreenPrev(navController : NavController) {
@@ -217,3 +218,4 @@ fun RegisterScreenPrev(navController : NavController) {
         }
     }
 }
+*/

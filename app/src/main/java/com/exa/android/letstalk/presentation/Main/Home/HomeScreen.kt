@@ -70,7 +70,6 @@ import com.exa.android.letstalk.AppManager.curBottomSheetState
 import com.exa.android.letstalk.AppManager.setCurChat
 import com.exa.android.letstalk.AppManager.switchSheetState
 import com.exa.android.letstalk.R
-import com.exa.android.letstalk.data.domain.main.ViewModel.ZegoViewModel
 import com.exa.android.letstalk.presentation.Main.Home.components.ChatListItem
 import com.exa.android.letstalk.presentation.Main.Home.components.StoryItem
 import com.exa.android.letstalk.presentation.auth.components.ShowLoader
@@ -85,8 +84,7 @@ import java.net.URLEncoder
 @Composable
 fun HomeScreen(
     navController: NavController,
-    viewModel: ChatViewModel,
-    zegoViewModel: ZegoViewModel = hiltViewModel()
+    viewModel: ChatViewModel
 ) {
     val context = LocalContext.current
     val curUser = viewModel.curUserId.collectAsState().value
@@ -101,16 +99,6 @@ fun HomeScreen(
         }
     }
 
-    LaunchedEffect(Unit) {
-        curUser.let {
-            zegoViewModel.initZego(
-                appID = Constants.APP_ID,
-                appSign = Constants.APPSign,
-                userID = curUser,
-                userName = curUser
-            )
-        }
-    }
     Scaffold(
         topBar = {
             HeaderSection(

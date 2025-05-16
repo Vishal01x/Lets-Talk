@@ -40,6 +40,9 @@ android {
     buildFeatures {
         compose = true
     }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.4.3" // or newer
+    }
 
     packaging {
         resources {
@@ -122,17 +125,16 @@ dependencies {
     //coil
     implementation("io.coil-kt:coil-compose:2.4.0")
 
+    implementation(libs.glide)
+    implementation(libs.landscapist.glide)
+    kapt("com.github.bumptech.glide:compiler:4.16.0")
+
     // Signal Protocol for E2EE
     implementation("org.whispersystems:signal-protocol-android:2.8.1")
 
     implementation("androidx.compose.compiler:compiler:1.5.15")
     // for google credentials
     implementation("com.google.auth:google-auth-library-oauth2-http:1.19.0")
-
-    // for Zegocloud
-    //implementation("com.github.ZEGOCLOUD:zego_uikit_prebuilt_call_android:+")
-    implementation("com.guolindev.permissionx:permissionx:1.8.0")
-    implementation("com.github.ZEGOCLOUD:zego_uikit_prebuilt_call_android:3.9.2") // Latest Zego UI Ki
 
     implementation("com.maxkeppeler.sheets-compose-dialogs:core:1.0.2")
 
@@ -151,5 +153,7 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
     implementation("androidx.compose.material:material-icons-extended:1.7.8")
+
+    implementation("io.getstream:stream-video-android-ui-compose:1.6.1")
 
 }

@@ -35,6 +35,8 @@ sealed class HomeRoute(val route : String){
             }
         }
     }
+    data object CreateGroup : HomeRoute("create_group")
+    data object PermissionScreen : HomeRoute("permission")
 }
 
 sealed class ScheduledMessageRoute(val route: String){

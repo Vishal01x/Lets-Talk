@@ -5,7 +5,6 @@ import android.content.Context
 import android.net.Uri
 import android.os.Environment
 import android.util.Log
-import com.exa.android.letstalk.presentation.test.getFileExtensionFromUrl
 
 fun downloadMedia(context: Context, mediaUrl: String, fileName: String) {
     Log.d("Storage Cloudinary", "Starting download from $mediaUrl")

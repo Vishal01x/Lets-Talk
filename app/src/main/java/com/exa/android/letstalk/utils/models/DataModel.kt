@@ -15,11 +15,11 @@ data class User(
 
 data class Message(
     val messageId: String = UUID.randomUUID().toString(),
-    val chatId : String = "",
+    val chatId: String = "",
     val senderId: String = "",
     val receiverId: String = "",
     val message: String = "",
-    val media : Media? = null,
+    val media: Media? = null,
     val timestamp: Timestamp = Timestamp.now(),
     val status: String = "sent", // Status could be "sent", "delivered", or "read"
     val replyTo: Message? = null,
@@ -27,20 +27,27 @@ data class Message(
 )
 
 data class Media(
-    var mediaType : MediaType = MediaType.IMAGE,
-    var mediaUrl : String = "",
+    var mediaType: MediaType = MediaType.IMAGE,
+    var mediaUrl: String = "",
 )
 
 data class Chat(
     var id: String = "",
     var name: String = "",
     var profilePicture: String? = "",
-    val group : Boolean = false,
+    val group: Boolean = false,
     val lastMessage: String = "",
     val lastMessageTimestamp: Timestamp = Timestamp.now(),
-    val lastMessageCnt : Long = 0,
-    var unreadMessages : Long = 0
+    val lastMessageCnt: Long = 0,
+    var unreadMessages: Long = 0
 )
+
+data class PriorityMessage(
+    val message: Message = Message(),
+    val user: User = User(),
+    val media: Media? = null
+)
+
 
 data class Status(
     val isOnline: Boolean = false,

@@ -15,6 +15,8 @@ import com.exa.android.letstalk.utils.helperFun.generateMessage
 import com.exa.android.letstalk.utils.helperFun.getOtherProfilePic
 import com.exa.android.letstalk.utils.helperFun.getOtherUserName
 import com.exa.android.letstalk.utils.models.Call
+import com.exa.android.reflekt.loopit.util.ChatCryptoUtil
+import com.exa.android.reflekt.loopit.util.ChatCryptoUtil.encrypt
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.CollectionReference
@@ -126,60 +128,63 @@ class FirestoreService @Inject constructor(
     suspend fun createGroup(
         groupName: String,
         groupMembers: List<String>,
-        groupProfile: String = "example.com",
-        onComplete: (String) -> Unit
+        groupProfile: String? = "example.com",
+        onComplete: (String, Exception?) -> Unit
     ) {
         val chatId = generateChatId()
         val chatRef = chatCollection.document(chatId)
 
-        coroutineScope {
-            // Create chat detail
-            val updateChatDetailTask = async {
-                updateChatDetail(
-                    Chat(
-                        id = chatId,
-                        name = groupName,
-                        profilePicture = groupProfile,
-                        group = true
+        try {
+            coroutineScope {
+                // Create chat detail
+                val updateChatDetailTask = async {
+                    updateChatDetail(
+                        Chat(
+                            id = chatId,
+                            name = groupName,
+                            profilePicture = groupProfile,
+                            group = true
+                        )
                     )
+                }
+
+                val allGroupMembers = groupMembers + currentUserId
+                val aboutData = mapOf(
+                    "admin" to listOf(currentUserId),
+                    "groupMembers" to allGroupMembers
                 )
-            }
 
-            // Prepare all group members
-            val allGroupMembers = groupMembers + currentUserId
-            val aboutData = mapOf(
-                "admin" to listOf(currentUserId),
-                "groupMembers" to allGroupMembers
-            )
-
-            // Update each user's chat list in parallel
-            val updateUserChatTasks = allGroupMembers.map { member ->
-                async {
-                    if (member != null) {
-                        updateUserChatList(member, chatId)
+                val updateUserChatTasks = allGroupMembers.map { member ->
+                    async {
+                        if (member != null && member.isNotBlank()) {
+                            updateUserChatList(member, chatId)
+                        }
                     }
                 }
+
+                val updateAboutTask = async {
+                    chatRef.collection("about").document("info").set(aboutData).await()
+                }
+
+                // Await all async tasks
+                updateChatDetailTask.await()
+                updateUserChatTasks.awaitAll()
+                updateAboutTask.await()
+
+                // Subscribe to notifications after successful creation
+                subscribeForNotifications(chatId) {
+                    Log.d("FireStore Operation", "Subscribed to topic : $it")
+                }
+                // push notification to user
+                Log.d("FireStore Operation", "Group created successfully")
+                onComplete(chatId, null)
             }
-
-            // Save the 'about' section
-            val updateAboutTask = async {
-                chatRef.collection("about").document("info").set(aboutData).await()
-            }
-
-            // Wait for all Firestore operations to complete
-//            updateChatDetailTask.await()
-//            updateUserChatTasks.awaitAll()
-//            updateAboutTask.await()
-
-            // Subscribe to notifications after successful creation
-            subscribeForNotifications(chatId) {
-                Log.d("FireStore Operation", "Subscribed to topic : $it")
-            }
-
-            Log.d("FireStore Operation", "Successfully Group is Created")
-            onComplete(chatId) // Call onComplete when everything is done
+        } catch (e: Exception) {
+            Log.e("FireStore Operation", "Failed to create group", e)
+            onComplete(chatId, e)
         }
     }
+
 
 
     private suspend fun checkAndCreateChat(receiver: User) {
@@ -218,8 +223,10 @@ class FirestoreService @Inject constructor(
     ) {
         try {
             val messageRef = chatCollection.document(message.chatId).collection("messages")
+            val encryptedText = encrypt(message.message, message.chatId)
+            val newMessage = message.copy(message = encryptedText)
 
-            messageRef.document(message.messageId).set(message)
+            messageRef.document(message.messageId).set(newMessage)
                 .addOnSuccessListener {
                     postNotificationToUsers(
                         channelID = message.chatId,
@@ -439,11 +446,19 @@ class FirestoreService @Inject constructor(
                                     )
                                 ).isFailure
                             } else {
-                                val messages =
+                                val encryptedMessages =
                                     snapshot?.toObjects(Message::class.java) ?: emptyList()
 
+                                val decryptedMessages = encryptedMessages.mapNotNull { msg ->
+                                    try {
+                                        msg.copy(message = ChatCryptoUtil.decrypt(msg.message, chatId))
+                                    } catch (e: Exception) {
+                                        null // Ignore malformed/decryption errors
+                                    }
+                                }
+
                                 if (activeChatId == chatId) {
-                                    updateMessageStatusToSeen(chatId, messages)
+                                    updateMessageStatusToSeen(chatId, decryptedMessages)
                                     // try to optimise it
                                     chatCollection.document(chatId)
                                         .addSnapshotListener { chatSnapshot, chatException ->
@@ -460,7 +475,7 @@ class FirestoreService @Inject constructor(
                                         }
                                 }
 
-                                val result = trySend(Response.Success(messages))
+                                val result = trySend(Response.Success(decryptedMessages))
                                 if (result.isFailure) {
                                     // Log or handle the failure (optional)
                                     Log.e(

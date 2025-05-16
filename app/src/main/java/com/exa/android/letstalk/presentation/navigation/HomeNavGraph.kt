@@ -1,5 +1,7 @@
 package com.exa.android.letstalk.presentation.navigation
 
+import androidx.compose.compiler.plugins.kotlin.lower.changedParamCountFromTotal
+import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -8,7 +10,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import com.exa.android.letstalk.data.domain.main.ViewModel.ChatViewModel
-import com.exa.android.letstalk.presentation.Main.Home.AllUserScreen
+import com.exa.android.letstalk.presentation.Main.Home.newChat.AllUserScreen
 import com.exa.android.letstalk.presentation.Main.Home.ChatDetail.DetailChatScreen
 import com.exa.android.letstalk.presentation.Main.Home.ChatDetail.ProfileScreen
 import com.exa.android.letstalk.presentation.Main.Home.HomeScreen
@@ -18,7 +20,9 @@ import com.exa.android.letstalk.presentation.navigation.component.HomeRoute
 import com.exa.android.letstalk.presentation.navigation.component.ScreenPurpose
 import com.exa.android.letstalk.utils.models.Chat
 import com.exa.android.letstalk.R
+import com.exa.android.letstalk.presentation.Main.Home.newChat.CreateGroupScreenUI
 import com.exa.android.letstalk.presentation.Main.Home.components.ZoomPhoto
+import com.exa.android.letstalk.presentation.Main.Home.newChat.NewGroupViewModel
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.net.URLDecoder
@@ -69,6 +73,10 @@ fun NavGraphBuilder.homeNavGraph(navController: NavHostController) {
             ){backStackEntry ->
             val purposeString = backStackEntry.arguments?.getString("purpose") ?: ""
             val messageListJson = backStackEntry.arguments?.getString("messageListJson")
+
+            val parentEntry = remember { navController.getBackStackEntry("home") }
+            val groupViewModel: NewGroupViewModel = hiltViewModel(parentEntry)
+
             val gson = Gson()
             val messageList: List<String> = if(messageListJson != null) {
                 val text = object : TypeToken<List<String>>() {}.type
@@ -78,8 +86,30 @@ fun NavGraphBuilder.homeNavGraph(navController: NavHostController) {
             }
 
             val purpose = ScreenPurpose.valueOf(purposeString)
-            AllUserScreen(navController = navController, purpose = purpose, forwardMessages = messageList)
+            AllUserScreen(navController = navController, purpose = purpose, forwardMessages = messageList, groupViewModel)
         }
+
+        composable(HomeRoute.CreateGroup.route){
+            val parentEntry = remember { navController.getBackStackEntry("home") }
+            val groupViewModel: NewGroupViewModel = hiltViewModel(parentEntry)
+            CreateGroupScreenUI(
+                groupViewModel,
+                onBack = { navController.popBackStack() },
+                onGroupCreated = {encodedChatJson->
+                    navController.navigate(HomeRoute.ChatDetail.createRoute(encodedChatJson)){
+                        popUpTo(HomeRoute.AllUserScreen.route){
+                            inclusive = true
+                        }
+                    }
+
+                }
+            )
+        }
+
+        composable(HomeRoute.PermissionScreen.route) {
+
+        }
+
         chatInfoNavGraph(navController)
     }
 }
