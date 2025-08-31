@@ -1,4 +1,4 @@
-# Chat App with Priority Messaging and Scheduled Delivery
+# Let's Talk - A Corporate Talk Solution
 
 This is a feature-rich, user-centric messaging app that enables seamless communication between users, groups, and communities. With unique features like message prioritization, scheduled message delivery, real-time status updates, and robust message management, the app offers a comprehensive solution for modern messaging needs. Built using Kotlin, Jetpack Compose, and Firebase, the app ensures smooth, real-time communication and data synchronization, while also integrating advanced security measures for user privacy.
 
