@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.AccessTimeFilled
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.PriorityHigh
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
@@ -34,6 +35,92 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
+
+@Composable
+fun CustomBottomNavigationBar(
+    navController: NavController
+) {
+    val currentDestination = navController.currentBackStackEntryAsState().value?.destination?.route
+
+    val items = listOf(
+        BottomNavItem(
+            route = HomeRoute.ChatList.route,
+            icon = Icons.Filled.Home,
+            label = "Home"
+        ),
+        BottomNavItem(
+            route = PriorityMessageRoute.PriorityMessageScreen.route,
+            icon = Icons.Filled.PriorityHigh,
+            label = "Priority"
+        ),
+        BottomNavItem(
+            route = ScheduledMessageRoute.ScheduledMessageScreen.route,
+            icon = Icons.Filled.AccessTimeFilled,
+            label = "Scheduled"
+        ),
+        BottomNavItem(
+            route = ProfileRoute.CurProfileScreen.route,
+            icon = Icons.Filled.Person,
+            label = "Profile"
+        ),
+//        BottomNavItem(
+//            route = MainRoute.Setting.route,
+//            icon = Icons.Default.Settings,
+//            label = "Settings"
+//        )
+    )
+
+    NavigationBar(
+        tonalElevation = 4.dp,
+        containerColor = MaterialTheme.colorScheme.surface
+    ) {
+        items.forEach { item ->
+            val selected = currentDestination == item.route
+
+            NavigationBarItem(
+                selected = selected,
+                onClick = {
+                    if (!selected) {
+                        navController.navigate(item.route) {
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+                },
+                icon = {
+                    Icon(
+                        imageVector = item.icon,
+                        contentDescription = item.label,
+                        tint = if (selected)
+                            MaterialTheme.colorScheme.primary
+                        else
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                },
+                label = {
+                    Text(
+                        text = item.label,
+                        color = if (selected)
+                            MaterialTheme.colorScheme.primary
+                        else
+                            MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.labelMedium
+                    )
+                },
+                alwaysShowLabel = true,
+                colors = NavigationBarItemDefaults.colors(
+                    indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+                )
+            )
+        }
+    }
+}
+
+data class BottomNavItem(
+    val route: String,
+    val icon: ImageVector,
+    val label: String
+)
 
 /*@Composable
 fun BottomNavigationBar(navController: NavController) {
@@ -188,86 +275,3 @@ data class BottomNavItem(
     val route: String, val icon: ImageVector, val label: String, val onClick: () -> Unit
 )
 */
-
-
-@Composable
-fun CustomBottomNavigationBar(
-    navController: NavController
-) {
-    val currentDestination = navController.currentBackStackEntryAsState().value?.destination?.route
-
-    val items = listOf(
-        BottomNavItem(
-            route = HomeRoute.ChatList.route,
-            icon = Icons.Filled.Home,
-            label = "Home"
-        ),
-        BottomNavItem(
-            route = ScheduledMessageRoute.ScheduledMessageScreen.route,
-            icon = Icons.Filled.AccessTimeFilled,
-            label = "Scheduled"
-        ),
-        BottomNavItem(
-            route = ProfileRoute.CurProfileScreen.route,
-            icon = Icons.Filled.Person,
-            label = "Profile"
-        ),
-        BottomNavItem(
-            route = MainRoute.Setting.route,
-            icon = Icons.Default.Settings,
-            label = "Settings"
-        )
-    )
-
-    NavigationBar(
-        tonalElevation = 4.dp,
-        containerColor = MaterialTheme.colorScheme.surface
-    ) {
-        items.forEach { item ->
-            val selected = currentDestination == item.route
-
-            NavigationBarItem(
-                selected = selected,
-                onClick = {
-                    if (!selected) {
-                        navController.navigate(item.route) {
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    }
-                },
-                icon = {
-                    Icon(
-                        imageVector = item.icon,
-                        contentDescription = item.label,
-                        tint = if (selected)
-                            MaterialTheme.colorScheme.primary
-                        else
-                            MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                },
-                label = {
-                    Text(
-                        text = item.label,
-                        color = if (selected)
-                            MaterialTheme.colorScheme.primary
-                        else
-                            MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.labelMedium
-                    )
-                },
-                alwaysShowLabel = true,
-                colors = NavigationBarItemDefaults.colors(
-                    indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
-                )
-            )
-        }
-    }
-}
-
-data class BottomNavItem(
-    val route: String,
-    val icon: ImageVector,
-    val label: String
-)
-

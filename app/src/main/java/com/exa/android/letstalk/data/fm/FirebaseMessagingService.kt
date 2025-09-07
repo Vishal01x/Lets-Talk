@@ -1,6 +1,7 @@
 package com.exa.android.letstalk.data.fm
 
 import android.Manifest
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -119,6 +120,7 @@ class FirebaseMessageService : FirebaseMessagingService() {
             .setShortcutId(senderName ?: "chat")
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
+            .setDefaults(Notification.DEFAULT_ALL)
             .setContentIntent(pendingIntent)
 
         // ✅ Load image as large icon using Glide (optional)

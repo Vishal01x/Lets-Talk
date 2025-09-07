@@ -173,8 +173,6 @@ class ChatViewModel @Inject constructor(
         }
     }
 
-
-
     fun makeCall(call : Call, onSuccess : () -> Unit, onFailure : () -> Unit){
         viewModelScope.launch {
             repo.makeCall(call, onSuccess = onSuccess, onFailure = onFailure)

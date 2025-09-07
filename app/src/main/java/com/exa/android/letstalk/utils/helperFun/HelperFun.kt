@@ -182,7 +182,7 @@ fun generateMessage(
 ): Message =  Message(
     chatId = chatId,
     senderId = currentUser,
-    message = text,
+    message = cleanMessage(text),
     media = media,
     replyTo = replyTo,
     members = members.ifEmpty {
@@ -193,7 +193,10 @@ fun generateMessage(
     }
 )
 
+fun cleanMessage(message: String): String {
+    return message.replace("@urgent", "", ignoreCase = true).trim()
+}
+
 fun getUserIdFromChatId(chatId: String, currentUser: String): String {
     return chatId.split('-').filter { it != currentUser }.joinToString("")
 }
-

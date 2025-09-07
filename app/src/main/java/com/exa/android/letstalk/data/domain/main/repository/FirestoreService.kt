@@ -534,6 +534,7 @@ class FirestoreService @Inject constructor(
             }
 
             val members = snapshot?.get("groupMembers") as? List<String> ?: emptyList()
+            Log.d("GroupIssue", "members - $members")
             trySend(members)
         }
 
@@ -546,28 +547,33 @@ class FirestoreService @Inject constructor(
         val userDetails = mutableListOf<User>()
         var remainingUsers = userIds.size
 
-        for (userId in userIds) {
-            userCollection.document(userId).get()
-                .addOnSuccessListener { document ->
-                    val user = document.toObject<User>()?.copy(userId = userId)
+        Log.d("GroupIssue", "userIds - $userIds")
 
-                    //if (user != null && user.userId != currentUser) {
-                    if (user != null) {
-                        userDetails.add(user)
+        for (userId in userIds) {
+            //if(!userId.isNullOrEmpty()) {
+                userCollection.document(userId).get()
+                    .addOnSuccessListener { document ->
+                        val user = document.toObject<User>()?.copy(userId = userId)
+
+                        //if (user != null && user.userId != currentUser) {
+                        if (user != null) {
+                            userDetails.add(user)
+                        }
+                        remainingUsers--
+                        if (remainingUsers == 0) {
+                            trySend(Response.Success(userDetails))
+                            close()
+                        }
                     }
-                    remainingUsers--
-                    if (remainingUsers == 0) {
-                        trySend(Response.Success(userDetails))
-                        close()
+                    .addOnFailureListener { error ->
+                        trySend(Response.Error("Failed to fetch user details: ${error.message}"))
+                        close(error)
                     }
-                }
-                .addOnFailureListener { error ->
-                    trySend(Response.Error("Failed to fetch user details: ${error.message}"))
-                    close(error)
-                }
+            //}
         }
 
         awaitClose {}
+
     }
 
 
@@ -643,26 +649,13 @@ class FirestoreService @Inject constructor(
                                 }
 
                                 if (chatSnapshot != null) {
-                                    val chat = chatSnapshot.toObject(Chat::class.java)
+                                    var chat = chatSnapshot.toObject(Chat::class.java)
                                     // Replace or update the chat entry for this user
                                     chatList.removeIf { it.id == chatId }
-                                    if (chat != null) {
-                                        chat.unreadMessages = chat.lastMessageCnt - lastMessageCnt
-                                        chat.name = if (!chat.group) {
-                                            getOtherUserName(chat.name, chat.id, currentUserId!!)
-                                        } else {
-                                            chat.name
-                                        }
 
-                                        chat.profilePicture = if (!chat.group) {
-                                            getOtherProfilePic(
-                                                chat.profilePicture ?: "",
-                                                chat.id,
-                                                currentUserId!!
-                                            )
-                                        } else {
-                                            chat.profilePicture
-                                        }
+                                    if (chat != null) {
+                                        chat = correctChatNameAndImage(chat, lastMessageCnt)
+
                                         chatList.add(chat) // Ensures it's inside the if block
                                     }
 
@@ -683,6 +676,26 @@ class FirestoreService @Inject constructor(
             userDocumentListener.remove()
             chatListeners.forEach { it.remove() }
         }
+    }
+
+    private fun correctChatNameAndImage(chat: Chat, lastMessageCnt: Long = 0): Chat {
+        chat.unreadMessages = chat.lastMessageCnt - lastMessageCnt
+        chat.name = if (!chat.group) {
+            getOtherUserName(chat.name, chat.id, currentUserId!!)
+        } else {
+            chat.name
+        }
+
+        chat.profilePicture = if (!chat.group) {
+            getOtherProfilePic(
+                chat.profilePicture ?: "",
+                chat.id,
+                currentUserId!!
+            )
+        } else {
+            chat.profilePicture
+        }
+        return chat
     }
 
 

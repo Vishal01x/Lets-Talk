@@ -1,6 +1,6 @@
 package com.exa.android.letstalk
 
-/*
+
 import android.app.Activity
 import android.content.Context
 import android.net.ConnectivityManager
@@ -360,7 +360,7 @@ fun App(context : FragmentActivity) {
 //}
 
 
-
+/*
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -501,4 +501,4 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-}
+}*/

@@ -1,6 +1,7 @@
 package com.exa.android.letstalk.utils.models
 
 import com.google.firebase.Timestamp
+import java.util.Date
 import java.util.UUID
 
 data class User(
@@ -26,6 +27,16 @@ data class Message(
     val members: List<String?> = emptyList()
 )
 
+data class UserStatus(
+    val userId: String = "",
+    val content: String = "",
+    val mediaUrl: String = "",
+    val mediaType: String = "", // "TEXT", "IMAGE", "VIDEO", "LINK"
+    val startTime: Date = Date(),
+    val endTime: Date = Date(),
+    val statusId: String = UUID.randomUUID().toString()
+)
+
 data class Media(
     var mediaType: MediaType = MediaType.IMAGE,
     var mediaUrl: String = "",
@@ -44,7 +55,7 @@ data class Chat(
 
 data class PriorityMessage(
     val message: Message = Message(),
-    val user: User = User(),
+    //val chat: Chat = Chat(),
     val media: Media? = null
 )
 

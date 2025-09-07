@@ -17,6 +17,7 @@ import com.exa.android.letstalk.presentation.navigation.component.MainRoute
 import com.exa.android.letstalk.presentation.navigation.component.SheetState
 import com.exa.android.letstalk.AppManager.curBottomSheetState
 import com.exa.android.letstalk.AppManager.switchSheetState
+import com.exa.android.letstalk.presentation.navigation.component.PriorityMessageRoute
 import com.exa.android.letstalk.presentation.navigation.component.ProfileRoute
 import com.exa.android.letstalk.presentation.navigation.component.ScheduledMessageRoute
 import com.exa.android.letstalk.utils.helperFun.permissionHandling
@@ -39,7 +40,8 @@ fun AppNavigation(
         bottomBar = {
             if (currentDestination == HomeRoute.ChatList.route ||
                 currentDestination == ProfileRoute.CurProfileScreen.route ||
-                currentDestination == ScheduledMessageRoute.ScheduledMessageScreen.route) {
+                currentDestination == ScheduledMessageRoute.ScheduledMessageScreen.route ||
+                currentDestination == PriorityMessageRoute.PriorityMessageScreen.route) {
                 if (curBottomSheetState.value == SheetState.HIDE) {
                     CustomBottomNavigationBar(navController)
                 }

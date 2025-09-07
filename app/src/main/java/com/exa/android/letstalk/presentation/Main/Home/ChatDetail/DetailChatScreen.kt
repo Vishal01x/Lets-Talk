@@ -35,6 +35,7 @@ import com.exa.android.khacheri.screens.Main.Home.ChatDetail.ChatHeader
 import com.exa.android.letstalk.AppManager.switchSheetState
 import com.exa.android.letstalk.data.domain.main.ViewModel.ChatViewModel
 import com.exa.android.letstalk.data.domain.main.ViewModel.MediaSharingViewModel
+import com.exa.android.letstalk.data.domain.main.ViewModel.PriorityViewModel
 import com.exa.android.letstalk.data.local.room.ScheduledMessageViewModel
 import com.exa.android.letstalk.data.domain.main.ViewModel.UserViewModel
 import com.exa.android.letstalk.presentation.Main.Home.ChatDetail.components.MessageList
@@ -70,6 +71,7 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
         hiltViewModel()   // UserViewModel for communicating with User Repository
     val scheduleMessageViewModel: ScheduledMessageViewModel = hiltViewModel()
     val mediaSharingViewModel: MediaSharingViewModel = hiltViewModel()
+    val priorityViewModel: PriorityViewModel = hiltViewModel()
 
     val responseChatMessages by remember { chatViewModel.messages }.collectAsState() // all the chats of cur and other User
     val curUserId by chatViewModel.curUserId.collectAsState()  // cur User Id
@@ -85,6 +87,7 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
 
     var replyMessage by remember { mutableStateOf<Message?>(null) } // to track is message replied
     var selectedMessages by remember { mutableStateOf<Set<Message>>(emptySet()) } // to track the Id's of messages selected to operate HeaderWithOptions
+    val isPriority by priorityViewModel.isPriority.collectAsState()
     val focusRequester = remember { FocusRequester() } // to request focus of keyboard
     val focusManager = LocalFocusManager.current // handling focus like show or not show keyboard
     val clipboardManager = LocalClipboardManager.current
@@ -171,7 +174,7 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
                 sendMessage(
                     chatViewModel, scheduleMessageViewModel,
                     generateMessage(curUserId, chat.id, "", media, null, membersId),
-                    chat, chatMessages.value
+                    chat, chatMessages.value, context
                 )
             }
         }
@@ -220,12 +223,31 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
                 scheduleMessageViewModel,
                 focusRequester,
                 onTextMessageSend = { text, replyTo ->
-                    val membersId = members.map { it.userId }
-                    sendMessage(
-                        chatViewModel, scheduleMessageViewModel,
-                        generateMessage(curUserId, chat.id, text, null, replyTo, membersId),
-                        chat, chatMessages.value
-                    )
+                    coroutineScope.launch {
+                        val isPriorityE = text.contains("@Urgent", ignoreCase = true)
+                        val membersId = members.map { it.userId }
+                        val msg =
+                            generateMessage(curUserId, chat.id, text, null, replyTo, membersId)
+
+                        sendMessage(
+                            chatViewModel,
+                            scheduleMessageViewModel,
+                            msg,
+                            chat,
+                            chatMessages.value,
+                            context
+                        )
+
+                        if (isPriorityE) {
+                            priorityViewModel.sendPriority(
+                                getUserIdFromChatId(chat.id, curUserId),
+                                msg,
+                                chat
+                            )
+                            showToast(context, "Urgent Message Sent")
+                        }
+
+                    }
                 },
                 onAddClick = {
                     mediaSharingViewModel.showMediaPickerSheet = true
@@ -353,20 +375,23 @@ private fun sendMessage(
     scheduledMessageViewModel: ScheduledMessageViewModel,
     message: Message,
     chat: Chat,
-    chatMessages: List<Message>
+    chatMessages: List<Message>,
+    context: Context
 ) {
-
     if (chatMessages.isEmpty() && !chat.group) {
         chatViewModel.createChat(chat) {
             if (scheduledMessageViewModel.scheduleMessageType.value != ScheduleType.NONE) {
+                showToast(context, "Message is Scheduled for ${scheduledMessageViewModel.scheduleTime.value}")
                 scheduledMessageViewModel.scheduleMessage(
                     message,
                     scheduledMessageViewModel.scheduleTime.value,
                     chat.name,
                     chat.profilePicture ?: ""
                 )
+
                 if (scheduledMessageViewModel.scheduleMessageType.value == ScheduleType.ONCE)
                     scheduledMessageViewModel.updateScheduleMessageType(ScheduleType.NONE)
+
             } else {
                 chatViewModel.createChatAndSendMessage(
                     message, chat.profilePicture

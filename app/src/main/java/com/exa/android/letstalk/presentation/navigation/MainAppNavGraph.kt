@@ -1,22 +1,22 @@
 package com.exa.android.letstalk.presentation.navigation
 
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
-import com.exa.android.letstalk.data.domain.main.ViewModel.ChatViewModel
 import com.exa.android.letstalk.presentation.Main.StatusScreen
 import com.exa.android.letstalk.presentation.Main.profile.OtherProfileScreen
 import com.exa.android.letstalk.presentation.Main.profile.UserProfileScreen
 
 import com.exa.android.letstalk.presentation.Main.scheduledMessages.ScheduledMessagesScreen
 import com.exa.android.letstalk.presentation.navigation.component.MainRoute
+import com.exa.android.letstalk.presentation.navigation.component.PriorityMessageRoute
 import com.exa.android.letstalk.presentation.navigation.component.ProfileRoute
 import com.exa.android.letstalk.presentation.navigation.component.ProfileType
 import com.exa.android.letstalk.presentation.navigation.component.ScheduledMessageRoute
+import com.exa.android.letstalk.presentation.Main.priorityMessages.PriorityMessagingScreen
 
 fun NavGraphBuilder.mainAppNavGraph(navController: NavHostController) {
 
@@ -29,7 +29,20 @@ fun NavGraphBuilder.mainAppNavGraph(navController: NavHostController) {
             StatusScreen(navController)
         }
 
+        priorityNavGraph(navController)
+
         profileNavGraph(navController)
+    }
+}
+
+fun NavGraphBuilder.priorityNavGraph(navController: NavHostController) {
+    navigation(
+        startDestination = PriorityMessageRoute.PriorityMessageScreen.route,
+        route = MainRoute.PriorityMessage.route
+    ) {
+        composable( PriorityMessageRoute.PriorityMessageScreen.route) {
+            PriorityMessagingScreen(navController)
+        }
     }
 }
 

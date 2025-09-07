@@ -13,6 +13,7 @@ sealed class MainRoute(val route : String){
     data object Profile : MainRoute("profile")
     data object Setting : MainRoute("setting")
     data object ScheduledMessage : MainRoute("scheduled_message")
+    data object PriorityMessage : MainRoute("priority_message")
 }
 
 
@@ -41,6 +42,10 @@ sealed class HomeRoute(val route : String){
 
 sealed class ScheduledMessageRoute(val route: String){
     data object ScheduledMessageScreen : ScheduledMessageRoute("scheduled_message_screen")
+}
+
+sealed class PriorityMessageRoute(val route: String){
+    data object PriorityMessageScreen : PriorityMessageRoute("priority_message_screen")
 }
 
 sealed class ProfileRoute(val route: String) {
