@@ -7,6 +7,7 @@ This is a feature-rich, user-centric messaging app that enables seamless communi
 ### **Message Prioritization**
 - **Prioritize Messages**: Users can classify messages into categories such as **Urgent**, **Important**, and **Normal** to help ensure that the most important communications are highlighted.
 - **Prioritize People, Groups, and Communities**: Users can assign priority to specific users, groups, and communities. This guarantees that messages and notifications from high-priority sources always appear first, even when the app is active in the background or closed.
+- **How to use** - "@Urgent" is required to include in message for making the message urgent.
 
 ### **Scheduled Messaging**
 - **Pre-set Message Delivery**: Users can schedule messages to be sent at a specific time, allowing for advanced communication planning. For instance, you can set birthday wishes or reminders and the app will send them at the pre-scheduled time, eliminating the need to wait and manually send them.
