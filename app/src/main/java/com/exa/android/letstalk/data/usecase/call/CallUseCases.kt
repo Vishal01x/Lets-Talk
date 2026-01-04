@@ -62,7 +62,6 @@ class InitiateCallUseCase @Inject constructor(
             
             android.util.Log.d("WEBRTC_CALL", "✅ [CALLER] SDP offer created (${sdpOffer.length} chars)")
 
-            // Create call offer document
             val callOffer = CallOffer(
                 callId = callId,
                 callerId = callerId,

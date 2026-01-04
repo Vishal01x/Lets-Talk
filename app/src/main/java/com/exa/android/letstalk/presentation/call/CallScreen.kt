@@ -145,13 +145,13 @@ fun CallScreen(
  * This should be called from chat screen or contacts screen
  */
 @Composable
-fun InitiateCall(
-    callViewModel: CallViewModel = hiltViewModel(),
+private fun InitiateCall(
     currentUserId: String,
     receiverId: String,
     receiverName: String,
     receiverImage: String?,
-    callType: CallType
+    callType: CallType,
+    callViewModel: CallViewModel = hiltViewModel()
 ) {
     LaunchedEffect(Unit) {
         callViewModel.initiateCall(

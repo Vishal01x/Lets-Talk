@@ -14,6 +14,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -104,6 +105,22 @@ class UserViewModel @Inject constructor(private val userRepository: UserReposito
                 .collect { response ->
                     _userProfile.value = response
                 }
+        }
+    }
+
+    /**
+     * Fetch user by ID synchronously
+     * Used by CallViewModel to get caller info when receiving calls
+     */
+    suspend fun getUserById(userId: String): User? {
+        return try {
+            val response = userRepository.getUserProfile(userId).first()
+            when (response) {
+                is Response.Success -> response.data
+                else -> null
+            }
+        } catch (e: Exception) {
+            null
         }
     }
 

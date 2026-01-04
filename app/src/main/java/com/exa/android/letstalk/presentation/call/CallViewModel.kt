@@ -10,6 +10,7 @@ import com.exa.android.letstalk.data.domain.call.models.CallStatus
 import com.exa.android.letstalk.data.domain.call.models.CallType
 import com.exa.android.letstalk.data.usecase.call.*
 import com.exa.android.letstalk.utils.CallRingtoneManager
+import com.exa.android.letstalk.utils.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -32,7 +33,8 @@ class CallViewModel @Inject constructor(
     private val observeIncomingCallsUseCase: ObserveIncomingCallsUseCase,
     private val webRTCManager: CallWebRTCManager,
     private val signalingRepository: CallSignalingRepository,
-    private val ringtoneManager: CallRingtoneManager
+    private val ringtoneManager: CallRingtoneManager,
+    private val userRepository: com.exa.android.letstalk.data.domain.main.repository.UserRepository
 ) : ViewModel() {
 
     private val TAG = "WEBRTC_CALL"
@@ -65,38 +67,64 @@ class CallViewModel @Inject constructor(
     private var callAnswerJob: Job? = null
     private var durationTimerJob: Job? = null
 
-    // Track processed call IDs to prevent duplicates
-    private val processedCallIds = mutableSetOf<String>()
-
     /**
      * Start observing incoming calls for the current user
      */
     fun startObservingIncomingCalls(userId: String) {
-        incomingCallListenerJob?.cancel()
+        //incomingCallListenerJob?.cancel()
         Log.d(TAG, "👂 [RECEIVER] Starting to observe incoming calls for: $userId")
+        
+        // Store current user ID for later use (ICE candidates, etc.)
+        currentUserId = userId
 
         incomingCallListenerJob = viewModelScope.launch(Dispatchers.IO) {
             observeIncomingCallsUseCase(userId).collect { callOffer ->
-                // Prevent duplicate processing
-                if (processedCallIds.add(callOffer.callId)) {
-                    Log.d(TAG, "🆕 [RECEIVER] Processing NEW call: ${callOffer.callId}")
+                Log.d(TAG, "🆕 [RECEIVER] New call detected: ${callOffer.callId}")
 
-                    callId = callOffer.callId
+                callId = callOffer.callId
 
-                    // Start ringtone
-                    ringtoneManager.startRingtone()
+                // Start ringtone
+                ringtoneManager.startRingtone()
 
-                    // Update UI state
-                    _callState.value = CallState.IncomingCall(
-                        callId = callOffer.callId,
-                        callerId = callOffer.callerId,
-                        callerName = "User", // TODO: Fetch from user repository
-                        callerImage = null,
-                        callType = callOffer.callType
-                    )
-                } else {
-                    Log.w(TAG, "⏭️ [RECEIVER] Ignoring DUPLICATE call: ${callOffer.callId}")
+                // Fetch caller info from UserRepository
+                Log.d(TAG, "🔍 [RECEIVER] Attempting to fetch caller with ID: ${callOffer.callerId}")
+                
+                val callerUserResponse = try {
+                    // Wait for Success or Error response, skip Loading
+                    userRepository.getUserProfile(callOffer.callerId)
+                        .firstOrNull { it is Response.Success || it is Response.Error }
+                } catch (e: Exception) {
+                    Log.e(TAG, "❌ [RECEIVER] Exception fetching user: ${e.message}", e)
+                    null
                 }
+                
+                Log.d(TAG, "📦 [RECEIVER] Response type: ${callerUserResponse?.javaClass?.simpleName}")
+                
+                val callerUser = when (callerUserResponse) {
+                    is Response.Success -> {
+                        Log.d(TAG, "✅ [RECEIVER] Success! User: ${callerUserResponse.data?.name}")
+                        callerUserResponse.data
+                    }
+                    is Response.Error -> {
+                        Log.e(TAG, "❌ [RECEIVER] Error: ${callerUserResponse.message}")
+                        null
+                    }
+                    else -> {
+                        Log.w(TAG, "⚠️ [RECEIVER] Unknown response type or null")
+                        null
+                    }
+                }
+                
+                Log.d(TAG, "👤 [RECEIVER] Final caller: name=${callerUser?.name}, image=${callerUser?.profilePicture}")
+
+                // Update UI state with actual caller info
+                _callState.value = CallState.IncomingCall(
+                    callId = callOffer.callId,
+                    callerId = callOffer.callerId,
+                    callerName = callerUser?.name ?: "Unknown User",
+                    callerImage = callerUser?.profilePicture,
+                    callType = callOffer.callType
+                )
             }
         }
     }
@@ -188,8 +216,7 @@ class CallViewModel @Inject constructor(
         val currentCallId = callId ?: return
 
         viewModelScope.launch(Dispatchers.IO) {
-            // Stop ringtone
-            stopObservingIncomingCalls()
+            // Stop ringtone (but keep listener active for future calls)
             ringtoneManager.stopRingtone()
 
             val result = answerCallUseCase(currentCallId, localRenderer)
@@ -211,8 +238,12 @@ class CallViewModel @Inject constructor(
                 startCallDurationTimer()
 
                 // Start sending ICE candidates
-                // Note: We need to get current user ID - should be passed or injected
-                collectAndSendIceCandidates(currentUserId!!) // This should be receiverId actually
+                val userId = currentUserId
+                if (userId != null) {
+                    collectAndSendIceCandidates(userId)
+                } else {
+                    Log.e(TAG, "⚠️ Cannot send ICE candidates: currentUserId is null")
+                }
 
                 Log.d(TAG, "Call answered: $currentCallId")
             }.onFailure { error ->
@@ -306,7 +337,7 @@ class CallViewModel @Inject constructor(
         receiverImage: String?,
         callType: CallType
     ) {
-        callAnswerJob?.cancel()
+        //callAnswerJob?.cancel()
 
         callAnswerJob = viewModelScope.launch(Dispatchers.IO) {
             signalingRepository.observeCallAnswer(callId).collect { answer ->
@@ -395,6 +426,7 @@ class CallViewModel @Inject constructor(
         ringtoneManager.stopRingtone()
         iceCandidateJob?.cancel()
         callAnswerJob?.cancel()
+        // DON'T cancel incomingCallListenerJob - keep it active for future calls!
         callId = null
     }
 

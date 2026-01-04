@@ -83,7 +83,7 @@ fun NavGraphBuilder.mainAppNavGraph(navController: NavHostController) {
                         receiverName = receiverName,
                         receiverImage = receiverImage,
                         callType = if (callTypeStr == "VIDEO") CallType.VIDEO else CallType.VOICE,
-                        localRenderer = null // TODO: Pass actual renderer
+                        localRenderer = null // TODO: Create and pass renderer
                     )
                 }
             } else {
