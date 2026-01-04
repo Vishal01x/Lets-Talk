@@ -156,4 +156,7 @@ dependencies {
 
     implementation("io.getstream:stream-video-android-ui-compose:1.6.1")
 
+    // WebRTC for voice and video calling
+    implementation("io.getstream:stream-webrtc-android:1.1.3")
+
 }

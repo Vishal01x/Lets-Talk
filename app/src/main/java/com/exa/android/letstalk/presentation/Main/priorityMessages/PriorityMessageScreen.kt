@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -125,76 +126,95 @@ fun PriorityMessagingScreen(
         backgroundColor = Color(0xFFF6F6F6)
     ) { padding ->
         Box(modifier = Modifier.padding(padding)) {
-            Column(modifier = Modifier.fillMaxSize()) {
-                LazyColumn(modifier = Modifier.weight(1f)) {
-                    items(priorityMessage) { message ->
-                        // Load chat detail for each message safely
-                        val otherUserChat by produceState<Chat?>(initialValue = null, key1 = message.message.chatId) {
-                            value = priorityViewModel.getChatDetail(message.message.chatId)
+
+            if(priorityMessage.isEmpty()){
+                Box(
+                    modifier = Modifier
+                        .padding(padding)
+                        .fillMaxSize(), // take full screen
+                    contentAlignment = Alignment.Center // center children
+                ) {
+                    Image(
+                        painter = painterResource(R.drawable.no_data),
+                        contentDescription = "No Data",
+                        modifier = Modifier.height(500.dp)
+                    )
+                }
+            }else {
+                Column(modifier = Modifier.fillMaxSize()) {
+                    LazyColumn(modifier = Modifier.weight(1f)) {
+                        items(priorityMessage) { message ->
+                            // Load chat detail for each message safely
+                            val otherUserChat by produceState<Chat?>(
+                                initialValue = null,
+                                key1 = message.message.chatId
+                            ) {
+                                value = priorityViewModel.getChatDetail(message.message.chatId)
+                            }
+
+                            PriorityMessageCard(
+                                data = message,
+                                otherChat = otherUserChat ?: Chat(),
+                                onReplyClick = {
+
+                                    val chatJson = Gson().toJson(otherUserChat)
+                                    val encodedChatJson = URLEncoder.encode(chatJson, "UTF-8")
+                                    navController.navigate(
+                                        HomeRoute.ChatDetail.createRoute(
+                                            encodedChatJson
+                                        )
+                                    )
+                                    curMessage = message
+
+                                },
+                                modifier = Modifier.animateContentSize()
+                            )
                         }
+                    }
 
-                        PriorityMessageCard(
-                            data = message,
-                            otherChat = otherUserChat ?: Chat(),
-                            onReplyClick = {
-
-                                val chatJson = Gson().toJson(otherUserChat)
-                                val encodedChatJson = URLEncoder.encode(chatJson, "UTF-8")
-                                navController.navigate(
-                                    HomeRoute.ChatDetail.createRoute(
-                                        encodedChatJson
+                    AnimatedVisibility(visible = showReplyBox) {
+                        Card(
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp, vertical = 8.dp)
+                                .fillMaxWidth(),
+                            shape = RoundedCornerShape(16.dp),
+                            elevation = CardDefaults.cardElevation(4.dp),
+                            colors = CardDefaults.cardColors(Color.White)
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .padding(12.dp)
+                                    .background(Color.White),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                TextField(
+                                    value = replyText,
+                                    onValueChange = { replyText = it },
+                                    placeholder = { Text("Type your reply...") },
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .padding(end = 8.dp),
+                                    shape = RoundedCornerShape(12.dp),
+                                    colors = TextFieldDefaults.textFieldColors(
+                                        backgroundColor = Color(0xFFF0F0F0),
+                                        focusedIndicatorColor = Color.Transparent,
+                                        unfocusedIndicatorColor = Color.Transparent
                                     )
                                 )
-                                curMessage = message
 
-                            },
-                            modifier = Modifier.animateContentSize()
-                        )
-                    }
-                }
-
-                AnimatedVisibility(visible = showReplyBox) {
-                    Card(
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp, vertical = 8.dp)
-                            .fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp),
-                        elevation = CardDefaults.cardElevation(4.dp),
-                        colors = CardDefaults.cardColors(Color.White)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .padding(12.dp)
-                                .background(Color.White),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            TextField(
-                                value = replyText,
-                                onValueChange = { replyText = it },
-                                placeholder = { Text("Type your reply...") },
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .padding(end = 8.dp),
-                                shape = RoundedCornerShape(12.dp),
-                                colors = TextFieldDefaults.textFieldColors(
-                                    backgroundColor = Color(0xFFF0F0F0),
-                                    focusedIndicatorColor = Color.Transparent,
-                                    unfocusedIndicatorColor = Color.Transparent
-                                )
-                            )
-
-                            IconButton(onClick = {
-                                coroutineScope.launch {
-                                    scaffoldState.snackbarHostState.showSnackbar("Reply sent")
+                                IconButton(onClick = {
+                                    coroutineScope.launch {
+                                        scaffoldState.snackbarHostState.showSnackbar("Reply sent")
+                                    }
+                                    replyText = ""
+                                    showReplyBox = false
+                                }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Send,
+                                        contentDescription = "Send",
+                                        tint = Color(0xFF0D1B2A)
+                                    )
                                 }
-                                replyText = ""
-                                showReplyBox = false
-                            }) {
-                                Icon(
-                                    imageVector = Icons.Default.Send,
-                                    contentDescription = "Send",
-                                    tint = Color(0xFF0D1B2A)
-                                )
                             }
                         }
                     }

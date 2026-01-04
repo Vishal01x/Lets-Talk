@@ -2,6 +2,7 @@ package com.exa.android.letstalk.presentation.Main.scheduledMessages
 
 // Jetpack Compose core
 import android.app.TimePickerDialog
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -162,21 +163,35 @@ fun ScheduledMessagesScreen(
     Scaffold(
         topBar = { MessagesHeader() }
     ) { padding ->
-
-        LazyColumn(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background.copy(alpha = 0.1f))
-        ) {
-            items(messages) { item ->
-                when (item) {
-                    is MessageListItem.DateHeader -> DateSeparator(item.date)
-                    is MessageListItem.MessageItem -> MessageCard(
-                        message = item.message,
-                        onDelete = { viewModel.deleteMessage(it) },
-                        onEdit = { selectedMessage = it }
-                    )
+        if (messages.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .padding(padding)
+                    .fillMaxSize(), // take full screen
+                contentAlignment = Alignment.Center // center children
+            ) {
+                Image(
+                    painter = painterResource(R.drawable.no_data),
+                    contentDescription = "No Data",
+                    modifier = Modifier.height(500.dp)
+                )
+            }
+        }else {
+            LazyColumn(
+                modifier = Modifier
+                    .padding(padding)
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background.copy(alpha = 0.1f))
+            ) {
+                items(messages) { item ->
+                    when (item) {
+                        is MessageListItem.DateHeader -> DateSeparator(item.date)
+                        is MessageListItem.MessageItem -> MessageCard(
+                            message = item.message,
+                            onDelete = { viewModel.deleteMessage(it) },
+                            onEdit = { selectedMessage = it }
+                        )
+                    }
                 }
             }
         }

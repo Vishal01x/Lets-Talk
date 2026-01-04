@@ -259,7 +259,7 @@ fun AddStoryItem() {
         ) {
             Icon(
                 imageVector = Icons.Default.Add,
-                contentDescription = "Add Story",
+                contentDescription = "Add Status",
                 tint = Color.Black,
                 modifier = Modifier.size(24.dp)
             )
@@ -317,7 +317,7 @@ fun ChatsSection(navController: NavController, viewModel: ChatViewModel) {
                                 style = MaterialTheme.typography.labelMedium
                             )
                             Spacer(modifier = Modifier.height(16.dp))
-                            Button(onClick = { navController.navigate(HomeRoute.SearchScreen.route) }) {
+                            Button(onClick = { navController.navigate(HomeRoute.AllUserScreen.createRoute(purpose = ScreenPurpose.NEW_CHAT)) }) {
                                 Text(text = "New Chat")
                             }
                         }

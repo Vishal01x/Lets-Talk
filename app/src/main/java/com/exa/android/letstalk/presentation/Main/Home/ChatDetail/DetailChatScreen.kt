@@ -1,6 +1,7 @@
 package com.exa.android.letstalk.presentation.Main.Home.ChatDetail
 
 import android.content.Context
+import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -185,12 +186,47 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
             ChatHeader(
                 chat, chatRoomStatus, curUserId, members, selectedMessages,
                 onProfileClick = {
-                    val otherUserId = getUserIdFromChatId(chat.id, curUserId)
-                    navController.navigate(ProfileRoute.OtherProfileScreen.createRoute(otherUserId))
+                    if(!chat.group) {
+                        val otherUserId = getUserIdFromChatId(chat.id, curUserId)
+                        navController.navigate(
+                            ProfileRoute.OtherProfileScreen.createRoute(
+                                otherUserId
+                            )
+                        )
+                    }
                 },
                 onBackClick = { navController.popBackStack() },
-                onVoiceCallClick = { makeVoiceCall(chatViewModel, curUserId, chat, context) },
-                onVideoCallClick = { /*startVideoCall(zegoViewModel, members)*/ },
+                onVoiceCallClick = {
+                    if (!chat.group) {
+                        val receiverId = getUserIdFromChatId(chat.id, curUserId)
+                        // Navigate to call screen with voice call intent
+                        navController.navigate(
+                            "call/${Uri.encode(receiverId)}" +
+                                    "?name=${Uri.encode(chat.name)}" +
+                                    "&image=${Uri.encode(chat.profilePicture ?: "")}" +
+                                    "&type=VOICE" +
+                                    "&callerId=${Uri.encode(curUserId)}" +
+                                    "&isOutgoing=true"
+                        )
+                    } else {
+                        showToast(context, "Group calls not supported yet")
+                    }
+                },
+                onVideoCallClick = {
+                    if (!chat.group) {
+                        val receiverId = getUserIdFromChatId(chat.id, curUserId)
+                        // Navigate to call screen with video call intent
+                        navController.navigate(
+                            "call/${Uri.encode(receiverId)}" +
+                                    "?name=${Uri.encode(chat.name)}" +
+                                    "&image=${Uri.encode(chat.profilePicture ?: "")}" +
+                                    "&type=VIDEO" +
+                                    "&callerId=${Uri.encode(curUserId)}" +
+                                    "&isOutgoing=true")
+                    } else {
+                        showToast(context, "Group calls not supported yet")
+                    }
+                },
                 onUnselectClick = { selectedMessages = emptySet() },
                 onCopyClick = {
                     copyMessages(selectedMessages, clipboardManager, coroutineScope)
@@ -297,25 +333,7 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
 }
 
 private fun navigateToProfile(navController: NavController, chat: Chat) {
-    val chatJson = Gson().toJson(chat)
-    // navController.navigate(ChatInfo.ProfileScreen.createRoute(chatJson))
-}
-
-private fun makeVoiceCall(
-    viewModel: ChatViewModel,
-    curUserId: String,
-    chat: Chat,
-    context: Context
-) {
-    val call = Call(
-        callerId = curUserId,
-        receiverId = getUserIdFromChatId(chat.id, curUserId),
-        isVideoCall = CallType.VOICE
-    )
-    viewModel.makeCall(call,
-        onSuccess = { showToast(context, "Wait for recipient response") },
-        onFailure = { showToast(context, "Recipient is on another call, try again later") }
-    )
+    // Navigation to profile - implementation removed as it's commented out
 }
 
 //private fun startVideoCall(zegoViewModel: ZegoViewModel, members: List<User>) {

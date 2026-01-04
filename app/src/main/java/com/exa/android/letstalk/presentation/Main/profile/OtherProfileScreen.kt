@@ -236,7 +236,7 @@ fun OtherProfileScreen(
         // Story List
         if (true) {
             LazyRow(contentPadding = PaddingValues(end = 8.dp)) {
-                items(3) { index ->
+                items(1) { index ->
                     Box(
                         modifier = Modifier
                             .width(120.dp)
@@ -246,8 +246,8 @@ fun OtherProfileScreen(
                             model = ImageRequest.Builder(context)
                                 .data("https://your-image-url.com/$index") // dynamic image
                                 .crossfade(true)
-                                .placeholder(R.drawable.ic_launcher_foreground)
-                                .error(R.drawable.ic_launcher_foreground)
+                                .placeholder(R.drawable.status_img)
+                                .error(R.drawable.status_img)
                                 .build(),
                             contentDescription = "Story Image",
                             contentScale = ContentScale.Crop,

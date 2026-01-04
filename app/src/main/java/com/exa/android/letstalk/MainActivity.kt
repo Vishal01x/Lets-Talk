@@ -1,50 +1,44 @@
 package com.exa.android.letstalk
 
-
 import android.app.Activity
+import android.app.NotificationManager
 import android.content.Context
 import android.net.ConnectivityManager
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.material.Surface
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.fragment.app.FragmentActivity
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.ViewModel
-import androidx.navigation.NavController
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.exa.android.letstalk.data.domain.call.models.CallState
 import com.exa.android.letstalk.data.domain.main.ViewModel.UserViewModel
-import com.exa.android.letstalk.presentation.Main.profile.OtherProfileScreen
+import com.exa.android.letstalk.presentation.call.CallViewModel
 import com.exa.android.letstalk.presentation.navigation.AppNavigation
-import com.exa.android.letstalk.presentation.navigation.component.AuthRoute
-import com.exa.android.letstalk.presentation.navigation.component.HomeRoute
-import com.exa.android.letstalk.presentation.navigation.component.MainRoute
 import com.exa.android.letstalk.ui.theme.LetsTalkTheme
 import com.exa.android.letstalk.utils.MyLifecycleObserver
 import com.exa.android.letstalk.utils.NetworkCallbackReceiver
 import com.exa.android.letstalk.utils.clearAllNotifications
-import com.exa.android.letstalk.utils.helperFun.permissionHandling
-import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
+import java.net.URLEncoder
 
 
 @AndroidEntryPoint
 class MainActivity : FragmentActivity() {
 
     val userViewModel: UserViewModel by viewModels()
+    private val callViewModel: CallViewModel by viewModels()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+    override fun onCreate(savedInstanceState: android.os.Bundle?) {
         super.onCreate(savedInstanceState)
         //enableEdgeToEdge()
 
@@ -53,6 +47,9 @@ class MainActivity : FragmentActivity() {
         curUser.value?.let {
             val lifecycleObserver = MyLifecycleObserver(userViewModel, it)
             lifecycle.addObserver(lifecycleObserver)
+            
+            // Start observing incoming calls
+            callViewModel.startObservingIncomingCalls(it)
         }
         setContent {
             LetsTalkTheme(dynamicColor = false) {
@@ -92,19 +89,48 @@ fun UpdateStatus(context: Context) {
 }
 
 @Composable
-fun App(context : FragmentActivity) {
+fun App(context: FragmentActivity) {
 
+    val userViewModel: UserViewModel = hiltViewModel()
+    val callViewModel: CallViewModel = hiltViewModel()
 
-//    val viewModel: AuthViewModel = hiltViewModel()
-//    val isLoggedIn = viewModel.authStatus.collectAsState().equals(true)
-
-    val viewModel: UserViewModel = hiltViewModel()
-    val isLoggedIn by viewModel.curUserId.collectAsState()
-    Log.d("isLoggedIn", isLoggedIn.toString())
+    val isLoggedIn by userViewModel.curUserId.collectAsState()
     val navController = rememberNavController()
-    //OnBackPressed(navController = navController) // handle on back pressed like finish activity on Home
-    // and back pressed else get back to home from other screen
-    AppNavigation(navController, isLoggedIn != null, context) // initiate navigation
+    
+    // Track last navigated call to prevent duplicate navigation
+    var lastNavigatedCallId by remember { mutableStateOf<String?>(null) }
+    
+    val callState by callViewModel.callState.collectAsState()
+    LaunchedEffect(callState) {
+        Log.d("WEBRTC_CALL", "📱 [RECEIVER] State changed: $callState")
+        
+        if (callState is CallState.IncomingCall) {
+            val incomingCall = callState as CallState.IncomingCall
+            
+            // Prevent duplicate navigation for same call
+            if (lastNavigatedCallId != incomingCall.callId) {
+                lastNavigatedCallId = incomingCall.callId
+                Log.d("WEBRTC_CALL", "🔀 [RECEIVER] Navigating to call screen for: ${incomingCall.callId}")
+                
+                navController.navigate(
+                    "call/${Uri.encode(incomingCall.callerId)}" +
+                            "?name=${Uri.encode(incomingCall.callerName)}" +
+                            "&image=" +
+                            "&type=${incomingCall.callType.name}" +
+                            "&callerId=${Uri.encode(isLoggedIn.orEmpty())}" +
+                            "&isOutgoing=false"  // CRITICAL: Don't initiate new call for receiver!
+                )
+            } else {
+                Log.d("WEBRTC_CALL", "⏭️ [RECEIVER] Skip duplicate navigation for: ${incomingCall.callId}")
+            }
+        }
+    }
+
+    AppNavigation(
+        navController = navController,
+        isLoggedIn = isLoggedIn != null,
+        context = context
+    )
 
 }
 
