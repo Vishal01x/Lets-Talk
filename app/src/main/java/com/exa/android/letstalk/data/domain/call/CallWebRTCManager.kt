@@ -18,16 +18,24 @@ class CallWebRTCManager(
     private val context: Context
 ) {
     private val TAG = "WEBRTC_CALL"
-    
+
+    // EglBase for renderer initialization
+    private val eglBase: EglBase by lazy { EglBase.create() }
+    val eglBaseContext: EglBase.Context
+        get() = eglBase.eglBaseContext
+
     private var peerConnectionFactory: PeerConnectionFactory? = null
     private var peerConnection: PeerConnection? = null
     private var localVideoTrack: VideoTrack? = null
     private var localAudioTrack: AudioTrack? = null
     private var videoCapturer: CameraVideoCapturer? = null
-    
+
+    // Callback for remote video stream
+    private var onRemoteStreamCallback: ((MediaStream) -> Unit)? = null
+
     private val _iceCandidateFlow = MutableSharedFlow<IceCandidate>()
     val iceCandidateFlow: SharedFlow<IceCandidate> = _iceCandidateFlow
-    
+
     private val _connectionStateFlow = MutableSharedFlow<PeerConnection.PeerConnectionState>()
     val connectionStateFlow: SharedFlow<PeerConnection.PeerConnectionState> = _connectionStateFlow
 
@@ -43,7 +51,7 @@ class CallWebRTCManager(
         PeerConnection.IceServer.builder("stun:stun1.l.google.com:19302").createIceServer(),
         PeerConnection.IceServer.builder("stun:stun2.l.google.com:19302").createIceServer()
     )
-    
+
     init {
         initializePeerConnectionFactory()
     }
@@ -56,17 +64,18 @@ class CallWebRTCManager(
             .setEnableInternalTracer(true)
             .setFieldTrials("WebRTC-H264HighProfile/Enabled/")
             .createInitializationOptions()
-        
+
         PeerConnectionFactory.initialize(options)
-        
+
+        // Use shared EglBase for encoder and decoder
         val encoderFactory = DefaultVideoEncoderFactory(
-            EglBase.create().eglBaseContext,
+            eglBase.eglBaseContext,
             true,
             true
         )
-        
-        val decoderFactory = DefaultVideoDecoderFactory(EglBase.create().eglBaseContext)
-        
+
+        val decoderFactory = DefaultVideoDecoderFactory(eglBase.eglBaseContext)
+
         peerConnectionFactory = PeerConnectionFactory.builder()
             .setVideoEncoderFactory(encoderFactory)
             .setVideoDecoderFactory(decoderFactory)
@@ -74,10 +83,10 @@ class CallWebRTCManager(
                 disableNetworkMonitor = false
             })
             .createPeerConnectionFactory()
-        
+
         Log.d(TAG, "PeerConnectionFactory initialized")
     }
-    
+
     /**
      * Create a new peer connection
      */
@@ -91,7 +100,7 @@ class CallWebRTCManager(
                 tcpCandidatePolicy = PeerConnection.TcpCandidatePolicy.DISABLED
                 continualGatheringPolicy = PeerConnection.ContinualGatheringPolicy.GATHER_CONTINUALLY
             }
-            
+
             val observer = object : PeerConnection.Observer {
                 override fun onIceCandidate(candidate: org.webrtc.IceCandidate?) {
                     candidate?.let {
@@ -107,12 +116,15 @@ class CallWebRTCManager(
                         }
                     }
                 }
-                
+
                 override fun onAddStream(stream: MediaStream?) {
-                    Log.d(TAG, "Remote stream added")
-                    stream?.let { onRemoteStream(it) }
+                    Log.d(TAG, "📺 Remote stream received")
+                    stream?.let { 
+                        onRemoteStream(it)
+                        onRemoteStreamCallback?.invoke(it)
+                    }
                 }
-                
+
                 override fun onConnectionChange(newState: PeerConnection.PeerConnectionState?) {
                     Log.d(TAG, "Connection state: $newState")
                     newState?.let {
@@ -121,7 +133,7 @@ class CallWebRTCManager(
                         }
                     }
                 }
-                
+
                 override fun onDataChannel(p0: DataChannel?) {}
                 override fun onIceConnectionChange(p0: PeerConnection.IceConnectionState?) {
                     Log.d(TAG, "ICE connection state: $p0")
@@ -139,7 +151,7 @@ class CallWebRTCManager(
                 override fun onIceCandidatesRemoved(p0: Array<out org.webrtc.IceCandidate>?) {}
                 override fun onAddTrack(p0: RtpReceiver?, p1: Array<out MediaStream>?) {}
             }
-            
+
             peerConnection = peerConnectionFactory?.createPeerConnection(rtcConfig, observer)
             peerConnection != null
         } catch (e: Exception) {
@@ -147,7 +159,7 @@ class CallWebRTCManager(
             false
         }
     }
-    
+
     /**
      * Initialize local media tracks (audio and optionally video)
      */
@@ -159,29 +171,25 @@ class CallWebRTCManager(
             mandatory.add(MediaConstraints.KeyValuePair("googHighpassFilter", "true"))
             mandatory.add(MediaConstraints.KeyValuePair("googNoiseSuppression", "true"))
         }
-        
+
         val audioSource = peerConnectionFactory?.createAudioSource(audioConstraints)
         localAudioTrack = peerConnectionFactory?.createAudioTrack("local_audio", audioSource)
-        
+
         // Create video track if needed
         if (enableVideo && surfaceViewRenderer != null) {
-            val eglBaseContext = EglBase.create().eglBaseContext
-            surfaceViewRenderer.init(eglBaseContext, null)
-            surfaceViewRenderer.setMirror(true)
-            
             videoCapturer = createCameraCapturer()
             val videoSource = peerConnectionFactory?.createVideoSource(videoCapturer?.isScreencast ?: false)
             videoCapturer?.initialize(
-                SurfaceTextureHelper.create("CameraThread", eglBaseContext),
+                SurfaceTextureHelper.create("CameraThread", eglBase.eglBaseContext),
                 context,
                 videoSource?.capturerObserver
             )
             videoCapturer?.startCapture(1280, 720, 30)
-            
+
             localVideoTrack = peerConnectionFactory?.createVideoTrack("local_video", videoSource)
             localVideoTrack?.addSink(surfaceViewRenderer)
         }
-        
+
         // Add tracks to peer connection
         // Add audio track
         localAudioTrack?.let { audioTrack ->
@@ -216,7 +224,7 @@ class CallWebRTCManager(
     private fun createCameraCapturer(): CameraVideoCapturer? {
         val enumerator = Camera2Enumerator(context)
         val deviceNames = enumerator.deviceNames
-        
+
         // Try front camera first
         for (deviceName in deviceNames) {
             if (enumerator.isFrontFacing(deviceName)) {
@@ -226,7 +234,7 @@ class CallWebRTCManager(
                 }
             }
         }
-        
+
         // Fall back to back camera
         for (deviceName in deviceNames) {
             if (!enumerator.isFrontFacing(deviceName)) {
@@ -236,10 +244,10 @@ class CallWebRTCManager(
                 }
             }
         }
-        
+
         return null
     }
-    
+
     /**
      * Create SDP offer
      */
@@ -252,7 +260,7 @@ class CallWebRTCManager(
             optional.add(MediaConstraints.KeyValuePair("OfferToReceiveVideo", "true"))
 
         }
-        
+
         return try {
             val sdp = peerConnection?.createOffer(constraints)
             peerConnection?.setLocalDescription(sdp)
@@ -262,13 +270,13 @@ class CallWebRTCManager(
             null
         }
     }
-    
+
     /**
      * Create SDP answer
      */
     suspend fun createAnswer(): String? {
         val constraints = MediaConstraints()
-        
+
         return try {
             val sdp = peerConnection?.createAnswer(constraints)
             peerConnection?.setLocalDescription(sdp)
@@ -278,7 +286,7 @@ class CallWebRTCManager(
             null
         }
     }
-    
+
     /**
      * Set remote SDP (offer or answer)
      */
@@ -291,7 +299,7 @@ class CallWebRTCManager(
             Log.e(TAG, "Failed to set remote description", e)
         }
     }
-    
+
     /**
      * Add ICE candidate received from remote peer
      */
@@ -308,28 +316,35 @@ class CallWebRTCManager(
             Log.e(TAG, "Failed to add ICE candidate", e)
         }
     }
-    
+
     /**
      * Toggle microphone mute
      */
     fun toggleMicrophone(mute: Boolean) {
         localAudioTrack?.setEnabled(!mute)
     }
-    
+
     /**
      * Toggle video
      */
     fun toggleVideo(enable: Boolean) {
         localVideoTrack?.setEnabled(enable)
     }
-    
+
     /**
      * Switch camera (front/back)
      */
     fun switchCamera() {
         videoCapturer?.switchCamera(null)
     }
-    
+
+    /**
+     * Set callback for remote stream
+     */
+    fun setRemoteStreamCallback(callback: (MediaStream) -> Unit) {
+        onRemoteStreamCallback = callback
+    }
+
     /**
      * Clean up resources
      */
@@ -341,7 +356,7 @@ class CallWebRTCManager(
         peerConnection?.close()
         peerConnection?.dispose()
         peerConnection = null
-        
+
         Log.d(TAG, "WebRTC resources cleaned up")
     }
 }
@@ -353,11 +368,11 @@ private suspend fun PeerConnection.createOffer(constraints: MediaConstraints): S
             override fun onCreateSuccess(sdp: SessionDescription?) {
                 continuation.resumeWith(Result.success(sdp))
             }
-            
+
             override fun onCreateFailure(error: String?) {
                 continuation.resumeWith(Result.failure(Exception(error ?: "Unknown error")))
             }
-            
+
             override fun onSetSuccess() {}
             override fun onSetFailure(p0: String?) {}
         }, constraints)
@@ -370,11 +385,11 @@ private suspend fun PeerConnection.createAnswer(constraints: MediaConstraints): 
             override fun onCreateSuccess(sdp: SessionDescription?) {
                 continuation.resumeWith(Result.success(sdp))
             }
-            
+
             override fun onCreateFailure(error: String?) {
                 continuation.resumeWith(Result.failure(Exception(error ?: "Unknown error")))
             }
-            
+
             override fun onSetSuccess() {}
             override fun onSetFailure(p0: String?) {}
         }, constraints)

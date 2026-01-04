@@ -28,7 +28,7 @@ class InitiateCallUseCase @Inject constructor(
     ): Result<String> {
         return try {
             android.util.Log.d("WEBRTC_CALL", "🚀 [CALLER] Starting call initiation")
-            
+
             // Generate call ID
             val callId = "call_${System.currentTimeMillis()}"
             android.util.Log.d("WEBRTC_CALL", "🆔 [CALLER] Call ID generated: $callId")
@@ -54,12 +54,12 @@ class InitiateCallUseCase @Inject constructor(
             // Create SDP offer
             android.util.Log.d("WEBRTC_CALL", "📝 [CALLER] Creating SDP offer...")
             val sdpOffer = webRTCManager.createOffer()
-            
+
             if (sdpOffer == null) {
                 android.util.Log.e("WEBRTC_CALL", "❌ [CALLER] SDP offer is null")
                 return Result.failure(Exception("Failed to create SDP offer"))
             }
-            
+
             android.util.Log.d("WEBRTC_CALL", "✅ [CALLER] SDP offer created (${sdpOffer.length} chars)")
 
             val callOffer = CallOffer(
@@ -71,12 +71,12 @@ class InitiateCallUseCase @Inject constructor(
                 timestamp = Timestamp.now(),
                 status = CallStatus.RINGING
             )
-            
+
             android.util.Log.d("WEBRTC_CALL", "💾 [CALLER] Saving to Firestore: $callId -> receiverId: $receiverId")
 
             // Save to Firestore
             val saveResult = signalingRepository.createCallOffer(callOffer)
-            
+
             saveResult.onSuccess {
                 android.util.Log.d("WEBRTC_CALL", "✅ [CALLER] Call saved to Firestore successfully")
             }.onFailure { error ->

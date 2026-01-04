@@ -36,9 +36,9 @@ fun NavGraphBuilder.homeNavGraph(navController: NavHostController) {
         }
 
         composable(HomeRoute.ZoomImage.route) { backStackEntry ->
-            val imageId = backStackEntry.arguments?.getString("imageId")
-            val resourceId = imageId?.toIntOrNull() ?: R.drawable.ic_launcher_background
-            ZoomPhoto(imageId = resourceId) {
+            val imageUrl = backStackEntry.arguments?.getString("imageId") ?: ""
+
+            ZoomPhoto(imageUrl = imageUrl) {
                 navController.popBackStack()
             }
         }

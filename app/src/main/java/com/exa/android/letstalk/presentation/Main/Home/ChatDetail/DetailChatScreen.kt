@@ -306,7 +306,7 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.White)
+ .background(Color.White)
                 .padding(paddingValues)
         ) {
             MessageList(

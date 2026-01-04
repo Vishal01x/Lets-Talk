@@ -19,6 +19,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -52,6 +54,8 @@ import com.exa.android.letstalk.presentation.Main.Home.ChatDetail.components.med
 import com.exa.android.letstalk.presentation.Main.Home.ChatDetail.components.media.openFileWithIntent
 import com.exa.android.letstalk.presentation.Main.Home.ChatDetail.components.media.video.VideoMessageItem
 import com.exa.android.letstalk.utils.models.MediaType
+import com.exa.android.letstalk.utils.helperFun.getDateSeparatorText
+import com.exa.android.letstalk.utils.helperFun.shouldShowDateSeparator
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -123,8 +127,44 @@ fun MessageList(
             if (reversedIndex == messages.size - unreadMessages && unreadMessages > 0) {
                 UnreadMessageSeparator()
             }
+            
+            // Date Separator - show if different day from previous message
+            val previousMessage = if (reversedIndex > 0) messages[reversedIndex - 1] else null
+            val showDateSeparator = shouldShowDateSeparator(message.timestamp.seconds, previousMessage?.timestamp?.seconds)
+            
+            if (showDateSeparator) {
+                val dateText = getDateSeparatorText(message.timestamp.seconds)
+                if (dateText != null) {
+                    DateSeparator(text = dateText)
+                }
+            }
         }
 
+    }
+}
+
+
+@Composable
+fun DateSeparator(text: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 12.dp),
+        horizontalArrangement = Arrangement.Center
+    ) {
+        Surface(
+            shape = RoundedCornerShape(12.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+            modifier = Modifier.padding(horizontal = 16.dp)
+        ) {
+            Text(
+                text = text,
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontWeight = FontWeight.Medium
+            )
+        }
     }
 }
 
@@ -237,14 +277,14 @@ fun MessageBubble(
             }
         ) {
             val bubbleColor = if (curUserId == message.senderId) Color(
-                0xFF007AFF
-            ) else Color(0xFFf6f6f6)
+                0xFFFDB92F  // Golden yellow for sent messages
+            ) else Color.White.copy(.75f)  // White for received messages
             Column(
                 modifier = Modifier
                     .widthIn(max = (0.7 * LocalConfiguration.current.screenWidthDp).dp) // occupy 70% of screen only
                     .background(
                         color = if (isHighlighted) bubbleColor.copy(alpha = 0.6f) else bubbleColor,
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp, bottomStart = 8.dp, bottomEnd = 0.dp)
                     )
                     .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {

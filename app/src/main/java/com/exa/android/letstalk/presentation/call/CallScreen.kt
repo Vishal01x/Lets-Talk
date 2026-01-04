@@ -35,22 +35,45 @@ fun CallScreen(
     val isVideoEnabled by callViewModel.isVideoEnabled.collectAsState()
     val isFrontCamera by callViewModel.isFrontCamera.collectAsState()
     val callDuration by callViewModel.callDuration.collectAsState()
-    
+
     val context = LocalContext.current
     
+    // Create SurfaceViewRenderers for video
+    val localRenderer = remember {
+        SurfaceViewRenderer(context).apply {
+            init(callViewModel.eglBaseContext, null)
+            setZOrderMediaOverlay(true)
+            setMirror(true)
+        }
+    }
+    
+    val remoteRenderer = remember {
+        SurfaceViewRenderer(context).apply {
+            init(callViewModel.eglBaseContext, null)
+        }
+    }
+    
+    // Cleanup renderers
+    DisposableEffect(Unit) {
+        onDispose {
+            localRenderer.release()
+            remoteRenderer.release()
+        }
+    }
+
     // Permission launcher for camera and microphone
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
         val cameraGranted = permissions[Manifest.permission.CAMERA] ?: false
         val audioGranted = permissions[Manifest.permission.RECORD_AUDIO] ?: false
-        
+
         if (!cameraGranted || !audioGranted) {
             showToast(context, "Camera and microphone permissions are required for calls")
             onCallEnded()
         }
     }
-    
+
     // Request permissions on launch if needed
     LaunchedEffect(Unit) {
         permissionLauncher.launch(
@@ -60,7 +83,7 @@ fun CallScreen(
             )
         )
     }
-    
+
     when (val state = callState) {
         is CallState.IncomingCall -> {
             IncomingCallScreen(
@@ -68,8 +91,7 @@ fun CallScreen(
                 callerImage = state.callerImage,
                 isVideoCall = state.callType == CallType.VIDEO,
                 onAnswer = {
-                    // TODO: Pass local renderer
-                    callViewModel.answerCall(null)
+                    callViewModel.answerCall(localRenderer, remoteRenderer)
                 },
                 onReject = {
                     callViewModel.rejectCall()
@@ -77,7 +99,7 @@ fun CallScreen(
                 }
             )
         }
-        
+
         is CallState.OutgoingCall -> {
             OutgoingCallScreen(
                 receiverName = state.receiverName,
@@ -89,7 +111,7 @@ fun CallScreen(
                 }
             )
         }
-        
+
         is CallState.ActiveCall -> {
             ActiveCallScreen(
                 otherUserName = state.otherUserName,
@@ -100,8 +122,8 @@ fun CallScreen(
                 isVideoEnabled = isVideoEnabled,
                 isFrontCamera = isFrontCamera,
                 callDuration = callDuration,
-                remoteRenderer = null, // TODO: Pass actual renderer
-                localRenderer = null, // TODO: Pass actual renderer
+                remoteRenderer = remoteRenderer,
+                localRenderer = localRenderer,
                 onMuteToggle = { callViewModel.toggleMute() },
                 onSpeakerToggle = { callViewModel.toggleSpeaker() },
                 onVideoToggle = { callViewModel.toggleVideo() },
@@ -112,22 +134,22 @@ fun CallScreen(
                 }
             )
         }
-        
+
         is CallState.CallEnded -> {
             LaunchedEffect(Unit) {
                 showToast(context, state.reason)
                 onCallEnded()
             }
         }
-        
+
         is CallState.Error -> {
             LaunchedEffect(Unit) {
                 showToast(context, state.message)
                 onCallEnded()
             }
         }
-        
-        
+
+
         CallState.Idle -> {
             // Show loading while waiting for state update
             Box(
@@ -151,6 +173,8 @@ private fun InitiateCall(
     receiverName: String,
     receiverImage: String?,
     callType: CallType,
+    localRenderer: SurfaceViewRenderer?,
+    remoteRenderer: SurfaceViewRenderer?,
     callViewModel: CallViewModel = hiltViewModel()
 ) {
     LaunchedEffect(Unit) {
@@ -160,7 +184,8 @@ private fun InitiateCall(
             receiverName = receiverName,
             receiverImage = receiverImage,
             callType = callType,
-            localRenderer = null // TODO: Create and pass renderer
+            localRenderer = localRenderer,
+            remoteRenderer = remoteRenderer
         )
     }
 }

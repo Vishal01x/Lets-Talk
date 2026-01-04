@@ -39,9 +39,7 @@ fun AppNavigation(
     Scaffold(
         bottomBar = {
             if (currentDestination == HomeRoute.ChatList.route ||
-                currentDestination == ProfileRoute.CurProfileScreen.route ||
-                currentDestination == ScheduledMessageRoute.ScheduledMessageScreen.route ||
-                currentDestination == PriorityMessageRoute.PriorityMessageScreen.route) {
+                currentDestination == ProfileRoute.CurProfileScreen.route) {
                 if (curBottomSheetState.value == SheetState.HIDE) {
                     CustomBottomNavigationBar(navController)
                 }

@@ -7,9 +7,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTimeFilled
@@ -42,77 +44,84 @@ fun CustomBottomNavigationBar(
 ) {
     val currentDestination = navController.currentBackStackEntryAsState().value?.destination?.route
 
-    val items = listOf(
-        BottomNavItem(
-            route = HomeRoute.ChatList.route,
-            icon = Icons.Filled.Home,
-            label = "Home"
-        ),
-        BottomNavItem(
-            route = PriorityMessageRoute.PriorityMessageScreen.route,
-            icon = Icons.Filled.PriorityHigh,
-            label = "Priority"
-        ),
-        BottomNavItem(
-            route = ScheduledMessageRoute.ScheduledMessageScreen.route,
-            icon = Icons.Filled.AccessTimeFilled,
-            label = "Scheduled"
-        ),
-        BottomNavItem(
-            route = ProfileRoute.CurProfileScreen.route,
-            icon = Icons.Filled.Person,
-            label = "Profile"
-        ),
-//        BottomNavItem(
-//            route = MainRoute.Setting.route,
-//            icon = Icons.Default.Settings,
-//            label = "Settings"
-//        )
-    )
-
-    NavigationBar(
-        tonalElevation = 4.dp,
-        containerColor = MaterialTheme.colorScheme.surface
+    // Pill-style bottom navigation
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(vertical = 12.dp, horizontal = 24.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceEvenly
     ) {
-        items.forEach { item ->
-            val selected = currentDestination == item.route
-
-            NavigationBarItem(
-                selected = selected,
-                onClick = {
-                    if (!selected) {
-                        navController.navigate(item.route) {
+        // Home Icon
+        Icon(
+            imageVector = Icons.Filled.Home,
+            contentDescription = "Home",
+            tint = if (currentDestination == HomeRoute.ChatList.route)
+                MaterialTheme.colorScheme.onSurface
+            else
+                MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+            modifier = Modifier
+                .size(28.dp)
+                .clickable {
+                    if (currentDestination != HomeRoute.ChatList.route) {
+                        navController.navigate(HomeRoute.ChatList.route) {
                             launchSingleTop = true
                             restoreState = true
                         }
                     }
-                },
-                icon = {
-                    Icon(
-                        imageVector = item.icon,
-                        contentDescription = item.label,
-                        tint = if (selected)
-                            MaterialTheme.colorScheme.primary
-                        else
-                            MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                },
-                label = {
-                    Text(
-                        text = item.label,
-                        color = if (selected)
-                            MaterialTheme.colorScheme.primary
-                        else
-                            MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.labelMedium
-                    )
-                },
-                alwaysShowLabel = true,
-                colors = NavigationBarItemDefaults.colors(
-                    indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+                }
+        )
+
+        // Center "+ New Chat" Pill Button
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .background(Color.Black, shape = RoundedCornerShape(50))
+                .clickable {
+                    com.exa.android.letstalk.AppManager.switchSheetState()
+                }
+                .padding(horizontal = 24.dp, vertical = 10.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "New Chat",
+                    tint = Color.White,
+                    modifier = Modifier.size(20.dp)
                 )
-            )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = "New Chat",
+                    color = Color.White,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 15.sp
+                )
+            }
         }
+
+        // Profile Icon
+        Icon(
+            imageVector = Icons.Filled.Person,
+            contentDescription = "Profile",
+            tint = if (currentDestination == ProfileRoute.CurProfileScreen.route)
+                MaterialTheme.colorScheme.onSurface
+            else
+                MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+            modifier = Modifier
+                .size(28.dp)
+                .clickable {
+                    if (currentDestination != ProfileRoute.CurProfileScreen.route) {
+                        navController.navigate(ProfileRoute.CurProfileScreen.route) {
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+                }
+        )
     }
 }
 

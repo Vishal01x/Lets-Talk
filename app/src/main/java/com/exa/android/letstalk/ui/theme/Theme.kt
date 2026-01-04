@@ -76,48 +76,65 @@ fun LetsTalkTheme(
 
 // Light Color Scheme (Updated)
 private val LightColorScheme = lightColorScheme(
-    primary = Color(0xFFFFC107),       // Yellow from the image
+    primary = Color(0xFFFDB92F),       // Golden yellow - exact from screenshot
     onPrimary = Color.Black,           // Black text/icons on yellow
-//    secondary = Color(0xFFBDBDBD),     // Gray for secondary elements
-//    onSecondary = Color(0xFF616161),   // Darker gray text/icons
-    secondary = Color.Black,
-    onSecondary = Color.White,
-    tertiary = Color.White,
-    onTertiary = Color.Black,
-    background = Color.White,          // White clean UI background
-    onBackground = Color.Black,        // Black text on the background
-    surface = Color(0xFFF8F8F8),       // Light gray for chat backgrounds
-    onSurface = Color.Black,     // Dark gray for text
-    error = Color(0xFFE57373),         // Soft Red (for errors)
-    primaryContainer = Color(0xFFFFC107), // Container for primary
-    secondaryContainer = Color(0xFFBDBDBD) // Container for secondary
+    secondary = Color.Black,           // Black for icons and secondary elements
+    onSecondary = Color.White,         // White text on black
+    tertiary = Color.White,            // White for surfaces
+    onTertiary = Color.Black,          // Black text on white
+    background = Color.White,          // White background
+    onBackground = Color.Black,        // Black text on background
+    surface = Color(0xFFF5F5F5),       // Very light gray for chat background
+    onSurface = Color.Black,           // Black text on surface
+    surfaceVariant = Color(0xFFF0F0F0), // Light gray for received messages
+    onSurfaceVariant = Color(0xFF666666), // Gray text for placeholders
+    error = Color(0xFFE57373),         // Soft red for errors
+    primaryContainer = Color(0xFFFFC107), // Yellow container
+    secondaryContainer = Color(0xFFE0E0E0), // Light gray container
+    outline = Color(0xFFE0E0E0)        // Light gray for borders/dividers
 )
 
 // Dark Color Scheme (Updated)
 private val DarkColorScheme = darkColorScheme(
-    primary = Color(0xFFFFC107),
-    onPrimary = Color.White,
-//    secondary = Color(0xFFBDBDBD),
-//    onSecondary = Color.White,
-    secondary = Color.White,
-    onSecondary = Color.Black,
-    tertiary = Color.Black,
-    onTertiary = Color.White,
-    background = Color(0xFF121212),
-    surface = Color(0xFF242424),
-    onSurface = Color.White,
-    onBackground = Color(0xFFE0E0E0),
-    error = Color(0xFFEF5350),
-    primaryContainer = Color(0xFFFFC107),
-    secondaryContainer = Color(0xFFBDBDBD)
+    primary = Color(0xFFFDB92F),       // Golden yellow - same as light mode
+    onPrimary = Color.Black,           // Black text on yellow (matches light mode)
+    secondary = Color.White,           // White for icons and secondary elements
+    onSecondary = Color.Black,         // Black text on white
+    tertiary = Color(0xFF1C1C1E),      // Dark for surfaces
+    onTertiary = Color.White,          // White text on dark
+    background = Color(0xFF1C1C1E),    // Dark background
+    onBackground = Color(0xFFE0E0E0),  // Light gray text on background
+    surface = Color(0xFF2C2C2E),       // Medium dark gray for elevated surfaces
+    onSurface = Color.White,           // White text on surface
+    surfaceVariant = Color(0xFF3A3A3C), // Medium gray for received messages
+    onSurfaceVariant = Color(0xFF999999), // Gray text for placeholders
+    error = Color(0xFFEF5350),         // Red for errors
+    primaryContainer = Color(0xFFFFC107), // Yellow container
+    secondaryContainer = Color(0xFF3A3A3C), // Dark gray container
+    outline = Color(0xFF48484A)        // Gray for borders/dividers
 )
 
 // Extended Colors
 object AppColors {
-    val NotificationBadge = Color(0xFFFFD700) // Gold for notification bubbles
-    val DividerColor = Color(0xFFE0E0E0) // Light gray for dividers
+    // Message Bubbles
+    val messageSentBackground = Color(0xFFFFC107)        // Yellow for sent messages
+    val messageReceivedBackgroundLight = Color(0xFFF0F0F0) // Light gray for received (light mode)
+    val messageReceivedBackgroundDark = Color(0xFF3A3A3C)  // Dark gray for received (dark mode)
+    val messageTextOnYellow = Color.Black                 // Black text on yellow bubbles
+    
+    // Status Indicators
+    val onlineIndicator = Color(0xFF4CAF50)              // Green for online status
+    val unreadBadge = Color(0xFFFFC107)                  // Yellow for unread count badge
+    val checkmarkDelivered = Color(0xFF666666)           // Gray for delivered status
+    val checkmarkRead = Color(0xFF4CAF50)                // Green for read status
+    
+    // UI Elements
+    val dividerColor = Color(0xFFE0E0E0)                 // Light gray for dividers
+    val dividerColorDark = Color(0xFF48484A)             // Dark gray for dividers (dark mode)
     val cardButtonColor1 = Color.White
     val cardButtonColor2 = Color.Black
+    val storyBorderGradientStart = Color(0xFFFFC107)     // Yellow gradient start for stories
+    val storyBorderGradientEnd = Color(0xFFFF9800)       // Orange gradient end for stories
 }
 
 // Typography Setup
@@ -146,9 +163,9 @@ val AppTypography = Typography(
 
 // Shapes for Components
 val AppShapes = Shapes(
-    small = RoundedCornerShape(4.dp),
-    medium = RoundedCornerShape(8.dp),
-    large = RoundedCornerShape(16.dp)
+    small = RoundedCornerShape(8.dp),    // For small elements like badges
+    medium = RoundedCornerShape(12.dp),   // For buttons and cards
+    large = RoundedCornerShape(20.dp)     // For message bubbles
 )
 
 @Composable

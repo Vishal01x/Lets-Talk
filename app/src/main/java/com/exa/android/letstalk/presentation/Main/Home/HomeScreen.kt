@@ -1,6 +1,7 @@
 package com.exa.android.letstalk.presentation.Main.Home
 
 import android.app.Activity
+import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -112,20 +113,20 @@ fun HomeScreen(
                 onSearchClick = { isSearching = true },
             )
         },
-        floatingActionButton = {
-            if (curBottomSheetState.value == SheetState.HIDE) {
-                ExtendedFloatingActionButton(
-                    text = { Text("New") },
-                    icon = { Icon(Icons.Default.Add, contentDescription = "Add") },
-                    onClick = {
-                        switchSheetState()
-                    },
-                    shape = RoundedCornerShape(12.dp),
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
-                )
-            }
-        }
+//        floatingActionButton = {
+//            if (curBottomSheetState.value == SheetState.HIDE) {
+//                androidx.compose.material3.FloatingActionButton(
+//                    onClick = {
+//                        switchSheetState()
+//                    },
+//                    shape = CircleShape,
+//                    containerColor = MaterialTheme.colorScheme.primary,
+//                    contentColor = MaterialTheme.colorScheme.onPrimary
+//                ) {
+//                    Icon(Icons.Default.Add, contentDescription = "New Chat", modifier = Modifier.size(28.dp))
+//                }
+//            }
+//        }
     ) {
 
         Box(
@@ -208,7 +209,8 @@ fun HeaderSection(
                 text = "Let's Talk",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
-                fontSize = 22.sp
+                fontSize = 24.sp,
+                color = MaterialTheme.colorScheme.onBackground
             )
             Icon(
                 imageVector = Icons.Default.Search,
@@ -327,7 +329,7 @@ fun ChatsSection(navController: NavController, viewModel: ChatViewModel) {
                         ChatListItem(
                             chat = chat,
                             zoomImage = { imageId ->
-                                navController.navigate("zoomImage/$imageId")
+                                navController.navigate("zoomImage/${Uri.encode(imageId)}")
                             },
                             openChat = { chatId ->
                                 setCurChat(chat)
@@ -380,15 +382,15 @@ fun ChatTitle(modifier: Modifier = Modifier) {
         Text(
             text = "Chats",
             style = MaterialTheme.typography.bodyLarge,
-            color = Color.Black,
+            color = MaterialTheme.colorScheme.onBackground,
             fontWeight = FontWeight.Bold,
-            fontSize = 19.sp
+            fontSize = 18.sp
         )
 
         Icon(
             imageVector = Icons.Default.Menu,
-            contentDescription = "search chat",
-            tint = Color.Black,
+            contentDescription = "menu",
+            tint = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.size(24.dp)
         )
     }

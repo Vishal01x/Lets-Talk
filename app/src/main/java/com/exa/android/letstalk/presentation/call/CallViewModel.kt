@@ -39,6 +39,10 @@ class CallViewModel @Inject constructor(
 
     private val TAG = "WEBRTC_CALL"
 
+    // Expose EglBase context for SurfaceViewRenderer initialization
+    val eglBaseContext: org.webrtc.EglBase.Context
+        get() = webRTCManager.eglBaseContext
+
     private val _callState = MutableStateFlow<CallState>(CallState.Idle)
     val callState: StateFlow<CallState> = _callState.asStateFlow()
 
@@ -73,7 +77,7 @@ class CallViewModel @Inject constructor(
     fun startObservingIncomingCalls(userId: String) {
         //incomingCallListenerJob?.cancel()
         Log.d(TAG, "👂 [RECEIVER] Starting to observe incoming calls for: $userId")
-        
+
         // Store current user ID for later use (ICE candidates, etc.)
         currentUserId = userId
 
@@ -88,7 +92,7 @@ class CallViewModel @Inject constructor(
 
                 // Fetch caller info from UserRepository
                 Log.d(TAG, "🔍 [RECEIVER] Attempting to fetch caller with ID: ${callOffer.callerId}")
-                
+
                 val callerUserResponse = try {
                     // Wait for Success or Error response, skip Loading
                     userRepository.getUserProfile(callOffer.callerId)
@@ -97,9 +101,9 @@ class CallViewModel @Inject constructor(
                     Log.e(TAG, "❌ [RECEIVER] Exception fetching user: ${e.message}", e)
                     null
                 }
-                
+
                 Log.d(TAG, "📦 [RECEIVER] Response type: ${callerUserResponse?.javaClass?.simpleName}")
-                
+
                 val callerUser = when (callerUserResponse) {
                     is Response.Success -> {
                         Log.d(TAG, "✅ [RECEIVER] Success! User: ${callerUserResponse.data?.name}")
@@ -114,7 +118,7 @@ class CallViewModel @Inject constructor(
                         null
                     }
                 }
-                
+
                 Log.d(TAG, "👤 [RECEIVER] Final caller: name=${callerUser?.name}, image=${callerUser?.profilePicture}")
 
                 // Update UI state with actual caller info
@@ -146,11 +150,19 @@ class CallViewModel @Inject constructor(
         receiverName: String,
         receiverImage: String?,
         callType: CallType,
-        localRenderer: SurfaceViewRenderer?
+        localRenderer: SurfaceViewRenderer?,
+        remoteRenderer: SurfaceViewRenderer?
     ) {
         Log.d(TAG, "📞 [CALLER] Initiating call to: $receiverId")
 
         currentUserId = callerId
+        
+        // Set remote stream callback
+        remoteRenderer?.let { renderer ->
+            webRTCManager.setRemoteStreamCallback { stream ->
+                stream.videoTracks.firstOrNull()?.addSink(renderer)
+            }
+        }
 
         // Set OutgoingCall state IMMEDIATELY (synchronously) so UI updates right away
         _callState.value = CallState.OutgoingCall(
@@ -211,9 +223,16 @@ class CallViewModel @Inject constructor(
     /**
      * Answer an incoming call
      */
-    fun answerCall(localRenderer: SurfaceViewRenderer?) {
+    fun answerCall(localRenderer: SurfaceViewRenderer?, remoteRenderer: SurfaceViewRenderer?) {
         val currentState = _callState.value as? CallState.IncomingCall ?: return
         val currentCallId = callId ?: return
+        
+        // Set remote stream callback
+        remoteRenderer?.let { renderer ->
+            webRTCManager.setRemoteStreamCallback { stream ->
+                stream.videoTracks.firstOrNull()?.addSink(renderer)
+            }
+        }
 
         viewModelScope.launch(Dispatchers.IO) {
             // Stop ringtone (but keep listener active for future calls)

@@ -233,10 +233,10 @@ fun OtherProfileScreen(
             )
         }
 
-        // Story List
+        // Story List - 6 Dummy Stories (same for all users)
         if (true) {
             LazyRow(contentPadding = PaddingValues(end = 8.dp)) {
-                items(1) { index ->
+                items(6) { index ->
                     Box(
                         modifier = Modifier
                             .width(120.dp)
@@ -244,7 +244,14 @@ fun OtherProfileScreen(
                     ) {
                         AsyncImage(
                             model = ImageRequest.Builder(context)
-                                .data("https://your-image-url.com/$index") // dynamic image
+                                .data(when (index) {
+                                    0 -> R.drawable.chat_img1
+                                    1 -> R.drawable.chat_img2
+                                    2 -> R.drawable.chat_img3
+                                    3 -> R.drawable.chat_img4
+                                    4 -> R.drawable.status_img
+                                    else -> R.drawable.chat_img1
+                                })
                                 .crossfade(true)
                                 .placeholder(R.drawable.status_img)
                                 .error(R.drawable.status_img)
@@ -277,9 +284,12 @@ fun OtherProfileScreen(
                         ) {
                             Text(
                                 text = when (index) {
-                                    0 -> "Cakep banget ini tanaman, cocok bgt"
-                                    1 -> "Kursi aja berdua, kamu masa sendiri 🥲"
-                                    else -> "Ngopi dulu sebelum diskusi panjang"
+                                    0 -> "Cakep banget ini taneman, cocok bgt"
+                                    1 -> "Kursi aja berdua, kamu madu sendiri 😁"
+                                    2 -> "Ngopi dulu, septelgu dimana?"
+                                    3 -> "Rural ang berdua, kamu masa sendiri 🥲"
+                                    4 -> "Weekend vibes 🌟"
+                                    else -> "New beginnings!"
                                 },
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.tertiary,

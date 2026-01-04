@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,11 +33,11 @@ import com.exa.android.letstalk.utils.helperFun.formatTimestamp
 import com.exa.android.letstalk.utils.models.Chat
 import com.exa.android.letstalk.R
 import com.exa.android.letstalk.presentation.Main.components.CircularUserImage
+import com.exa.android.letstalk.ui.theme.AppColors
 import com.exa.android.letstalk.utils.helperFun.getOtherUserName
 
 @Composable
-fun ChatListItem(chat: Chat, zoomImage: (Int) -> Unit, openChat: (userId: String) -> Unit) {
-
+fun ChatListItem(chat: Chat, zoomImage: (String?) -> Unit, openChat: (userId: String) -> Unit) {
     val context = LocalContext.current
 
     Row(
@@ -44,66 +45,100 @@ fun ChatListItem(chat: Chat, zoomImage: (Int) -> Unit, openChat: (userId: String
         modifier = Modifier
             .fillMaxWidth()
             .clickable { openChat(chat.id) }
-            .padding(horizontal = 4.dp, vertical = 8.dp)
+            .padding(horizontal = 8.dp, vertical = 10.dp)
     ) {
-
-        CircularUserImage(
-            context, chat.profilePicture ?: "", null,Modifier
-                .size(48.dp)
-                .clip(CircleShape)
-                .clickable {
-                    zoomImage(R.drawable.chat_img3)
-                }
-        )
-
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Column(
-                        modifier = Modifier.weight(1f),
-                        verticalArrangement = Arrangement.SpaceAround
-                    ) {
-                        Text(
-                            chat.name,
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = Color.Black,
-                            fontWeight = FontWeight.Bold,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            chat.lastMessage,
-                            style = MaterialTheme.typography.labelMedium,
-                            color = Color.DarkGray,
-                            fontSize = 13.sp,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
+        // Avatar with online indicator
+        Box {
+            CircularUserImage(
+                context, chat.profilePicture ?: "", null, Modifier
+                    .size(56.dp)
+                    .clip(CircleShape)
+                    .clickable {
+                        zoomImage(chat.profilePicture)
                     }
-                    Column(horizontalAlignment = Alignment.End) {
-                        val timestampInMillis = chat.lastMessageTimestamp.seconds * 1000L
-                        Text(
-                            formatTimestamp(timestampInMillis),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = Color.Gray,
-                            fontSize = 13.sp
-                        )
-                        if (chat.unreadMessages > 0) {
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Box(
-                                contentAlignment = Alignment.Center,
-                                modifier = Modifier
-                                    .size(24.dp)
-                                    .clip(CircleShape)
-                                    .background(Color.Yellow)
-                            ) {
-                                Text(
-                                    "${chat.unreadMessages}",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = Color.Black,
-                                    fontSize = 12.sp
-                                )
-                            }
-                        }
-                    }
+            )
+            // Online indicator (small green dot) - you can make this conditional based on online status
+            // Uncomment when you have online status logic
+            /*
+            Box(
+                modifier = Modifier
+                    .size(14.dp)
+                    .clip(CircleShape)
+                    .background(AppColors.onlineIndicator)
+                    .border(2.dp, MaterialTheme.colorScheme.background, CircleShape)
+                    .align(Alignment.BottomEnd)
+            )
+            */
+        }
+
+        Spacer(modifier = Modifier.width(12.dp))
+        
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.SpaceAround
+        ) {
+            Text(
+                chat.name,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onBackground,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 16.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                // Double checkmark for read status (make conditional based on message status)
+                if (chat.lastMessage.isNotEmpty()) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_seen),
+                        contentDescription = "Read",
+                        tint = AppColors.checkmarkRead,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
                 }
+                
+                Text(
+                    chat.lastMessage,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontSize = 14.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
+        
+        Column(
+            horizontalAlignment = Alignment.End,
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            val timestampInMillis = chat.lastMessageTimestamp.seconds * 1000L
+            Text(
+                formatTimestamp(timestampInMillis),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontSize = 12.sp
+            )
+            
+            if (chat.unreadMessages > 0) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .size(22.dp)
+                        .clip(CircleShape)
+                        .background(AppColors.unreadBadge)
+                ) {
+                    Text(
+                        "${chat.unreadMessages}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = AppColors.messageTextOnYellow,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
     }
+}

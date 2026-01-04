@@ -2,7 +2,9 @@ package com.exa.android.letstalk.presentation.navigation
 
 import android.util.Log
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
@@ -72,9 +74,34 @@ fun NavGraphBuilder.mainAppNavGraph(navController: NavHostController) {
             val activityCallViewModel: CallViewModel = viewModel(
                 viewModelStoreOwner = activity ?: androidx.compose.ui.platform.LocalLifecycleOwner.current as androidx.lifecycle.ViewModelStoreOwner
             )
+            
+            val context = LocalContext.current
 
-            // For outgoing calls, initiate the call directly via ViewModel
+            // For outgoing calls, create renderers and initiate the call
             if (isOutgoing) {
+                val localRenderer = remember {
+                    org.webrtc.SurfaceViewRenderer(context).apply {
+                        init(activityCallViewModel.eglBaseContext, null)
+                        setZOrderMediaOverlay(true)
+                        setMirror(true)  // Mirror for selfie view
+                    }
+                }
+                
+                val remoteRenderer = remember {
+                    org.webrtc.SurfaceViewRenderer(context).apply {
+                        init(activityCallViewModel.eglBaseContext, null)
+                        setMirror(false)  // Don't mirror remote video
+                    }
+                }
+                
+                // Clean up renderers when navigation changes
+                DisposableEffect(Unit) {
+                    onDispose {
+                        localRenderer.release()
+                        remoteRenderer.release()
+                    }
+                }
+                
                 LaunchedEffect(Unit) {
                     Log.d("WEBRTC_CALL", "✅ [CALLER] Initiating call via ViewModel")
                     activityCallViewModel.initiateCall(
@@ -83,7 +110,8 @@ fun NavGraphBuilder.mainAppNavGraph(navController: NavHostController) {
                         receiverName = receiverName,
                         receiverImage = receiverImage,
                         callType = if (callTypeStr == "VIDEO") CallType.VIDEO else CallType.VOICE,
-                        localRenderer = null // TODO: Create and pass renderer
+                        localRenderer = localRenderer,
+                        remoteRenderer = remoteRenderer
                     )
                 }
             } else {
