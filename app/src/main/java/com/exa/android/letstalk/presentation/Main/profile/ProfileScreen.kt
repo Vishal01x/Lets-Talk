@@ -2,6 +2,7 @@ package com.exa.android.letstalk.presentation.Main.profile
 
 
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -20,12 +21,14 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.TabRowDefaults.Divider
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Cake
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Link
+import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CircularProgressIndicator
@@ -62,12 +65,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.exa.android.letstalk.R
 import com.exa.android.letstalk.data.domain.main.ViewModel.MediaSharingViewModel
 import com.exa.android.letstalk.data.domain.main.ViewModel.UserViewModel
 import com.exa.android.letstalk.presentation.auth.viewmodels.AuthViewModel
+import com.exa.android.letstalk.presentation.navigation.component.AuthRoute
 import com.exa.android.letstalk.presentation.navigation.component.ProfileType
 import com.exa.android.letstalk.utils.Response
 import com.exa.android.letstalk.utils.models.User
@@ -79,19 +84,14 @@ import com.exa.android.reflekt.loopit.presentation.main.Home.ChatDetail.componen
 fun UserProfileScreen(
     userId: String? = null,
     profileType: ProfileType,
+    navController: NavController,
     onProfileSave: (() -> Unit)? = null,
     mediaSharingViewModel: MediaSharingViewModel = hiltViewModel(),
     authViewModel: AuthViewModel = hiltViewModel(),
     userViewModel: UserViewModel = hiltViewModel()
 ) {
-    val mockUser = User(
-        name = "John Doe",
-        about = "Android Developer",
-        birthDate = "Jan 1, 1990",
-        phone = "1234567890",
-        socialMedia = "@johndoe",
-        profilePicture = "https://res.cloudinary.com/dgqxusedq/raw/upload/v1745431643/1000238567_yswicn.jpg" // Provide image URL or empty
-    )
+
+    val context = LocalContext.current
 
     LaunchedEffect(userId) {
         if (profileType != ProfileType.SIGNUP_PROFILE) {
@@ -109,8 +109,12 @@ fun UserProfileScreen(
             )
         }, onImageEdit = {
             mediaSharingViewModel.showMediaPickerSheet = true
-        }, onSettingsClick = {
-
+        }, onLogOutClick = {
+            authViewModel.logoutUser()
+            navController.navigate(AuthRoute.Welcome.route) {
+                popUpTo(0) { inclusive = true }
+            }
+            showToast(context, "Logged out successfully")
         },
         onProfileSave = {
             if (onProfileSave != null) {
@@ -130,7 +134,7 @@ fun ProfileScreen(
     userViewModel: UserViewModel,
     onSave: (User, Uri?) -> Unit,
     onImageEdit: () -> Unit,
-    onSettingsClick: () -> Unit,
+    onLogOutClick: () -> Unit,
     onProfileSave: () -> Unit
 ) {
     val user by userViewModel.userProfile.collectAsState()
@@ -223,16 +227,16 @@ fun ProfileScreen(
         topBar = {
             if (profileType != ProfileType.SIGNUP_PROFILE) {
                 TopAppBar(
-                    title = { Text("Profile Screen", style = MaterialTheme.typography.titleLarge) },
+                    title = { Text("Profile Screen", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onTertiary) },
                     colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                         containerColor = MaterialTheme.colorScheme.background,
                         titleContentColor = MaterialTheme.colorScheme.onBackground
                     ),
                     modifier = Modifier.shadow(4.dp),
                     actions = {
-                        IconButton(onClick = onSettingsClick) {
+                        IconButton(onClick = onLogOutClick) {
                             Icon(
-                                Icons.Default.Settings,
+                                Icons.AutoMirrored.Filled.Logout,
                                 contentDescription = "Settings",
                                 tint = MaterialTheme.colorScheme.secondary
                             )

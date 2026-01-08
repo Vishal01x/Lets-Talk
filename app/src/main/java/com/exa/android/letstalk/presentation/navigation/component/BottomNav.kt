@@ -77,7 +77,7 @@ fun CustomBottomNavigationBar(
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
-                .background(Color.Black, shape = RoundedCornerShape(50))
+                .background(MaterialTheme.colorScheme.secondary, shape = RoundedCornerShape(50))
                 .clickable {
                     com.exa.android.letstalk.AppManager.switchSheetState()
                 }
@@ -90,13 +90,13 @@ fun CustomBottomNavigationBar(
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = "New Chat",
-                    tint = Color.White,
+                    tint = MaterialTheme.colorScheme.onSecondary,
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
                     text = "New Chat",
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onSecondary,
                     fontWeight = FontWeight.Medium,
                     fontSize = 15.sp
                 )

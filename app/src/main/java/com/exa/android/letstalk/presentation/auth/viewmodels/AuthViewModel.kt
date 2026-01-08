@@ -123,7 +123,7 @@ class AuthViewModel @Inject constructor(
     fun logoutUser() {
         viewModelScope.launch {
             userPreferences.clearUser()
-            //authRepository.logoutUser()
+            authRepository.logOutUser()
             _authStatus.value = Response.Error("")
         }
     }

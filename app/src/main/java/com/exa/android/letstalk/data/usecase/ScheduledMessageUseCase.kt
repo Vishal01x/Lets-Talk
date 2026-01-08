@@ -11,4 +11,6 @@ interface ScheduledMessageRepository {
     suspend fun getMessageCountAtTime(time: Long): Int
     suspend fun removeScheduledMessage(messageId: String)
     suspend fun removeAllMessagesAtTime(time: Long)
+    suspend fun getMessagesScheduledOnOrBefore(time: Long): List<ScheduledMessageEntity>
+    suspend fun deleteMessagesScheduledOnOrBefore(time: Long)
 }

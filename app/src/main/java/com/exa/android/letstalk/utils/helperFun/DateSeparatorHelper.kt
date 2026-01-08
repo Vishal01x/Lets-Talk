@@ -4,7 +4,8 @@ import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-fun getDateSeparatorText(timestampMillis: Long): String? {
+fun getDateSeparatorText(timestampSeconds: Long): String? {
+    val timestampMillis = timestampSeconds * 1000L
     val messageDate = Calendar.getInstance().apply {
         timeInMillis = timestampMillis
     }
@@ -28,10 +29,10 @@ fun shouldShowDateSeparator(currentMessageTime: Long, previousMessageTime: Long?
     if (previousMessageTime == null) return true
     
     val currentDate = Calendar.getInstance().apply {
-        timeInMillis = currentMessageTime
+        timeInMillis = currentMessageTime * 1000L
     }
     val previousDate = Calendar.getInstance().apply {
-        timeInMillis = previousMessageTime
+        timeInMillis = previousMessageTime * 1000L
     }
     
     return !isSameDay(currentDate, previousDate)

@@ -72,6 +72,9 @@ class AuthRepository @Inject constructor(
         }
     }
 
+    fun logOutUser() = firebaseAuth.signOut()
+
+
     fun resetPassword(email : String) : Flow<Response<Boolean>> = flow{
         emit(Response.Loading)
         try {

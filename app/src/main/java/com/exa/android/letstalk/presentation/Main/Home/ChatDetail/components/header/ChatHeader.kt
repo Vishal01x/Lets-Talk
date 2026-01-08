@@ -11,6 +11,7 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.*
 import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.*
@@ -53,11 +54,12 @@ fun ChatHeader(
     onUnselectClick: () -> Unit, // unselect all the messages
     onCopyClick: () -> Unit,
     onForwardClick: () -> Unit,
-    onDeleteClick: (Int) -> Unit
+    onDeleteClick: (Int) -> Unit,
+    onScheduledMessageClick: () -> Unit
 ) {
     Card(
         elevation = CardDefaults.cardElevation(8.dp),
-        colors = CardDefaults.cardColors(Color.White),
+        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.tertiary),
         shape = RectangleShape
         // modifier = Modifier.clickable(enabled = (selectedMessages.isEmpty())) { onProfileClick() }
     ) {
@@ -81,7 +83,8 @@ fun ChatHeader(
                 onBackClick = { onBackClick() },
                 onProfileClick = { onProfileClick() },
                 onVoiceCallClick = { onVoiceCallClick() },
-                onVideoCallClick = { onVideoCallClick() }
+                onVideoCallClick = { onVideoCallClick() },
+                onScheduledMessagesClick = { onScheduledMessageClick() }
             )
         }
     }
@@ -203,7 +206,7 @@ fun PlaceIcons(
 
             Text(
                 text = selectedMessages.toString(),
-                color = Color.Black,
+                color = MaterialTheme.colorScheme.secondary,
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.Bold
             )
@@ -233,7 +236,7 @@ fun ShowIcon(iconData: IconData, rotationAngle: Float = 0f) {
                     modifier = Modifier
                         .rotate(rotationAngle)
                         .size(24.dp),
-                    tint = Color.Black,
+                    tint = MaterialTheme.colorScheme.secondary,
                     // for forward icon we rotate it opposite of reply
                 )
             }
@@ -245,7 +248,7 @@ fun ShowIcon(iconData: IconData, rotationAngle: Float = 0f) {
                     modifier = Modifier
                         .rotate(rotationAngle)
                         .size(24.dp),
-                    tint = Color.Black
+                    tint = MaterialTheme.colorScheme.secondary
                 )
             }
         }
@@ -261,7 +264,8 @@ fun HeaderWithProfile(
     onBackClick: () -> Unit,
     onProfileClick: () -> Unit,
     onVoiceCallClick: () -> Unit,
-    onVideoCallClick: () -> Unit
+    onVideoCallClick: () -> Unit,
+    onScheduledMessagesClick: () -> Unit
 ) {
 
     val context = LocalContext.current
@@ -277,7 +281,7 @@ fun HeaderWithProfile(
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
                 contentDescription = "Back",
-                tint = Color.Black,
+                tint = MaterialTheme.colorScheme.secondary,
                 modifier = Modifier.size(32.dp)
             )
         }
@@ -288,7 +292,7 @@ fun HeaderWithProfile(
         CircularUserImage(context,chat.profilePicture ?: "",null, Modifier
             .size(40.dp)
             .clip(CircleShape)
-            .border(1.dp, Color.Black, CircleShape)
+            .border(1.dp, MaterialTheme.colorScheme.secondary, CircleShape)
             .clickable { onProfileClick() })
 
 
@@ -311,7 +315,7 @@ fun HeaderWithProfile(
             Text(
                 text = displayName,
                 style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
-                color = Color.Black,
+                color = MaterialTheme.colorScheme.secondary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.fillMaxWidth(fraction = 0.9f) // Restrict width to avoid overlapping
@@ -355,12 +359,22 @@ fun HeaderWithProfile(
             )
         }
 
+        // Scheduled Messages Icon
+        IconButton(onClick = onScheduledMessagesClick) {
+            Icon(
+                imageVector = Icons.Outlined.Schedule,
+                contentDescription = "Scheduled Messages",
+                tint = MaterialTheme.colorScheme.secondary
+            )
+        }
+
+
          //Video Call Icon
         IconButton(onClick = onVideoCallClick) {
             Icon(
                 painter = painterResource(id = R.drawable.video),
                 contentDescription = "Video Call",
-                tint = Color.Black,
+                tint = MaterialTheme.colorScheme.secondary,
                 modifier = Modifier.size(24.dp)
             )
         }
@@ -371,7 +385,7 @@ fun HeaderWithProfile(
             Icon(
                 imageVector = Icons.Default.Call,
                 contentDescription = "Call",
-                tint = Color.Black
+                tint = MaterialTheme.colorScheme.secondary
             )
         }
     }

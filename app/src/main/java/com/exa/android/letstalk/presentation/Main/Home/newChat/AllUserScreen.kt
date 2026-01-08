@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
@@ -158,6 +159,7 @@ fun AllUserUi(navController: NavController, selectedUsers: Set<User>? = null, on
                 }
             )
         },
+        backgroundColor = MaterialTheme.colorScheme.background,
         bottomBar = {
             if (!selectedUsers.isNullOrEmpty()) {
                 SelectedUsersBar(
@@ -204,12 +206,12 @@ fun AllUserTopBar(onBackClick: () -> Unit) {
                     text = "Select User",
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onTertiary
                 )
                 Text(
                     text = "Choose a user from the list",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Black.copy(alpha = 0.6f)
+                    color = MaterialTheme.colorScheme.onTertiary.copy(alpha = 0.6f)
                 )
             }
         },
@@ -218,7 +220,7 @@ fun AllUserTopBar(onBackClick: () -> Unit) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
                     contentDescription = "Back",
-                    tint = Color.Black
+                    tint = MaterialTheme.colorScheme.onTertiary
                 )
             }
         },
@@ -227,18 +229,18 @@ fun AllUserTopBar(onBackClick: () -> Unit) {
                 Icon(
                     imageVector = Icons.Default.Search,
                     contentDescription = "Search User",
-                    tint = Color.Black
+                    tint = MaterialTheme.colorScheme.onTertiary
                 )
             }
             IconButton(onClick = { /* Handle more options */ }) {
                 Icon(
                     imageVector = Icons.Default.MoreVert,
                     contentDescription = "More Options",
-                    tint = Color.Black
+                    tint = MaterialTheme.colorScheme.onTertiary
                 )
             }
         },
-        backgroundColor = Color.White
+        backgroundColor = MaterialTheme.colorScheme.tertiary
     )
 }
 
@@ -251,7 +253,7 @@ fun SelectedUsersBar(
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(8.dp),
-        colors = CardDefaults.cardColors(Color.White)
+        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.background)
     ) {
         Row(
             modifier = Modifier
@@ -263,7 +265,7 @@ fun SelectedUsersBar(
             Text(
                 text = usersName,
                 style = MaterialTheme.typography.bodyMedium,
-                color = Color.Black,
+                color = MaterialTheme.colorScheme.onTertiary,
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 1,
                 fontWeight = FontWeight.Medium,
@@ -275,12 +277,12 @@ fun SelectedUsersBar(
                 },
                 modifier = Modifier
                     .clip(RoundedCornerShape(8.dp))
-                    .background(Color.Black)
+                    .background(MaterialTheme.colorScheme.secondary)
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                     contentDescription = "Forward Icon",
-                    tint = Color.White
+                    tint = MaterialTheme.colorScheme.onSecondary
                 )
             }
         }
@@ -310,13 +312,13 @@ fun AllUsersListItem(
                 Icon(
                     imageVector = Icons.Default.Check,
                     contentDescription = "Selected User",
-                    tint = Color.White,
+                    tint = MaterialTheme.colorScheme.tertiary,
                     modifier = Modifier
                         .size(24.dp) // Adjust the size of the check icon
                         .clip(CircleShape)
-                        .border(2.dp, Color.White, CircleShape)
+                        .border(2.dp, MaterialTheme.colorScheme.onTertiary, CircleShape)
                         .padding(2.dp)
-                        .background(Color.Black)
+                        .background(MaterialTheme.colorScheme.secondary)
                         .align(Alignment.BottomEnd)
                 )
             }
@@ -325,7 +327,7 @@ fun AllUsersListItem(
         Text(
             text = user.name,
             style = MaterialTheme.typography.bodyLarge,
-            color = Color.Black,
+            color = MaterialTheme.colorScheme.onTertiary,
             fontWeight = FontWeight.Bold
         )
     }

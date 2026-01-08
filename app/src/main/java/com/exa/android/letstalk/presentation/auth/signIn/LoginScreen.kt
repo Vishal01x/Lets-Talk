@@ -66,7 +66,7 @@ fun LoginScreen(navController: NavController) {
             text = "Let's join with us",
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onPrimary
+            color = MaterialTheme.colorScheme.onTertiary
         )
 
         Spacer(Modifier.height(8.dp))

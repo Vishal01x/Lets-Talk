@@ -12,7 +12,6 @@ import androidx.navigation.navArgument
 import com.exa.android.letstalk.data.domain.main.ViewModel.ChatViewModel
 import com.exa.android.letstalk.presentation.Main.Home.newChat.AllUserScreen
 import com.exa.android.letstalk.presentation.Main.Home.ChatDetail.DetailChatScreen
-import com.exa.android.letstalk.presentation.Main.Home.ChatDetail.ProfileScreen
 import com.exa.android.letstalk.presentation.Main.Home.HomeScreen
 import com.exa.android.letstalk.presentation.Main.Home.SearchScreen
 import com.exa.android.letstalk.presentation.navigation.component.ChatInfo
@@ -107,29 +106,15 @@ fun NavGraphBuilder.homeNavGraph(navController: NavHostController) {
         }
 
         composable(HomeRoute.PermissionScreen.route) {
-
         }
-
-        chatInfoNavGraph(navController)
+        
+        composable("scheduled_messages") {
+             com.exa.android.letstalk.presentation.Main.scheduledMessages.ScheduledMessagesScreen(
+                 onEditClick = { /* Handle edit if needed, or handled internally */ }
+             )
+        }
     }
 }
 
-fun NavGraphBuilder.chatInfoNavGraph(navController: NavHostController) {
-    navigation(startDestination = ChatInfo.ProfileScreen.route, route = "chat") {
-        composable(ChatInfo.ProfileScreen.route) {
-            ProfileScreen(
-//                "fjidjf",
-//                onMediaClick = { navController.navigate(ChatInfo.ChatMedia.route) },
-//                onCallClick = { navController.navigate(Call.VoiceCall.route) },
-//                onMediaVisibilityClick = { navController.navigate(ChatInfo.MediaVisibility.route) },
-//                onBlockClick = { navController.navigate(ChatInfo.BlockUser.route) }
-            )
-        }
-        /*composable(ChatInfo.ChatMedia.route) { MediaScreen() }
-        composable(ChatInfo.MediaVisibility.route) { MediaVisibilityScreen() }
-        composable(ChatInfo.BlockUser.route) { BlockUserScreen() }
-        composable(Call.VoiceCall.route) { CallScreen() }*/
-    }
-}
 
 

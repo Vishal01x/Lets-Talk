@@ -49,9 +49,9 @@ sealed class PriorityMessageRoute(val route: String){
 }
 
 sealed class ProfileRoute(val route: String) {
-    data object OtherProfileScreen : ProfileRoute("profile/other_profile?userId={userId}") {
-        fun createRoute(userId: String? = null): String {
-            return "profile/other_profile?userId=$userId"
+    data object OtherProfileScreen : ProfileRoute("profile/other_profile/{curUserId}?otherUserId={otherUserId}") {
+        fun createRoute(curUserId: String? = null, otherUserId : String? = null): String {
+            return "profile/other_profile/$curUserId?otherUserId=$otherUserId"
         }
     }
 

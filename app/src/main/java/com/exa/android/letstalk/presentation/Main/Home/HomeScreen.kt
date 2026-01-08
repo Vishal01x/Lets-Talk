@@ -262,7 +262,7 @@ fun AddStoryItem() {
             Icon(
                 imageVector = Icons.Default.Add,
                 contentDescription = "Add Status",
-                tint = Color.Black,
+                tint = MaterialTheme.colorScheme.secondary,
                 modifier = Modifier.size(24.dp)
             )
         }
@@ -270,7 +270,7 @@ fun AddStoryItem() {
         Text(
             text = "Add Story",
             style = MaterialTheme.typography.titleSmall,
-            color = Color.Black
+            color = MaterialTheme.colorScheme.secondary
         )
     }
 }
@@ -424,6 +424,7 @@ fun CustomBottomSheet(
         sheetState = sheetState,
         sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
         scrimColor = Color.Black.copy(alpha = 0.6f), // Dimming the background
+        sheetBackgroundColor = MaterialTheme.colorScheme.background,
         sheetContent = {
             BottomSheetContent(
                 onNewChatClick = { onNewChatClick() },
@@ -505,7 +506,7 @@ fun BottomSheetContent(
             onClick = onDismiss,
             modifier = Modifier.fillMaxWidth()
         ) {
-            androidx.compose.material.Text("Cancel", fontSize = 18.sp, color = Color.Black)
+            androidx.compose.material.Text("Cancel", fontSize = 18.sp, color = MaterialTheme.colorScheme.secondary)
         }
     }
 }
@@ -526,13 +527,13 @@ fun BottomSheetOption(icon: Int, title: String, description: String, onClick: ()
             modifier = Modifier
                 .padding(end = 16.dp)
                 .size(28.dp),
-            tint = Color.Black
+            tint = MaterialTheme.colorScheme.secondary
         )
         Column {
             androidx.compose.material.Text(
                 text = title,
                 fontSize = 18.sp,
-                color = Color.Black,
+                color = MaterialTheme.colorScheme.secondary,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Bold
             )

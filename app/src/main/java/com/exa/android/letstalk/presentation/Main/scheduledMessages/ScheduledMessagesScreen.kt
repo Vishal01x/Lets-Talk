@@ -41,103 +41,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-/*@Composable
-fun ScheduledMessagesScreen(
-    viewModel: ScheduledMessageViewModel = hiltViewModel(),
-    onEditClick: (ScheduledMessageEntity) -> Unit
-) {
-    val messages by viewModel.messages.collectAsState()
-
-    Scaffold(
-        topBar = { MessagesHeader() }
-    ) { padding ->
-        LazyColumn(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
-        ) {
-            items(messages) { item ->
-                when (item) {
-                    is MessageListItem.DateHeader -> DateSeparator(item.date)
-                    is MessageListItem.MessageItem -> MessageCard(
-                        message = item.message,
-                        onDelete = { viewModel.deleteMessage(it) },
-                        onEdit = { onEditClick(it) }
-                    )
-                }
-            }
-        }
-    }
-}
-
-
-
-@Composable
-private fun MessageCard(
-    message: ScheduledMessageEntity,
-    onDelete: (ScheduledMessageEntity) -> Unit,
-    onEdit: (ScheduledMessageEntity) -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp),
-        elevation = CardDefaults.elevatedCardElevation(4.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(12.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Profile Image
-            AsyncImage(
-                model = message.profileImageUri ?: "",
-                contentDescription = "Profile image",
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape)
-            )
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            // Message Details
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = message.recipientName ?: "",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    fontWeight = FontWeight.Bold
-                )
-
-                Text(
-                    text = message.message,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Medium
-                )
-
-                Text(
-                    text = formatTimestamp(message.scheduledTime),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                )
-            }
-
-            // Action Buttons
-            IconButton(onClick = { onEdit(message) }) {
-                Icon(Icons.Default.Edit, contentDescription = "Edit")
-            }
-            IconButton(onClick = { onDelete(message) }) {
-                Icon(Icons.Default.Delete, contentDescription = "Delete")
-            }
-        }
-    }
-}
-
-*/
 
 @Composable
 fun ScheduledMessagesScreen(
@@ -181,7 +84,7 @@ fun ScheduledMessagesScreen(
                 modifier = Modifier
                     .padding(padding)
                     .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background.copy(alpha = 0.1f))
+                    .background(MaterialTheme.colorScheme.background)
             ) {
                 items(messages) { item ->
                     when (item) {
@@ -202,7 +105,7 @@ fun ScheduledMessagesScreen(
 @Composable
 private fun MessagesHeader() {
     TopAppBar(
-        title = { Text("Scheduled Messages", style = MaterialTheme.typography.titleLarge) },
+        title = { Text("Scheduled Messages", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onTertiary) },
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
             containerColor = MaterialTheme.colorScheme.background,
             titleContentColor = MaterialTheme.colorScheme.onBackground
@@ -223,7 +126,7 @@ private fun MessageCard(
             .padding(horizontal = 8.dp, vertical = 4.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.2f)
+            containerColor = MaterialTheme.colorScheme.surface
         )
     ) {
         Column(

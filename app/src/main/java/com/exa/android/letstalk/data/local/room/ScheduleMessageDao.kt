@@ -26,4 +26,10 @@ interface ScheduledMessageDao {
 
     @Query("DELETE FROM scheduled_messages WHERE scheduledTime = :time")
     suspend fun deleteAllMessagesAtTime(time: Long)
+
+    @Query("SELECT * FROM scheduled_messages WHERE scheduledTime <= :time")
+    suspend fun getMessagesScheduledOnOrBefore(time: Long): List<ScheduledMessageEntity>
+
+    @Query("DELETE FROM scheduled_messages WHERE scheduledTime <= :time")
+    suspend fun deleteMessagesScheduledOnOrBefore(time: Long)
 }

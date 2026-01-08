@@ -189,7 +189,7 @@ fun LetsTalkTheme(
 
     // Set the status bar color based on the theme
     systemUiController.setStatusBarColor(
-        color = Color.White, // Use primary color for the status bar
+        color = if(darkTheme)Color(0xFF1C1C1E) else Color.White, // Use primary color for the status bar
         darkIcons = !darkTheme       // Use light or dark icons based on the theme
     )
     MaterialTheme(

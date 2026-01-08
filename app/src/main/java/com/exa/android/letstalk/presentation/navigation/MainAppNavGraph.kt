@@ -1,5 +1,6 @@
 package com.exa.android.letstalk.presentation.navigation
 
+import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -43,7 +44,7 @@ fun NavGraphBuilder.mainAppNavGraph(navController: NavHostController) {
         priorityNavGraph(navController)
 
         profileNavGraph(navController)
-        
+
         // Call navigation
         composable(
             route = "call/{receiverId}?name={receiverName}&image={receiverImage}&type={callType}&callerId={callerId}&isOutgoing={isOutgoing}",
@@ -62,19 +63,24 @@ fun NavGraphBuilder.mainAppNavGraph(navController: NavHostController) {
         ) { backStackEntry ->
             val receiverId = backStackEntry.arguments?.getString("receiverId") ?: ""
             val receiverName = backStackEntry.arguments?.getString("receiverName") ?: ""
-            val receiverImage = backStackEntry.arguments?.getString("receiverImage")?.takeIf { it.isNotEmpty() }
+            val receiverImage =
+                backStackEntry.arguments?.getString("receiverImage")?.takeIf { it.isNotEmpty() }
             val callTypeStr = backStackEntry.arguments?.getString("callType") ?: "VOICE"
             val callerId = backStackEntry.arguments?.getString("callerId") ?: ""
             val isOutgoing = backStackEntry.arguments?.getBoolean("isOutgoing") ?: false
 
-            Log.d("WEBRTC_CALL", "🎬 Navigation | isOutgoing=$isOutgoing | caller=$callerId | receiver=$receiverId")
+            Log.d(
+                "WEBRTC_CALL",
+                "🎬 Navigation | isOutgoing=$isOutgoing | caller=$callerId | receiver=$receiverId"
+            )
 
             // Get activity-scoped ViewModel (shared with MainActivity)
             val activity = LocalContext.current as? androidx.activity.ComponentActivity
             val activityCallViewModel: CallViewModel = viewModel(
-                viewModelStoreOwner = activity ?: androidx.compose.ui.platform.LocalLifecycleOwner.current as androidx.lifecycle.ViewModelStoreOwner
+                viewModelStoreOwner = activity
+                    ?: androidx.compose.ui.platform.LocalLifecycleOwner.current as androidx.lifecycle.ViewModelStoreOwner
             )
-            
+
             val context = LocalContext.current
 
             // For outgoing calls, create renderers and initiate the call
@@ -86,14 +92,14 @@ fun NavGraphBuilder.mainAppNavGraph(navController: NavHostController) {
                         setMirror(true)  // Mirror for selfie view
                     }
                 }
-                
+
                 val remoteRenderer = remember {
                     org.webrtc.SurfaceViewRenderer(context).apply {
                         init(activityCallViewModel.eglBaseContext, null)
                         setMirror(false)  // Don't mirror remote video
                     }
                 }
-                
+
                 // Clean up renderers when navigation changes
                 DisposableEffect(Unit) {
                     onDispose {
@@ -101,7 +107,7 @@ fun NavGraphBuilder.mainAppNavGraph(navController: NavHostController) {
                         remoteRenderer.release()
                     }
                 }
-                
+
                 LaunchedEffect(Unit) {
                     Log.d("WEBRTC_CALL", "✅ [CALLER] Initiating call via ViewModel")
                     activityCallViewModel.initiateCall(
@@ -118,7 +124,7 @@ fun NavGraphBuilder.mainAppNavGraph(navController: NavHostController) {
                 Log.d("WEBRTC_CALL", "⛔ [RECEIVER] Skipping call initiation (incoming call)")
             }
 
-            
+
             // Show call screen with shared ViewModel
             CallScreen(
                 currentUserId = callerId,
@@ -136,7 +142,7 @@ fun NavGraphBuilder.priorityNavGraph(navController: NavHostController) {
         startDestination = PriorityMessageRoute.PriorityMessageScreen.route,
         route = MainRoute.PriorityMessage.route
     ) {
-        composable( PriorityMessageRoute.PriorityMessageScreen.route) {
+        composable(PriorityMessageRoute.PriorityMessageScreen.route) {
             PriorityMessagingScreen(navController)
         }
     }
@@ -162,20 +168,48 @@ fun NavGraphBuilder.profileNavGraph(navController: NavHostController) {
         route = MainRoute.Profile.route
     ) {
         composable(ProfileRoute.CurProfileScreen.route) {
-            UserProfileScreen(null, ProfileType.MY_PROFILE)
+            UserProfileScreen(null, ProfileType.MY_PROFILE, navController)
         }
-        composable(route = ProfileRoute.OtherProfileScreen.route,
+        composable(
+            route = ProfileRoute.OtherProfileScreen.route,
             arguments = listOf(
-                navArgument("userId") {
+                navArgument("otherUserId") {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                },
+                navArgument("curUserId") {
                     type = NavType.StringType
                     nullable = true
                     defaultValue = null
                 }
+
             )) {
-            val userId = it.arguments?.getString("userId")
-            OtherProfileScreen(userId, onCloseClick = {
-                navController.popBackStack()
-            })
+            val otherUserId = it.arguments?.getString("otherUserId")
+            val curUserId = it.arguments?.getString("curUserId")
+            OtherProfileScreen(
+                otherUserId, onCloseClick = {
+                    navController.popBackStack()
+                }, onVideoClick = { user ->
+                    navController.navigate(
+                        "call/${Uri.encode(otherUserId)}" +
+                                "?name=${Uri.encode(user.name)}" +
+                                "&image=${Uri.encode(user.profilePicture ?: "")}" +
+                                "&type=VIDEO" +
+                                "&callerId=${Uri.encode(curUserId)}" +
+                                "&isOutgoing=true"
+                    )
+                },
+                onVoiceClick = { user ->
+                    navController.navigate(
+                        "call/${Uri.encode(otherUserId)}" +
+                                "?name=${Uri.encode(user.name)}" +
+                                "&image=${Uri.encode(user.profilePicture ?: "")}" +
+                                "&type=VOICE" +
+                                "&callerId=${Uri.encode(curUserId)}" +
+                                "&isOutgoing=true"
+                    )
+                })
         }
     }
 }

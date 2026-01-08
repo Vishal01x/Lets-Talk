@@ -32,7 +32,7 @@ fun DeleteMessageDialog(
     AlertDialog(
         onDismissRequest = onCancel,
         backgroundColor = MaterialTheme.colors.background,
-        title = { Text(text = "Delete message?", color = Color.Black) },
+        title = { Text(text = "Delete message?", color = MaterialTheme.colors.onBackground) },
         text = {
             Column {
                 if (canDeleteForEveryone && !hasBeenDeleted) {
@@ -95,7 +95,7 @@ fun CustomButton(text: String, isPrimary: Boolean, enabled: Boolean = true, onCl
             enabled = enabled,
             colors = ButtonDefaults.buttonColors(
                 backgroundColor = if (enabled) Color.Red else Color.Gray,
-                contentColor = Color.White
+                contentColor = MaterialTheme.colors.onSecondary
             ),
             shape = MaterialTheme.shapes.medium
         ) {
@@ -105,9 +105,9 @@ fun CustomButton(text: String, isPrimary: Boolean, enabled: Boolean = true, onCl
         OutlinedButton(
             onClick = onClick,
             shape = MaterialTheme.shapes.medium,
-            border = BorderStroke(1.dp, Color.Black)
+            border = BorderStroke(1.dp, MaterialTheme.colors.secondary)
         ) {
-            Text(text = text, color = Color.Black)
+            Text(text = text, color = MaterialTheme.colors.secondary)
         }
     }
 }

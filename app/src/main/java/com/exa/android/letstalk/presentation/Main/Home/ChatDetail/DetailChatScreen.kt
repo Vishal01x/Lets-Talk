@@ -186,11 +186,11 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
             ChatHeader(
                 chat, chatRoomStatus, curUserId, members, selectedMessages,
                 onProfileClick = {
-                    if(!chat.group) {
+                    if (!chat.group) {
                         val otherUserId = getUserIdFromChatId(chat.id, curUserId)
                         navController.navigate(
                             ProfileRoute.OtherProfileScreen.createRoute(
-                                otherUserId
+                                curUserId, otherUserId
                             )
                         )
                     }
@@ -222,7 +222,8 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
                                     "&image=${Uri.encode(chat.profilePicture ?: "")}" +
                                     "&type=VIDEO" +
                                     "&callerId=${Uri.encode(curUserId)}" +
-                                    "&isOutgoing=true")
+                                    "&isOutgoing=true"
+                        )
                     } else {
                         showToast(context, "Group calls not supported yet")
                     }
@@ -245,7 +246,10 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
                         coroutineScope
                     )
                     selectedMessages = emptySet()
-                }
+                },
+                onScheduledMessageClick =  {
+                    navController.navigate("scheduled_messages")
+                },
             )
         },
         bottomBar = {
@@ -306,7 +310,7 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
- .background(Color.White)
+                .background(MaterialTheme.colorScheme.background)
                 .padding(paddingValues)
         ) {
             MessageList(

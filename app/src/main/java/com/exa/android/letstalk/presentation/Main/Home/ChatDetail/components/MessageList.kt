@@ -179,14 +179,14 @@ fun UnreadMessageSeparator() {
     ) {
         Surface(
             shape = RoundedCornerShape(12.dp),
-            color = Color(0xFFE0E0E0),
+            color = MaterialTheme.colorScheme.secondaryContainer,
             modifier = Modifier.padding(horizontal = 16.dp)
         ) {
             Text(
                 text = "Unread Messages",
                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
                 style = MaterialTheme.typography.labelMedium,
-                color = Color.DarkGray
+                color = MaterialTheme.colorScheme.onSecondaryContainer
             )
         }
     }
@@ -278,7 +278,7 @@ fun MessageBubble(
         ) {
             val bubbleColor = if (curUserId == message.senderId) Color(
                 0xFFFDB92F  // Golden yellow for sent messages
-            ) else Color.White.copy(.75f)  // White for received messages
+            ) else MaterialTheme.colorScheme.secondaryContainer // Theme aware for received messages
             Column(
                 modifier = Modifier
                     .widthIn(max = (0.7 * LocalConfiguration.current.screenWidthDp).dp) // occupy 70% of screen only
@@ -311,7 +311,7 @@ fun MessageBubble(
                     Text(
                         text = if (message.senderId == curUserId) "You deleted this message" else "This message was deleted",
                         style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 24.sp),
-                        color = if (message.senderId == curUserId) Color.White.copy(alpha = 0.8F) else Color.Black.copy(
+                        color = if (message.senderId == curUserId) Color.White.copy(alpha = 0.8F) else MaterialTheme.colorScheme.onSecondaryContainer.copy(
                             alpha = 0.8F
                         ),
                         fontWeight = FontWeight.Normal,
@@ -322,7 +322,7 @@ fun MessageBubble(
                         Text(
                             text = message.message,
                             style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 24.sp),
-                            color = if (curUserId == message.senderId) Color.White else Color.Black,
+                            color = if (curUserId == message.senderId) Color.White else MaterialTheme.colorScheme.onSecondaryContainer,
                             fontWeight = FontWeight.Medium
                         )
                     } else {
@@ -371,7 +371,7 @@ fun MessageBubble(
                     Text(
                         text = formatTimestamp(timestampInMillis), // generate timeStamp like hrs, yesterday
                         style = MaterialTheme.typography.labelSmall,
-                        color = if (curUserId == message.senderId) Color.White else Color.Gray
+                        color = if (curUserId == message.senderId) Color.White else MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
                     )
                     if (curUserId == message.senderId && message.message != "deleted") {
                         Spacer(modifier = Modifier.width(2.dp))

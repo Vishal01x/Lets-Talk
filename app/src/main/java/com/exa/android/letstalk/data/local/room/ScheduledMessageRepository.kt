@@ -38,4 +38,12 @@ class ScheduledMessageRepositoryImpl @Inject constructor(
     override suspend fun removeAllMessagesAtTime(time: Long) {
         dao.deleteAllMessagesAtTime(time)
     }
+
+    override suspend fun getMessagesScheduledOnOrBefore(time: Long): List<ScheduledMessageEntity> {
+        return dao.getMessagesScheduledOnOrBefore(time)
+    }
+
+    override suspend fun deleteMessagesScheduledOnOrBefore(time: Long) {
+        dao.deleteMessagesScheduledOnOrBefore(time)
+    }
 }

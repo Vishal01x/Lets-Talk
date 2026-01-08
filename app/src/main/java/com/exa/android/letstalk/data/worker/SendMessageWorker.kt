@@ -34,17 +34,22 @@ class SendMessagesWorker@AssistedInject constructor(
 //    lateinit var firestoreService: FirestoreService
 
     override suspend fun doWork(): Result {
-        val time = inputData.getLong("SCHEDULED_TIME", 0L)
         Log.d("ScheduleMessage", "Sending message: start")
-        if (time > 0) {
-            val messages = scheduledMessageRepository.getMessagesAtTime(time)
-            Log.d("ScheduleMessage", "Sending message: $messages")
+        
+        // Use current time plus a small buffer (e.g., 5 seconds) to catch any slightly future messages involved in this wake-up
+        // or any past messages that were missed.
+        val currentTime = System.currentTimeMillis() + 5000 
+        
+        val messages = scheduledMessageRepository.getMessagesScheduledOnOrBefore(currentTime)
+        Log.d("ScheduleMessage", "Sending message: found ${messages.size} messages")
+        
+        if (messages.isNotEmpty()) {
             messages.forEach { message ->
                 sendMessageToFirebase(message)
             }
 
             // Remove messages from Room database after sending
-            scheduledMessageRepository.removeAllMessagesAtTime(time)
+            scheduledMessageRepository.deleteMessagesScheduledOnOrBefore(currentTime)
         }
         Log.d("ScheduleMessage", "Sending message: completed")
         return Result.success()

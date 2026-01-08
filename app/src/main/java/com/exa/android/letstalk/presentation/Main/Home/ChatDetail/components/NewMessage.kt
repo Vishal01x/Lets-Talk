@@ -197,7 +197,7 @@ fun SendTFMessage(
     var message by remember { mutableStateOf("") }
     Card(
         elevation = CardDefaults.cardElevation(8.dp),
-        colors = CardDefaults.cardColors(Color.White),
+        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surface),
         shape = RectangleShape,
         modifier = Modifier.padding(bottom = 8.dp)
     ) {
@@ -226,7 +226,7 @@ fun SendTFMessage(
                     androidx.compose.material.Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = "Add",
-                        tint = Color.Black
+                        tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
 
@@ -234,7 +234,7 @@ fun SendTFMessage(
                     androidx.compose.material.Icon(
                         painter = if(isMessageScheduled)painterResource(R.drawable.alarm_dark)else painterResource(R.drawable.alarm_light),
                         contentDescription = "Add",
-                        tint = Color.Black,
+                        tint = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.size(24.dp)
                     )
                 }
@@ -246,14 +246,14 @@ fun SendTFMessage(
                     modifier = Modifier
                         .weight(1f)
                         .clip(RoundedCornerShape(24.dp))
-                        .background(Color(0xFFEFEFEF)) // Light grey background
+                        .background(MaterialTheme.colorScheme.surfaceVariant) // Light grey background
                         .padding(horizontal = 16.dp, vertical = 8.dp),
                     contentAlignment = Alignment.CenterStart
                 ) {
                     if (message.isEmpty()) {
                         Text(
                             text = "Type a Message",
-                            color = Color.Gray,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }
@@ -263,7 +263,7 @@ fun SendTFMessage(
                         modifier = Modifier
                             .fillMaxWidth()
                             .focusRequester(focusRequester),
-                        textStyle = MaterialTheme.typography.bodyLarge.copy(color = Color.Black),
+                        textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
                         maxLines = 4,
                         keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions(
@@ -295,7 +295,7 @@ fun SendTFMessage(
                     androidx.compose.material.Icon(
                         painter = painterResource(if (message.isEmpty()) R.drawable.microphone else R.drawable.send),
                         contentDescription = "Send or Mic",
-                        tint = Color.Black,
+                        tint = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.size(24.dp)
                     )
                 }
@@ -315,7 +315,7 @@ fun SendAudioMessage(
 ) {
     Card(
         elevation = CardDefaults.cardElevation(8.dp),
-        colors = CardDefaults.cardColors(Color.White),
+        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surface),
         shape = RectangleShape
     ) {
         Row(
@@ -329,14 +329,14 @@ fun SendAudioMessage(
                 androidx.compose.material.Icon(
                     imageVector = Icons.Default.Delete,
                     contentDescription = "Delete Recording",
-                    tint = Color.Black
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
             }
 
             // Timer
             Text(
                 text = recordingTime,
-                color = Color.Black,
+                color = MaterialTheme.colorScheme.onSurface,
                 style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
@@ -362,7 +362,7 @@ fun SendAudioMessage(
                 androidx.compose.material.Icon(
                     painter = painterResource(if (isPaused) R.drawable.play else R.drawable.pause),
                     contentDescription = "Pause/Resume Recording",
-                    tint = Color.Black
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
             }
 
@@ -371,7 +371,7 @@ fun SendAudioMessage(
                 androidx.compose.material.Icon(
                     imageVector = Icons.Default.Send,
                     contentDescription = "Send Recording",
-                    tint = Color.Black
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
             }
         }
@@ -394,7 +394,7 @@ fun ReplyUi(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .background(if (showCross) Color(0xFFf6f6f6) else Color.White.copy(alpha = 0.4f))
+            .background(if (showCross) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
             .padding(vertical = 12.dp, horizontal = 8.dp)
     ) {
         Column(verticalArrangement = Arrangement.SpaceEvenly) {
@@ -403,7 +403,7 @@ fun ReplyUi(
                     text = it,
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
@@ -411,7 +411,7 @@ fun ReplyUi(
                 text = replyTo.message,
                 style = MaterialTheme.typography.bodyMedium,
                 maxLines = 1,
-                color = Color(0x80000000),
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
                 fontWeight = FontWeight.Medium,
                 overflow = TextOverflow.Ellipsis
             )
@@ -419,8 +419,8 @@ fun ReplyUi(
         if (showCross) {
             Box(modifier = Modifier
                 .clip(CircleShape)
-                .border(1.dp, Color.White, CircleShape)
-                .background(Color.Black)
+                .border(1.dp, MaterialTheme.colorScheme.onSurface, CircleShape)
+                .background(MaterialTheme.colorScheme.onSurface)
                 .clickable {
                     if (onDiscard != null) {
                         onDiscard()
@@ -431,7 +431,7 @@ fun ReplyUi(
                 Icon(
                     imageVector = Icons.Default.Close,
                     contentDescription = "Discard Reply",
-                    tint = Color.White
+                    tint = MaterialTheme.colorScheme.surface
                 )
             }
         }

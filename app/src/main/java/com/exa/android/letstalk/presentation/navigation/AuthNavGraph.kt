@@ -25,7 +25,7 @@ fun NavGraphBuilder.authNavGraph(navController: NavHostController) {
         composable(AuthRoute.Register.route) { RegisterScreen(navController) }
 
         composable(AuthRoute.CreateUser.route) {
-            UserProfileScreen(null, ProfileType.SIGNUP_PROFILE, onProfileSave = {
+            UserProfileScreen(null, ProfileType.SIGNUP_PROFILE, navController, onProfileSave = {
                 navController.navigate(MainRoute.Home.route){
                     popUpTo(MainRoute.Home.route){
                         inclusive = true

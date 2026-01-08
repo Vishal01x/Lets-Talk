@@ -49,6 +49,8 @@ import com.exa.android.letstalk.utils.models.User
 fun OtherProfileScreen(
     userId: String?,
     onCloseClick: () -> Unit,
+    onVoiceClick: (User) -> Unit = {},
+    onVideoClick: (User) -> Unit = {},
     userViewModel: UserViewModel = hiltViewModel()
 ) {
     val userResponse by userViewModel.userProfile.collectAsState()
@@ -167,7 +169,7 @@ fun OtherProfileScreen(
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             Button(
-                onClick = {},
+                onClick = {onVoiceClick(user)},
                 shape = CircleShape,
                 colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondary)
             ) {
@@ -181,7 +183,7 @@ fun OtherProfileScreen(
                 Text("Audio", color = MaterialTheme.colorScheme.tertiary)
             }
             Button(
-                onClick = {},
+                onClick = {onVideoClick(user)},
                 shape = CircleShape,
                 colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondary)
             ) {
@@ -194,20 +196,20 @@ fun OtherProfileScreen(
                 Spacer(modifier = Modifier.width(6.dp))
                 Text("Video", color = MaterialTheme.colorScheme.tertiary)
             }
-            Button(
-                onClick = {},
-                shape = CircleShape,
-                colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondary.copy(.1f))
-            ) {
-                Icon(
-                    Icons.Default.Search,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp),
-                    tint = MaterialTheme.colorScheme.secondary
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                Text("Search", color = MaterialTheme.colorScheme.secondary)
-            }
+//            Button(
+//                onClick = {},
+//                shape = CircleShape,
+//                colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondary.copy(.1f))
+//            ) {
+//                Icon(
+//                    Icons.Default.Search,
+//                    contentDescription = null,
+//                    modifier = Modifier.size(18.dp),
+//                    tint = MaterialTheme.colorScheme.secondary
+//                )
+//                Spacer(modifier = Modifier.width(6.dp))
+//                Text("Search", color = MaterialTheme.colorScheme.secondary)
+//            }
         }
 
         HorizontalDivider()
