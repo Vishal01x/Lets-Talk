@@ -6,7 +6,6 @@ plugins {
     id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
 }
-
 android {
     namespace = "com.exa.android.letstalk"
     compileSdk = 35
@@ -68,9 +67,9 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     // Firebase
-    implementation(libs.firebase.auth) //auth
-    implementation(libs.firebase.firestore) // firestore
-    implementation(libs.firebase.database) // db
+    implementation(libs.firebase.firestore)
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.database)
     implementation(libs.androidx.datastore.preferences.core.jvm)
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.firebase.auth.ktx)
@@ -121,6 +120,7 @@ dependencies {
 
     // hilt Navigation
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+    kapt("androidx.hilt:hilt-compiler:1.2.0")
 
     //coil
     implementation("io.coil-kt:coil-compose:2.4.0")
@@ -129,8 +129,12 @@ dependencies {
     implementation(libs.landscapist.glide)
     kapt("com.github.bumptech.glide:compiler:4.16.0")
 
-    // Signal Protocol for E2EE
+    // Signal Protocol for E2EE - Android fork with better compatibility
     implementation("org.whispersystems:signal-protocol-android:2.8.1")
+    // Compatible protobuf version
+    implementation("com.google.protobuf:protobuf-javalite:3.21.9")
+    // EncryptedSharedPreferences for secure key storage
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
 
     implementation("androidx.compose.compiler:compiler:1.5.15")
     // for google credentials
@@ -158,5 +162,6 @@ dependencies {
 
     // WebRTC for voice and video calling
     implementation("io.getstream:stream-webrtc-android:1.1.3")
+
 
 }

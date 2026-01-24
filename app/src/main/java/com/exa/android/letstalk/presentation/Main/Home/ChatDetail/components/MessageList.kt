@@ -39,10 +39,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.exa.android.letstalk.utils.helperFun.formatTimestamp
-import com.exa.android.letstalk.utils.helperFun.getVibrator
-import com.exa.android.letstalk.utils.models.Message
-import com.exa.android.letstalk.utils.models.User
+import com.exa.android.letstalk.core.utils.helperFun.formatTimestamp
+import com.exa.android.letstalk.core.utils.helperFun.getVibrator
+import com.exa.android.letstalk.domain.Message
+import com.exa.android.letstalk.domain.User
 import com.exa.android.letstalk.R
 import com.exa.android.letstalk.presentation.Main.Home.ChatDetail.components.media.checkAndOpenOrDownloadMedia
 import com.exa.android.letstalk.presentation.Main.Home.ChatDetail.components.media.docs.DocumentMessageItem
@@ -53,9 +53,9 @@ import com.exa.android.letstalk.presentation.Main.Home.ChatDetail.components.med
 import com.exa.android.letstalk.presentation.Main.Home.ChatDetail.components.media.image.openImageIntent
 import com.exa.android.letstalk.presentation.Main.Home.ChatDetail.components.media.openFileWithIntent
 import com.exa.android.letstalk.presentation.Main.Home.ChatDetail.components.media.video.VideoMessageItem
-import com.exa.android.letstalk.utils.models.MediaType
-import com.exa.android.letstalk.utils.helperFun.getDateSeparatorText
-import com.exa.android.letstalk.utils.helperFun.shouldShowDateSeparator
+import com.exa.android.letstalk.domain.MediaType
+import com.exa.android.letstalk.core.utils.helperFun.getDateSeparatorText
+import com.exa.android.letstalk.core.utils.helperFun.shouldShowDateSeparator
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 

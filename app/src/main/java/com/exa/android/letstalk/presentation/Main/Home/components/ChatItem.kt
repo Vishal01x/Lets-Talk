@@ -29,12 +29,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.exa.android.letstalk.utils.helperFun.formatTimestamp
-import com.exa.android.letstalk.utils.models.Chat
+import com.exa.android.letstalk.core.utils.helperFun.formatTimestamp
+import com.exa.android.letstalk.domain.Chat
 import com.exa.android.letstalk.R
 import com.exa.android.letstalk.presentation.Main.components.CircularUserImage
 import com.exa.android.letstalk.ui.theme.AppColors
-import com.exa.android.letstalk.utils.helperFun.getOtherUserName
+import com.exa.android.letstalk.core.utils.helperFun.getOtherUserName
 
 @Composable
 fun ChatListItem(chat: Chat, zoomImage: (String?) -> Unit, openChat: (userId: String) -> Unit) {

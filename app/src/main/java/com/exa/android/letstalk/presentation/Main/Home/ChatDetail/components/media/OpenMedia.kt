@@ -7,7 +7,7 @@ import android.net.Uri
 import android.os.Environment
 import android.widget.Toast
 import androidx.core.content.FileProvider
-import com.exa.android.letstalk.utils.Constants.APP_NAME
+import com.exa.android.letstalk.core.utils.Constants.APP_NAME
 import java.io.File
 
 fun checkAndOpenOrDownloadMedia(

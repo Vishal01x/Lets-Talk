@@ -30,15 +30,15 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.exa.android.letstalk.data.domain.main.ViewModel.ChatViewModel
-import com.exa.android.letstalk.data.domain.main.ViewModel.UserViewModel
+import com.exa.android.letstalk.presentation.Main.Home.ViewModel.ChatViewModel
+import com.exa.android.letstalk.presentation.Main.Home.ViewModel.UserViewModel
 import com.exa.android.letstalk.presentation.Main.components.CircularUserImage
 import com.exa.android.letstalk.presentation.navigation.component.HomeRoute
 import com.exa.android.letstalk.presentation.navigation.component.ScreenPurpose
-import com.exa.android.letstalk.utils.helperFun.generateChatId
-import com.exa.android.letstalk.utils.models.Chat
-import com.exa.android.letstalk.utils.models.User
-import com.exa.android.letstalk.utils.Response
+import com.exa.android.letstalk.core.utils.helperFun.generateChatId
+import com.exa.android.letstalk.domain.Chat
+import com.exa.android.letstalk.domain.User
+import com.exa.android.letstalk.core.utils.Response
 import com.google.gson.Gson
 import java.net.URLEncoder
 

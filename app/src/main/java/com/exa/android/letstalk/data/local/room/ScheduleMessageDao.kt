@@ -32,4 +32,16 @@ interface ScheduledMessageDao {
 
     @Query("DELETE FROM scheduled_messages WHERE scheduledTime <= :time")
     suspend fun deleteMessagesScheduledOnOrBefore(time: Long)
+
+    @Query("SELECT * FROM scheduled_messages WHERE scheduledTime > :time")
+    suspend fun getFutureScheduledMessages(time: Long): List<ScheduledMessageEntity>
+
+    @Query("UPDATE scheduled_messages SET status = 'sent' WHERE scheduledTime <= :time AND status = 'scheduled'")
+    suspend fun markMessagesAsSent(time: Long)
+
+    @Query("SELECT * FROM scheduled_messages WHERE status = 'scheduled' ORDER BY scheduledTime ASC")
+    fun getScheduledMessages(): Flow<List<ScheduledMessageEntity>>
+
+    @Query("SELECT * FROM scheduled_messages WHERE status = 'sent' ORDER BY scheduledTime DESC")
+    fun getSentMessages(): Flow<List<ScheduledMessageEntity>>
 }

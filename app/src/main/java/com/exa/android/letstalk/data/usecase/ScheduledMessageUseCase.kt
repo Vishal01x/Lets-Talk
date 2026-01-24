@@ -13,4 +13,8 @@ interface ScheduledMessageRepository {
     suspend fun removeAllMessagesAtTime(time: Long)
     suspend fun getMessagesScheduledOnOrBefore(time: Long): List<ScheduledMessageEntity>
     suspend fun deleteMessagesScheduledOnOrBefore(time: Long)
+    suspend fun getFutureScheduledMessages(time: Long): List<ScheduledMessageEntity>
+    suspend fun markMessagesAsSent(time: Long)
+    fun getScheduledMessages(): Flow<List<ScheduledMessageEntity>>
+    fun getSentMessages(): Flow<List<ScheduledMessageEntity>>
 }

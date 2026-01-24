@@ -1,6 +1,5 @@
 package com.exa.android.letstalk.presentation.navigation
 
-import androidx.compose.compiler.plugins.kotlin.lower.changedParamCountFromTotal
 import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
@@ -9,16 +8,14 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
-import com.exa.android.letstalk.data.domain.main.ViewModel.ChatViewModel
+import com.exa.android.letstalk.presentation.Main.Home.ViewModel.ChatViewModel
 import com.exa.android.letstalk.presentation.Main.Home.newChat.AllUserScreen
 import com.exa.android.letstalk.presentation.Main.Home.ChatDetail.DetailChatScreen
 import com.exa.android.letstalk.presentation.Main.Home.HomeScreen
 import com.exa.android.letstalk.presentation.Main.Home.SearchScreen
-import com.exa.android.letstalk.presentation.navigation.component.ChatInfo
 import com.exa.android.letstalk.presentation.navigation.component.HomeRoute
 import com.exa.android.letstalk.presentation.navigation.component.ScreenPurpose
-import com.exa.android.letstalk.utils.models.Chat
-import com.exa.android.letstalk.R
+import com.exa.android.letstalk.domain.Chat
 import com.exa.android.letstalk.presentation.Main.Home.newChat.CreateGroupScreenUI
 import com.exa.android.letstalk.presentation.Main.Home.components.ZoomPhoto
 import com.exa.android.letstalk.presentation.Main.Home.newChat.NewGroupViewModel

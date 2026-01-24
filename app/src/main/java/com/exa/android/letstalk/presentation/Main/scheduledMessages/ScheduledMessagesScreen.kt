@@ -2,17 +2,27 @@ package com.exa.android.letstalk.presentation.Main.scheduledMessages
 
 // Jetpack Compose core
 import android.app.TimePickerDialog
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.*
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Emergency
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Schedule
@@ -36,22 +46,28 @@ import com.exa.android.letstalk.data.local.room.MessageListItem
 import com.exa.android.letstalk.data.local.room.ScheduledMessageViewModel
 import com.exa.android.letstalk.data.local.room.ScheduledMessageEntity
 import com.exa.android.letstalk.presentation.Main.Home.components.MessageSchedulerDialog
-import com.exa.android.letstalk.utils.helperFun.formatTimestamp
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlinx.coroutines.launch
 
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ScheduledMessagesScreen(
     viewModel: ScheduledMessageViewModel = hiltViewModel(),
     onEditClick: (ScheduledMessageEntity) -> Unit
 ) {
-    val messages by viewModel.messages.collectAsState()
-    var showEditDialog by remember { mutableStateOf(false) }
+    val scheduledMessages by viewModel.scheduledMessages.collectAsState()
+    val sentMessages by viewModel.sentMessages.collectAsState()
+    
+    val pagerState = rememberPagerState(pageCount = { 2 })
+    val coroutineScope = rememberCoroutineScope()
+    val titles = listOf("Scheduled", "Sent")
+
     var selectedMessage by remember { mutableStateOf<ScheduledMessageEntity?>(null) }
-    var showScheduleDialog by remember { mutableStateOf(false) }
-    // Edit Dialog
+
+    // Edit Dialog (Only for Scheduled messages generally)
     selectedMessage?.let { message ->
         EditMessageDialog(
             message = message,
@@ -66,35 +82,95 @@ fun ScheduledMessagesScreen(
     Scaffold(
         topBar = { MessagesHeader() }
     ) { padding ->
-        if (messages.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .padding(padding)
-                    .fillMaxSize(), // take full screen
-                contentAlignment = Alignment.Center // center children
+        Column(modifier = Modifier.padding(padding)) {
+            TabRow(
+                selectedTabIndex = pagerState.currentPage,
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.primary,
+                indicator = { tabPositions ->
+                    TabRowDefaults.Indicator(
+                        Modifier.tabIndicatorOffset(tabPositions[pagerState.currentPage]),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
             ) {
-                Image(
-                    painter = painterResource(R.drawable.no_data),
-                    contentDescription = "No Data",
-                    modifier = Modifier.height(500.dp)
+                titles.forEachIndexed { index, title ->
+                    Tab(
+                        selected = pagerState.currentPage == index,
+                        onClick = {
+                            coroutineScope.launch { pagerState.animateScrollToPage(index) }
+                        },
+                        text = { Text(title, style = MaterialTheme.typography.titleMedium) }
+                    )
+                }
+            }
+
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxSize()
+            ) { page ->
+                if (page == 0) {
+                    ScheduledMessageList(
+                        messages = scheduledMessages,
+                        onDelete = { viewModel.deleteMessage(it) },
+                        onEdit = { selectedMessage = it },
+                        isHistory = false
+                    )
+                } else {
+                    ScheduledMessageList(
+                        messages = sentMessages,
+                        onDelete = { viewModel.deleteMessage(it) }, // Allow deleting history
+                        onEdit = { /* No edit for sent messages */ },
+                        isHistory = true
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ScheduledMessageList(
+    messages: List<MessageListItem>,
+    onDelete: (ScheduledMessageEntity) -> Unit,
+    onEdit: (ScheduledMessageEntity) -> Unit,
+    isHistory: Boolean
+) {
+    if (messages.isEmpty()) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(
+                    imageVector = if(isHistory)Icons.Default.Check else Icons.Default.Emergency,
+                    contentDescription = null,
+                    modifier = Modifier.size(64.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = if(isHistory) "No sent messages" else "No scheduled messages",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-        }else {
-            LazyColumn(
-                modifier = Modifier
-                    .padding(padding)
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background)
-            ) {
-                items(messages) { item ->
-                    when (item) {
-                        is MessageListItem.DateHeader -> DateSeparator(item.date)
-                        is MessageListItem.MessageItem -> MessageCard(
-                            message = item.message,
-                            onDelete = { viewModel.deleteMessage(it) },
-                            onEdit = { selectedMessage = it }
-                        )
-                    }
+        }
+    } else {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+        ) {
+            items(messages) { item ->
+                when (item) {
+                    is MessageListItem.DateHeader -> DateSeparator(item.date)
+                    is MessageListItem.MessageItem -> MessageCard(
+                        message = item.message,
+                        onDelete = onDelete,
+                        onEdit = if (!isHistory) onEdit else { {} }, // Disable edit for history
+                        showEditArg = !isHistory 
+                    )
                 }
             }
         }
@@ -118,7 +194,8 @@ private fun MessagesHeader() {
 private fun MessageCard(
     message: ScheduledMessageEntity,
     onDelete: (ScheduledMessageEntity) -> Unit,
-    onEdit: (ScheduledMessageEntity) -> Unit
+    onEdit: (ScheduledMessageEntity) -> Unit,
+    showEditArg: Boolean = true
 ) {
     Card(
         modifier = Modifier
@@ -163,15 +240,17 @@ private fun MessageCard(
 //                    )
                 }
 
-                IconButton(
-                    onClick = { onEdit(message) },
-                    modifier = Modifier.size(32.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Edit,
-                        contentDescription = "Edit",
-                        tint = MaterialTheme.colorScheme.secondary
-                    )
+                if (showEditArg) {
+                    IconButton(
+                        onClick = { onEdit(message) },
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Edit,
+                            contentDescription = "Edit",
+                            tint = MaterialTheme.colorScheme.secondary
+                        )
+                    }
                 }
             }
 

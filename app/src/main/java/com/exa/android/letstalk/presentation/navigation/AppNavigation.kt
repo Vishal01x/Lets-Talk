@@ -20,7 +20,7 @@ import com.exa.android.letstalk.AppManager.switchSheetState
 import com.exa.android.letstalk.presentation.navigation.component.PriorityMessageRoute
 import com.exa.android.letstalk.presentation.navigation.component.ProfileRoute
 import com.exa.android.letstalk.presentation.navigation.component.ScheduledMessageRoute
-import com.exa.android.letstalk.utils.helperFun.permissionHandling
+import com.exa.android.letstalk.core.utils.helperFun.permissionHandling
 
 @Composable
 fun AppNavigation(

@@ -1,7 +1,7 @@
 package com.exa.android.letstalk.data.local.room
 
 import androidx.room.TypeConverter
-import com.exa.android.letstalk.utils.models.Message
+import com.exa.android.letstalk.domain.Message
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 

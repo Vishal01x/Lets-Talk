@@ -13,7 +13,6 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.PermMedia
 import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.*
@@ -39,11 +38,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.exa.android.letstalk.R
-import com.exa.android.letstalk.data.domain.main.ViewModel.UserViewModel
+import com.exa.android.letstalk.presentation.Main.Home.ViewModel.UserViewModel
 import com.exa.android.letstalk.presentation.Main.components.CircularUserImage
 import com.exa.android.letstalk.ui.theme.LetsTalkTheme
-import com.exa.android.letstalk.utils.Response
-import com.exa.android.letstalk.utils.models.User
+import com.exa.android.letstalk.core.utils.Response
+import com.exa.android.letstalk.domain.User
 
 @Composable
 fun OtherProfileScreen(

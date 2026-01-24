@@ -11,12 +11,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.exa.android.letstalk.data.domain.call.models.CallState
-import com.exa.android.letstalk.data.domain.call.models.CallType
+import com.exa.android.letstalk.core.utils.showToast
+import com.exa.android.letstalk.domain.CallState
+import com.exa.android.letstalk.domain.CallType
 import com.exa.android.letstalk.presentation.call.screens.ActiveCallScreen
 import com.exa.android.letstalk.presentation.call.screens.IncomingCallScreen
 import com.exa.android.letstalk.presentation.call.screens.OutgoingCallScreen
-import com.exa.android.letstalk.utils.showToast
 import org.webrtc.SurfaceViewRenderer
 
 /**

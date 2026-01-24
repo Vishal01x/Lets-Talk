@@ -9,11 +9,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -21,7 +16,6 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
@@ -33,30 +27,27 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import com.exa.android.khacheri.screens.Main.Home.ChatDetail.ChatHeader
-import com.exa.android.letstalk.AppManager.switchSheetState
-import com.exa.android.letstalk.data.domain.main.ViewModel.ChatViewModel
-import com.exa.android.letstalk.data.domain.main.ViewModel.MediaSharingViewModel
-import com.exa.android.letstalk.data.domain.main.ViewModel.PriorityViewModel
+import com.exa.android.letstalk.presentation.Main.Home.ViewModel.ChatViewModel
+import com.exa.android.letstalk.presentation.Main.Home.ViewModel.MediaSharingViewModel
+import com.exa.android.letstalk.presentation.Main.priorityMessages.PriorityViewModel
 import com.exa.android.letstalk.data.local.room.ScheduledMessageViewModel
-import com.exa.android.letstalk.data.domain.main.ViewModel.UserViewModel
+import com.exa.android.letstalk.presentation.Main.Home.ViewModel.UserViewModel
 import com.exa.android.letstalk.presentation.Main.Home.ChatDetail.components.MessageList
 import com.exa.android.letstalk.presentation.Main.Home.ChatDetail.components.NewMessageSection
 import com.exa.android.letstalk.presentation.navigation.component.HomeRoute
 import com.exa.android.letstalk.presentation.navigation.component.ScreenPurpose
 import com.exa.android.letstalk.presentation.Main.Home.components.MessageSchedulerDialog
 import com.exa.android.letstalk.presentation.navigation.component.ProfileRoute
-import com.exa.android.letstalk.utils.CurChatManager.activeChatId
-import com.exa.android.letstalk.utils.models.Chat
-import com.exa.android.letstalk.utils.models.Message
-import com.exa.android.letstalk.utils.models.User
-import com.exa.android.letstalk.utils.Response
-import com.exa.android.letstalk.utils.clearChatNotifications
-import com.exa.android.letstalk.utils.helperFun.generateMessage
-import com.exa.android.letstalk.utils.helperFun.getUserIdFromChatId
-import com.exa.android.letstalk.utils.models.Call
-import com.exa.android.letstalk.utils.models.CallType
-import com.exa.android.letstalk.utils.models.ScheduleType
-import com.exa.android.letstalk.utils.showToast
+import com.exa.android.letstalk.core.utils.CurChatManager.activeChatId
+import com.exa.android.letstalk.domain.Chat
+import com.exa.android.letstalk.domain.Message
+import com.exa.android.letstalk.domain.User
+import com.exa.android.letstalk.core.utils.Response
+import com.exa.android.letstalk.core.utils.clearChatNotifications
+import com.exa.android.letstalk.core.utils.helperFun.generateMessage
+import com.exa.android.letstalk.core.utils.helperFun.getUserIdFromChatId
+import com.exa.android.letstalk.domain.ScheduleType
+import com.exa.android.letstalk.core.utils.showToast
 import com.exa.android.reflekt.loopit.presentation.main.Home.ChatDetail.component.media.mediaSelectionSheet.MediaPickerHandler
 import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
@@ -79,8 +70,7 @@ fun DetailChatScreen(navController: NavController, chat: Chat) {
     //val curUser by chatViewModel.curUser.collectAsState() // cur User Details
     //val responseChatRoomDetail by userVM.chatRoomDetail.collectAsState() // Other User Details in form of response from UserViewModel
     val responseMembersDetail by chatViewModel.membersDetail.collectAsState() // Members Details in form of response from ChatViewModel
-    val chatRoomStatus by userViewModel.chatRoomStatus.observeAsState() // Other User Status like online, offline, typing
-    val curCall by chatViewModel.curCall.collectAsState()
+    val chatRoomStatus by userViewModel.chatRoomStatus.observeAsState() // Other User Status like online, offline, typin
 
     // val chatRoomDetail: MutableState<Chat?> = remember { mutableStateOf(Chat()) } // fetching data from responseUserDetail when Success
     val chatMessages: MutableState<List<Message>> = remember { mutableStateOf(emptyList()) }

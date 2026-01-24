@@ -31,12 +31,12 @@ import androidx.compose.ui.unit.dp
 import com.exa.android.letstalk.R
 import com.exa.android.letstalk.presentation.Main.Home.ChatDetail.components.header.DeleteMessageDialog
 import com.exa.android.letstalk.presentation.Main.components.CircularUserImage
-import com.exa.android.letstalk.utils.helperFun.formatTimestamp
-import com.exa.android.letstalk.utils.helperFun.getOtherUserName
-import com.exa.android.letstalk.utils.models.Chat
-import com.exa.android.letstalk.utils.models.Message
-import com.exa.android.letstalk.utils.models.Status
-import com.exa.android.letstalk.utils.models.User
+import com.exa.android.letstalk.core.utils.helperFun.formatTimestamp
+import com.exa.android.letstalk.core.utils.helperFun.getOtherUserName
+import com.exa.android.letstalk.domain.Chat
+import com.exa.android.letstalk.domain.Message
+import com.exa.android.letstalk.domain.Status
+import com.exa.android.letstalk.domain.User
 
 
 @Composable

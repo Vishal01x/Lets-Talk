@@ -3,14 +3,19 @@ package com.exa.android.letstalk.presentation.call
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.exa.android.letstalk.data.domain.call.CallSignalingRepository
-import com.exa.android.letstalk.data.domain.call.CallWebRTCManager
-import com.exa.android.letstalk.data.domain.call.models.CallState
-import com.exa.android.letstalk.data.domain.call.models.CallStatus
-import com.exa.android.letstalk.data.domain.call.models.CallType
-import com.exa.android.letstalk.data.usecase.call.*
-import com.exa.android.letstalk.utils.CallRingtoneManager
-import com.exa.android.letstalk.utils.Response
+import com.exa.android.letstalk.core.utils.Response
+import com.exa.android.letstalk.data.repository.CallSignalingRepository
+import com.exa.android.letstalk.data.repository.UserRepository
+import com.exa.android.letstalk.data.usecase.AnswerCallUseCase
+import com.exa.android.letstalk.data.usecase.EndCallUseCase
+import com.exa.android.letstalk.data.usecase.InitiateCallUseCase
+import com.exa.android.letstalk.data.usecase.ObserveIncomingCallsUseCase
+import com.exa.android.letstalk.data.usecase.RejectCallUseCase
+import com.exa.android.letstalk.data.webrtc.CallRingtoneManager
+import com.exa.android.letstalk.data.webrtc.CallWebRTCManager
+import com.exa.android.letstalk.domain.CallState
+import com.exa.android.letstalk.domain.CallStatus
+import com.exa.android.letstalk.domain.CallType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -34,7 +39,7 @@ class CallViewModel @Inject constructor(
     private val webRTCManager: CallWebRTCManager,
     private val signalingRepository: CallSignalingRepository,
     private val ringtoneManager: CallRingtoneManager,
-    private val userRepository: com.exa.android.letstalk.data.domain.main.repository.UserRepository
+    private val userRepository: UserRepository
 ) : ViewModel() {
 
     private val TAG = "WEBRTC_CALL"

@@ -7,7 +7,7 @@ import javax.inject.Inject
 class ScheduledMessageRepositoryImpl @Inject constructor(
     private val db: ScheduleMessageDatabase
 ): ScheduledMessageRepository {
-    val dao = db.dao
+    val dao = db.scheduleMessageDao()
 
     override fun getAllMessages(): Flow<List<ScheduledMessageEntity>> = dao.getAllMessages()
 
@@ -45,5 +45,21 @@ class ScheduledMessageRepositoryImpl @Inject constructor(
 
     override suspend fun deleteMessagesScheduledOnOrBefore(time: Long) {
         dao.deleteMessagesScheduledOnOrBefore(time)
+    }
+
+    override suspend fun getFutureScheduledMessages(time: Long): List<ScheduledMessageEntity> {
+        return dao.getFutureScheduledMessages(time)
+    }
+
+    override suspend fun markMessagesAsSent(time: Long) {
+        dao.markMessagesAsSent(time)
+    }
+
+    override fun getScheduledMessages(): Flow<List<ScheduledMessageEntity>> {
+        return dao.getScheduledMessages()
+    }
+
+    override fun getSentMessages(): Flow<List<ScheduledMessageEntity>> {
+        return dao.getSentMessages()
     }
 }

@@ -7,6 +7,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     
     <!-- WebRTC Call Permissions -->
     <uses-permission android:name="android.permission.CAMERA" />
@@ -34,13 +35,23 @@
 
         <!-- MessageReceiver: Handles scheduled message alarms -->
         <receiver
-            android:name=".data.broadcast.MessageReceiver"
+            android:name=".core.broadcast.MessageReceiver"
             android:exported="false"
             android:enabled="true" />
 
+        <!-- BootReceiver: Reschedules alarms on device reboot -->
+        <receiver
+            android:name=".core.broadcast.BootReceiver"
+            android:exported="true"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
         <!-- Firebase Messaging Service -->
         <service
-            android:name=".data.fm.FirebaseMessageService"
+            android:name=".core.fm.FirebaseMessageService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />

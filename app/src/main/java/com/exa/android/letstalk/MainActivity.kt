@@ -1,7 +1,5 @@
 package com.exa.android.letstalk
 
-import android.app.Activity
-import android.app.NotificationManager
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.Uri
@@ -13,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.lifecycleScope
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -20,16 +19,19 @@ import androidx.compose.runtime.setValue
 import androidx.fragment.app.FragmentActivity
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.rememberNavController
-import com.exa.android.letstalk.data.domain.call.models.CallState
-import com.exa.android.letstalk.data.domain.main.ViewModel.UserViewModel
+import com.exa.android.letstalk.data.signal_protocol.DeviceInitializer
+import com.exa.android.letstalk.core.worker.WorkerScheduler
+import com.exa.android.letstalk.domain.CallState
+import com.exa.android.letstalk.presentation.Main.Home.ViewModel.UserViewModel
 import com.exa.android.letstalk.presentation.call.CallViewModel
 import com.exa.android.letstalk.presentation.navigation.AppNavigation
 import com.exa.android.letstalk.ui.theme.LetsTalkTheme
-import com.exa.android.letstalk.utils.MyLifecycleObserver
-import com.exa.android.letstalk.utils.NetworkCallbackReceiver
-import com.exa.android.letstalk.utils.clearAllNotifications
+import com.exa.android.letstalk.core.utils.MyLifecycleObserver
+import com.exa.android.letstalk.core.utils.NetworkCallbackReceiver
+import com.exa.android.letstalk.core.utils.clearAllNotifications
 import dagger.hilt.android.AndroidEntryPoint
-import java.net.URLEncoder
+import javax.inject.Inject
+import kotlinx.coroutines.launch
 
 
 @AndroidEntryPoint
@@ -37,19 +39,39 @@ class MainActivity : FragmentActivity() {
 
     val userViewModel: UserViewModel by viewModels()
     private val callViewModel: CallViewModel by viewModels()
+    
+    @Inject
+    lateinit var deviceInitializer: DeviceInitializer
 
-    override fun onCreate(savedInstanceState: android.os.Bundle?) {
+    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         //enableEdgeToEdge()
 
         val curUser = userViewModel.curUserId
 
-        curUser.value?.let {
-            val lifecycleObserver = MyLifecycleObserver(userViewModel, it)
+        curUser.value?.let { userId ->
+            val lifecycleObserver = MyLifecycleObserver(userViewModel, userId)
             lifecycle.addObserver(lifecycleObserver)
             
             // Start observing incoming calls
-            callViewModel.startObservingIncomingCalls(it)
+            callViewModel.startObservingIncomingCalls(userId)
+            
+            // Initialize Signal E2EE keys
+            lifecycleScope.launch {
+                try {
+                    Log.d("SignalE2EE", "Initializing Signal Protocol for user: $userId")
+                    val success = deviceInitializer.initializeDeviceIfNeeded(userId)
+                    if (success) {
+                        Log.d("SignalE2EE", "✅ Signal Protocol initialized successfully")
+                        // Schedule background workers for key maintenance
+                        WorkerScheduler.scheduleSignalWorkers(this@MainActivity)
+                    } else {
+                        Log.e("SignalE2EE", "❌ Signal Protocol initialization failed")
+                    }
+                } catch (e: Exception) {
+                    Log.e("SignalE2EE", "Error initializing Signal Protocol", e)
+                }
+            }
         }
         setContent {
             LetsTalkTheme(dynamicColor = false) {

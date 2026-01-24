@@ -22,7 +22,7 @@ import com.exa.android.letstalk.presentation.auth.components.InputField
 import com.exa.android.letstalk.presentation.auth.components.ShowLoader
 import com.exa.android.letstalk.presentation.auth.components.isValidEmailAndPassword
 import com.exa.android.letstalk.presentation.navigation.component.AuthRoute
-import com.exa.android.letstalk.utils.Response
+import com.exa.android.letstalk.core.utils.Response
 
 
 @Composable

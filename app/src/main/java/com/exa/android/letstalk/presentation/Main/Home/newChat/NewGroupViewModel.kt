@@ -2,25 +2,20 @@ package com.exa.android.letstalk.presentation.Main.Home.newChat
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.exa.android.letstalk.data.domain.main.ViewModel.ChatViewModel
-import com.exa.android.letstalk.data.domain.main.ViewModel.MediaSharingViewModel
-import com.exa.android.letstalk.presentation.navigation.component.HomeRoute
-import com.exa.android.letstalk.utils.Response
-import com.exa.android.letstalk.utils.isNetworkAvailable
-import com.exa.android.letstalk.utils.models.Chat
-import com.exa.android.letstalk.utils.models.User
-import com.google.gson.Gson
+import com.exa.android.letstalk.presentation.Main.Home.ViewModel.ChatViewModel
+import com.exa.android.letstalk.presentation.Main.Home.ViewModel.MediaSharingViewModel
+import com.exa.android.letstalk.core.utils.Response
+import com.exa.android.letstalk.core.utils.isNetworkAvailable
+import com.exa.android.letstalk.domain.User
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
-import java.net.URLEncoder
 import javax.inject.Inject
 import kotlin.coroutines.resumeWithException
 

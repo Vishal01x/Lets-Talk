@@ -18,7 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.exa.android.letstalk.utils.models.Message
+import com.exa.android.letstalk.domain.Message
 
 @Composable
 fun DeleteMessageDialog(

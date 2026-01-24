@@ -5,13 +5,15 @@ import androidx.lifecycle.viewModelScope
 import com.exa.android.letstalk.data.usecase.CancelMessageUseCase
 import com.exa.android.letstalk.data.usecase.ScheduleMessageUseCase
 import com.exa.android.letstalk.data.usecase.ScheduledMessageRepository
-import com.exa.android.letstalk.utils.models.Message
-import com.exa.android.letstalk.utils.models.ScheduleType
+import com.exa.android.letstalk.domain.Message
+import com.exa.android.letstalk.domain.ScheduleType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -32,22 +34,19 @@ class ScheduledMessageViewModel @Inject constructor(
     private val _scheduleMessageType = MutableStateFlow(ScheduleType.NONE)
     val scheduleMessageType: StateFlow<ScheduleType> = _scheduleMessageType
 
-    private val _messages = MutableStateFlow<List<MessageListItem>>(emptyList())
-    val messages: StateFlow<List<MessageListItem>> = _messages.asStateFlow()
-
-    init {
-        loadScheduledMessages()
-    }
-
-    private fun loadScheduledMessages() {
-        viewModelScope.launch {
-            repository.getAllMessages()
-                .map { messages ->
-                    groupMessagesByDate(messages)
-                }
-                .collect { _messages.value = it }
+    // Expose Scheduled Messages (Pending)
+    val scheduledMessages: StateFlow<List<MessageListItem>> = repository.getScheduledMessages()
+        .map { messages ->
+            groupMessagesByDate(messages)
         }
-    }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    // Expose Sent Messages (History)
+    val sentMessages: StateFlow<List<MessageListItem>> = repository.getSentMessages()
+        .map { messages ->
+            groupMessagesByDate(messages)
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     private fun groupMessagesByDate(messages: List<ScheduledMessageEntity>): List<MessageListItem> {
         val grouped = messages.groupBy { message ->

@@ -1,9 +1,7 @@
 package com.exa.android.reflekt.loopit.presentation.main.Home.ChatDetail.component.media.mediaSelectionSheet
 
 import android.app.Activity
-import android.content.Context
 import android.net.Uri
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
@@ -13,7 +11,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.exa.android.letstalk.data.domain.main.ViewModel.MediaSharingViewModel
+import com.exa.android.letstalk.presentation.Main.Home.ViewModel.MediaSharingViewModel
 import com.exa.android.letstalk.presentation.Main.Home.ChatDetail.components.mediaSelectionSheet.launchCameraWithPermission
 
 @Composable

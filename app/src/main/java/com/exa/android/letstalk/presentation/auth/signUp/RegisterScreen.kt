@@ -43,8 +43,7 @@ import com.exa.android.letstalk.presentation.auth.viewmodels.AuthViewModel
 import com.exa.android.letstalk.presentation.navigation.component.AuthRoute
 import com.exa.android.letstalk.presentation.navigation.component.ProfileRoute
 import com.exa.android.letstalk.presentation.navigation.component.ProfileType
-import com.exa.android.letstalk.utils.Response
-import com.exa.android.letstalk.utils.showToast
+import com.exa.android.letstalk.core.utils.Response
 
 @Composable
 fun RegisterScreen(navController: NavController) {

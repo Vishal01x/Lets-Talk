@@ -2,7 +2,6 @@ package com.exa.android.letstalk.presentation.navigation
 
 import android.net.Uri
 import android.util.Log
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -14,8 +13,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
-import com.exa.android.letstalk.data.domain.call.models.CallType
-import com.exa.android.letstalk.presentation.Main.Home.ChatDetail.DetailChatScreen
+import com.exa.android.letstalk.domain.CallType
 import com.exa.android.letstalk.presentation.Main.StatusScreen
 import com.exa.android.letstalk.presentation.Main.profile.OtherProfileScreen
 import com.exa.android.letstalk.presentation.Main.profile.UserProfileScreen

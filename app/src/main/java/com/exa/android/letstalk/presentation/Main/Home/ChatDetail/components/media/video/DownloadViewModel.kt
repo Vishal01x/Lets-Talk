@@ -8,7 +8,7 @@ import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.exa.android.letstalk.presentation.Main.Home.ChatDetail.components.media.getMimeType
-import com.exa.android.letstalk.utils.Constants.APP_NAME
+import com.exa.android.letstalk.core.utils.Constants.APP_NAME
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow

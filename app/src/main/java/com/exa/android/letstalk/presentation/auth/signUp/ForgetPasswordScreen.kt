@@ -29,8 +29,8 @@ import androidx.navigation.NavController
 import com.exa.android.letstalk.presentation.auth.components.InputField
 import com.exa.android.letstalk.presentation.auth.components.ShowLoader
 import com.exa.android.letstalk.presentation.auth.viewmodels.AuthViewModel
-import com.exa.android.letstalk.utils.Response
-import com.exa.android.letstalk.utils.showToast
+import com.exa.android.letstalk.core.utils.Response
+import com.exa.android.letstalk.core.utils.showToast
 
 @Composable
 fun HandleForgetPassword(onComplete : () -> Unit) {

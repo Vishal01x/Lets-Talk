@@ -2,7 +2,7 @@ package com.exa.android.letstalk.data.local.room
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.exa.android.letstalk.utils.models.Message
+import com.exa.android.letstalk.domain.Message
 import com.google.firebase.Timestamp
 import java.util.UUID
 

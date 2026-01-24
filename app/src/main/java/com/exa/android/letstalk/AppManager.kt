@@ -2,7 +2,7 @@ package com.exa.android.letstalk
 
 import androidx.compose.runtime.mutableStateOf
 import com.exa.android.letstalk.presentation.navigation.component.SheetState
-import com.exa.android.letstalk.utils.models.Chat
+import com.exa.android.letstalk.domain.Chat
 
 object AppManager {
 

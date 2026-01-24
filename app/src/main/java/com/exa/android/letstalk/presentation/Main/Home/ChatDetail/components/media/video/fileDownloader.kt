@@ -1,7 +1,7 @@
 package com.exa.android.letstalk.presentation.Main.Home.ChatDetail.components.media.video
 
 import android.content.Context
-import com.exa.android.letstalk.utils.Constants.APP_NAME
+import com.exa.android.letstalk.core.utils.Constants.APP_NAME
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File

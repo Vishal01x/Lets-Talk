@@ -6,12 +6,12 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.exa.android.letstalk.data.domain.auth.AuthRepository
-import com.exa.android.letstalk.data.domain.main.ViewModel.MediaSharingViewModel
+import com.exa.android.letstalk.core.utils.Response
+import com.exa.android.letstalk.core.utils.isNetworkAvailable
+import com.exa.android.letstalk.data.repository.AuthRepository
+import com.exa.android.letstalk.presentation.Main.Home.ViewModel.MediaSharingViewModel
 import com.exa.android.letstalk.data.local.pref.UserPreferences
-import com.exa.android.letstalk.utils.Response
-import com.exa.android.letstalk.utils.isNetworkAvailable
-import com.exa.android.letstalk.utils.models.User
+import com.exa.android.letstalk.domain.User
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow

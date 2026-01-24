@@ -37,13 +37,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.exa.android.letstalk.data.domain.main.ViewModel.ChatViewModel
+import com.exa.android.letstalk.presentation.Main.Home.ViewModel.ChatViewModel
 import com.exa.android.letstalk.presentation.navigation.component.HomeRoute
-import com.exa.android.letstalk.utils.helperFun.generateChatId
-import com.exa.android.letstalk.utils.models.Chat
+import com.exa.android.letstalk.core.utils.helperFun.generateChatId
+import com.exa.android.letstalk.domain.Chat
 import com.exa.android.letstalk.AppManager.setCurChat
 import com.exa.android.letstalk.R
-import com.exa.android.letstalk.utils.Response
+import com.exa.android.letstalk.core.utils.Response
 import com.google.gson.Gson
 import java.net.URLEncoder
 

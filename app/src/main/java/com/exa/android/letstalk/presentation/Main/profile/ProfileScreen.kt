@@ -30,7 +30,6 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -69,14 +68,14 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.exa.android.letstalk.R
-import com.exa.android.letstalk.data.domain.main.ViewModel.MediaSharingViewModel
-import com.exa.android.letstalk.data.domain.main.ViewModel.UserViewModel
+import com.exa.android.letstalk.presentation.Main.Home.ViewModel.MediaSharingViewModel
+import com.exa.android.letstalk.presentation.Main.Home.ViewModel.UserViewModel
 import com.exa.android.letstalk.presentation.auth.viewmodels.AuthViewModel
 import com.exa.android.letstalk.presentation.navigation.component.AuthRoute
 import com.exa.android.letstalk.presentation.navigation.component.ProfileType
-import com.exa.android.letstalk.utils.Response
-import com.exa.android.letstalk.utils.models.User
-import com.exa.android.letstalk.utils.showToast
+import com.exa.android.letstalk.core.utils.Response
+import com.exa.android.letstalk.domain.User
+import com.exa.android.letstalk.core.utils.showToast
 import com.exa.android.reflekt.loopit.presentation.main.Home.ChatDetail.component.media.mediaSelectionSheet.MediaPickerHandler
 
 

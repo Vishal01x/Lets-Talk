@@ -10,7 +10,7 @@ import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
-import com.exa.android.letstalk.utils.models.MediaType
+import com.exa.android.letstalk.domain.MediaType
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date

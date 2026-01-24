@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import com.exa.android.letstalk.R
-import com.exa.android.letstalk.utils.models.ScheduleType
+import com.exa.android.letstalk.domain.ScheduleType
 import com.maxkeppeker.sheets.core.models.base.rememberSheetState
 import com.maxkeppeler.sheets.calendar.CalendarDialog
 import com.maxkeppeler.sheets.calendar.models.CalendarConfig
