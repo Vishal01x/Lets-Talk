@@ -240,6 +240,105 @@ graph TD
 - **Google Fonts**: Custom typography for premium feel
 ---
 
+# 📱 Lets Talk – Light Mode UI Preview
+
+A modern real-time chat application with secure messaging, voice/video calling, group chats, and smart features like message scheduling.
+
+---
+
+## 🚀 Onboarding & Authentication
+
+<table>
+<tr>
+<td><img src="https://github.com/Vishal01x/Lets-Talk/blob/master/docs/Welcome%20Screen.jpeg" width="250"/></td>
+<td><img src="https://github.com/Vishal01x/Lets-Talk/blob/master/docs/Registration_Screen.jpeg" width="250"/></td>
+<td><img src="https://github.com/Vishal01x/Lets-Talk/blob/master/docs/Login_Email.jpeg" width="250"/></td>
+<td><img src="https://github.com/Vishal01x/Lets-Talk/blob/master/docs/Login_Phone.jpeg" width="250"/></td>
+</tr>
+<tr>
+<td align="center">Welcome</td>
+<td align="center">Registration</td>
+<td align="center">Email Login</td>
+<td align="center">Phone Login</td>
+</tr>
+</table>
+
+---
+
+## 🏠 Home & User Discovery
+
+<table>
+<tr>
+<td><img src="https://github.com/Vishal01x/Lets-Talk/blob/master/docs/Home_main.jpeg" width="250"/></td>
+<td><img src="https://github.com/Vishal01x/Lets-Talk/blob/master/docs/Home1.jpeg" width="250"/></td>
+<td><img src="https://github.com/Vishal01x/Lets-Talk/blob/master/docs/User_List.jpeg" width="250"/></td>
+<td><img src="https://github.com/Vishal01x/Lets-Talk/blob/master/docs/Create_Group.jpeg" width="250"/></td>
+</tr>
+<tr>
+<td align="center">Home</td>
+<td align="center">Chat Overview</td>
+<td align="center">User List</td>
+<td align="center">Create Group</td>
+</tr>
+</table>
+
+---
+
+## 💬 Messaging Experience
+
+<table>
+<tr>
+<td><img src="https://github.com/Vishal01x/Lets-Talk/blob/master/docs/Detail%20Chat.jpeg" width="250"/></td>
+<td><img src="https://github.com/Vishal01x/Lets-Talk/blob/master/docs/ScheduleMessage.jpeg" width="250"/></td>
+<td><img src="https://github.com/Vishal01x/Lets-Talk/blob/master/docs/ScheduleMessageList.jpeg" width="250"/></td>
+<td><img src="https://github.com/Vishal01x/Lets-Talk/blob/master/docs/Notification_drawer.jpeg" width="250"/></td>
+</tr>
+<tr>
+<td align="center">Chat Screen</td>
+<td align="center">Schedule Message</td>
+<td align="center">Scheduled Messages List</td>
+<td align="center">Notification Drawer</td>
+</tr>
+</table>
+
+---
+
+## 📞 Voice & Video Calling
+
+<table>
+<tr>
+<td><img src="https://github.com/Vishal01x/Lets-Talk/blob/master/docs/VideoCall_Incoming.jpeg" width="250"/></td>
+<td><img src="https://github.com/Vishal01x/Lets-Talk/blob/master/docs/VideoCall_Outgoing.jpeg" width="250"/></td>
+<td><img src="https://github.com/Vishal01x/Lets-Talk/blob/master/docs/LiveVideoCall.jpeg" width="250"/></td>
+<td><img src="https://github.com/Vishal01x/Lets-Talk/blob/master/docs/LiveVoiceCall.jpeg" width="250"/></td>
+</tr>
+<tr>
+<td align="center">Incoming Call</td>
+<td align="center">Outgoing Call</td>
+<td align="center">Live Video</td>
+<td align="center">Live Voice</td>
+</tr>
+</table>
+
+---
+
+## 👤 Profile Management
+
+<table>
+<tr>
+<td><img src="https://github.com/Vishal01x/Lets-Talk/blob/master/docs/ChatProfile.jpeg" width="250"/></td>
+<td><img src="https://github.com/Vishal01x/Lets-Talk/blob/master/docs/Profile_Screen.jpeg" width="250"/></td>
+<td><img src="https://github.com/Vishal01x/Lets-Talk/blob/master/docs/Profile_Edit.jpeg" width="250"/></td>
+</tr>
+<tr>
+<td align="center">Chat Profile</td>
+<td align="center">Profile View</td>
+<td align="center">Edit Profile</td>
+</tr>
+</table>
+
+---
+
 ## Application Screenshots
 ### 🌞 Light Mode
 | **Authentication** | **Chat List** | **Chat Detail** |
