@@ -288,7 +288,7 @@ A modern real-time chat application with secure messaging, voice/video calling, 
 
 <table>
 <tr>
-<td><img src="https://github.com/Vishal01x/Lets-Talk/blob/master/docs/Detail%20Chat.jpeg" width="250"/></td>
+<td><img src="https://github.com/user-attachments/assets/51dd8207-896b-4e1a-8b3e-fbe39fba502f" width="250"/></td>
 <td><img src="https://github.com/Vishal01x/Lets-Talk/blob/master/docs/ScheduleMessage.jpeg" width="250"/></td>
 <td><img src="https://github.com/Vishal01x/Lets-Talk/blob/master/docs/ScheduleMessageList.jpeg" width="250"/></td>
 <td><img src="https://github.com/Vishal01x/Lets-Talk/blob/master/docs/Notification_drawer.jpeg" width="250"/></td>
@@ -336,29 +336,25 @@ A modern real-time chat application with secure messaging, voice/video calling, 
 <td align="center">Edit Profile</td>
 </tr>
 </table>
-
 ---
 
-## Application Screenshots
-### 🌞 Light Mode
-| **Authentication** | **Chat List** | **Chat Detail** |
-|:---:|:---:|:---:|
-| ![Login Light](docs/images/login_light.png) | ![Home Light](docs/images/home_light.png) | ![Chat Light](docs/images/chat_light.png) |
-| *Secure Firebase Auth* | *Real-time Chat List* | *Rich Message Bubbles* |
-| **Group Chat** | **Video Call** | **Scheduled Messages** |
-|:---:|:---:|:---:|
-| ![Group Light](docs/images/group_light.png) | ![Call Light](docs/images/call_light.png) | ![Scheduled Light](docs/images/scheduled_light.png) |
-| *Multi-user Conversations* | *WebRTC HD Video* | *Message Scheduling* |
-### 🌚 Dark Mode
-| **Authentication** | **Chat List** | **Chat Detail** |
-|:---:|:---:|:---:|
-| ![Login Dark](docs/images/login_dark.png) | ![Home Dark](docs/images/home_dark.png) | ![Chat Dark](docs/images/chat_dark.png) |
-| *OLED-Friendly UI* | *Elegant Dark Theme* | *Eye-Comfortable Design* |
-| **Group Chat** | **Video Call** | **Scheduled Messages** |
-|:---:|:---:|:---:|
-| ![Group Dark](docs/images/group_dark.png) | ![Call Dark](docs/images/call_dark.png) | ![Scheduled Dark](docs/images/scheduled_dark.png) |
-| *Vibrant Accents* | *Immersive Calling* | *Sleek Interface* |
-> **Note**: Add your application screenshots to the `docs/images/` directory with the naming convention shown above.
+## Dark Mode UI
+
+<table>
+<tr>
+<td><img src="https://github.com/user-attachments/assets/244422b0-0225-4f0d-b232-b95ee6fca576" width="250"/></td>
+<td><img src="https://github.com/user-attachments/assets/610b61e8-fdcf-41e7-9013-116a55d3581b" width="250"/></td>
+<td><img src="https://github.com/user-attachments/assets/141e4cdd-0b9d-44db-be28-e3a5b6b17728" width="250"/></td>
+<td><img src="https://github.com/user-attachments/assets/51794951-bd41-4681-8095-5682ec01e5c7" width="250"/></td>
+</tr>
+<tr>
+<td align="center">Welcome Screen</td>
+<td align="center">Home Screen</td>
+<td align="center">Detail Chat</td>
+<td align="center">Profile Screen</td>
+</tr>
+</table>
+
 ---
 
 ## 📚 Detailed Documentation
